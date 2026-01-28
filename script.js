@@ -25,6 +25,7 @@ function updateUI() {
 
 function checkTaskStatus(id, btnId) {
     const btn = document.getElementById(btnId);
+    if (!btn) return;
     if (tasksStatus[id] === 'ready') {
         btn.innerText = "Talep Et";
         btn.className = "btn-claim";
@@ -92,15 +93,16 @@ function doTask(type) {
 }
 
 function inviteFriend() {
-    const link = `https://t.me/BOT_ADINIZ?start=${tg.initDataUnsafe.user?.id || 0}`;
+    const link = `https://a90eb892.miniapp-testt.pages.dev/?start=${tg.initDataUnsafe.user?.id || 0}`;
     tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=Flashy Farm'da birlikte kazanalım!`);
 }
 
 function switchPage(pageId, el) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
-    document.getElementById('page-' + pageId).classList.add('active-page');
+    const target = document.getElementById('page-' + pageId);
+    if(target) target.classList.add('active-page');
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    el.classList.add('active');
+    if(el) el.classList.add('active');
 }
 
 updateUI();

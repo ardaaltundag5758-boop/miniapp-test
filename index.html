@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Stack Ball - Slow & Smooth</title>
+    <title>Stack Ball - Smooth Circle</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; font-family: 'Arial Black', sans-serif; background: #000; }
@@ -29,11 +29,11 @@
         let ballY = START_Y + 5;
         let ballVel = 0; 
         
-        // --- HIZ AYARLARI (BAŞTAN AŞAĞI YAVAŞLATILDI) ---
-        const GRAVITY = 0.005;      // İyice düşürüldü, top tüy gibi düşer
-        const JUMP_FORCE = 0.12;     // Zıplama yüksekliği çok azaltıldı
-        const CRUSH_SPEED = 0.35;    // Blok kırma hızı daha sakin
-        const ROT_SPEED = 0.008;     // Platform dönüşü çok yavaşlatıldı
+        // Hız Ayarları (Yavaş ve kontrollü)
+        const GRAVITY = 0.005;      
+        const JUMP_FORCE = 0.12;     
+        const CRUSH_SPEED = 0.35;    
+        const ROT_SPEED = 0.008;     
         const LAYER_GAP = 5.5;
 
         function init() {
@@ -56,12 +56,14 @@
             mainPivot = new THREE.Group();
             scene.add(mainPivot);
 
+            // Merkez Direk
             const tower = new THREE.Mesh(
-                new THREE.CylinderGeometry(2.5, 2.5, 1000, 32),
+                new THREE.CylinderGeometry(2.5, 2.5, 1000, 48),
                 new THREE.MeshPhongMaterial({ color: 0x111111 })
             );
             mainPivot.add(tower);
 
+            // Top
             ball = new THREE.Mesh(
                 new THREE.SphereGeometry(1.2, 32, 32),
                 new THREE.MeshPhongMaterial({ color: 0xffffff })
@@ -85,18 +87,24 @@
                 const isBlack = i > 5 && Math.random() < 0.2 && i < 58;
                 const color = isBlack ? 0x222222 : 0xeb4d4b;
                 
-                const piecesPerLayer = 16; 
-                const angleStep = (Math.PI * 2) / piecesPerLayer;
+                // Tam pürüzsüz halka için Torus (Simit) Geometrisi kullanımı
+                // CylinderGeometry de kullanılabilir ancak dilimlere bölmek için 
+                // parçalı silindir yapısı en temizidir.
+                const segments = 40; // 40 parça ile tam yuvarlak görünüm
+                const radius = 5.2;
+                const angleStep = (Math.PI * 2) / segments;
 
-                for(let j = 0; j < piecesPerLayer; j++) {
-                    const geometry = new THREE.BoxGeometry(2.5, 1.2, 3.5);
+                // Stack Ball mantığı: Halka parçalardan oluşur ama yan yana gelince kusursuz görünür
+                for(let j = 0; j < segments; j++) {
+                    // Silindir dilimi kullanarak kenarlardaki "dişli" çıkıntıları yok ediyoruz
+                    const geometry = new THREE.CylinderGeometry(2.5, 2.5, 1.2, 8, 1, false, j * angleStep, angleStep * 0.95);
                     const material = new THREE.MeshPhongMaterial({ color: color });
                     const piece = new THREE.Mesh(geometry, material);
                     
-                    const angle = j * angleStep;
-                    piece.position.x = Math.cos(angle) * 5.2;
-                    piece.position.z = Math.sin(angle) * 5.2;
-                    piece.rotation.y = -angle;
+                    piece.rotation.x = Math.PI / 2;
+                    piece.position.x = Math.cos(j * angleStep + angleStep/2) * radius;
+                    piece.position.z = Math.sin(j * angleStep + angleStep/2) * radius;
+                    piece.rotation.z = -(j * angleStep + angleStep/2);
                     
                     piece.userData = { fatal: isBlack };
                     layerGroup.add(piece);
@@ -120,6 +128,7 @@
                 mainPivot.rotation.y += ROT_SPEED; 
             }
 
+            // Parçalanma efektleri
             for (let i = fragments.length - 1; i >= 0; i--) {
                 const f = fragments[i];
                 f.position.add(f.userData.vel);
@@ -150,7 +159,7 @@
                 }
 
                 ball.position.y = ballY;
-                camera.position.y = THREE.MathUtils.lerp(camera.position.y, ballY + 18, 0.03); // Takip iyice yavaşlatıldı
+                camera.position.y = THREE.MathUtils.lerp(camera.position.y, ballY + 18, 0.03);
                 camera.lookAt(0, ballY - 10, 0);
             }
 

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Stack Ball - Optimized Performance</title>
+    <title>Stack Ball - Balanced Speed</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; font-family: 'Arial Black', sans-serif; background: #1a1a1a; }
@@ -27,13 +27,13 @@
         let ballY = START_Y + 5;
         let ballVel = 0; 
 
-        // --- STABİLİZE EDİLMİŞ AYARLAR ---
-        const ROT_SPEED = 1.2;        // Saniyedeki dönüş hızı
-        const GRAVITY = -38.0;        // Saniye bazlı yerçekimi
-        const JUMP_FORCE = 16.0;      // Saniye bazlı zıplama
-        const CRUSH_SPEED = -45.0;    // Saniye bazlı kırma hızı
+        // --- DENGELENMİŞ YENİ HIZ AYARLARI ---
+        const ROT_SPEED = 1.2;        
+        const GRAVITY = -38.0;        
+        const JUMP_FORCE = 16.0;      
+        const CRUSH_SPEED = -32.0;    // Önceki -45.0 idi, daha kontrollü olması için düşürüldü
         const RING_DEPTH = 2.2;
-        const LAYER_GAP = 0.3;        // İstediğin dar boşluk
+        const LAYER_GAP = 0.3;        
         const TOTAL_STEP = RING_DEPTH + LAYER_GAP;
 
         function init() {
@@ -45,7 +45,7 @@
 
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Performans için limit
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             document.body.appendChild(renderer.domElement);
 
             scene.add(new THREE.AmbientLight(0xffffff, 1.0));
@@ -56,14 +56,12 @@
             mainPivot = new THREE.Group();
             scene.add(mainPivot);
 
-            // Merkez Direk
             const tower = new THREE.Mesh(
                 new THREE.CylinderGeometry(3.5, 3.5, 1000, 32),
                 new THREE.MeshPhongMaterial({ color: 0x222222 })
             );
             mainPivot.add(tower);
 
-            // Top
             ball = new THREE.Mesh(
                 new THREE.SphereGeometry(1.1, 24, 24),
                 new THREE.MeshPhongMaterial({ color: 0xffffff })
@@ -125,12 +123,10 @@
         function animate() {
             requestAnimationFrame(animate);
             let dt = clock.getDelta();
-            if (dt > 0.1) dt = 0.016; // FPS düşüşlerinde topun ışınlanmasını önler
+            if (dt > 0.1) dt = 0.016; 
 
-            // Sabit Dönüş
             mainPivot.rotation.y += ROT_SPEED * dt; 
 
-            // Parça Efektleri
             for (let i = fragments.length - 1; i >= 0; i--) {
                 const f = fragments[i];
                 f.position.add(f.userData.vel.clone().multiplyScalar(dt * 60));
@@ -147,15 +143,12 @@
 
                 ballY += ballVel * dt;
 
-                // Çarpışma ve Kırma Kontrolü
                 for (let i = 0; i < layers.length; i++) {
                     const l = layers[i];
                     const diff = ballY - l.position.y;
 
-                    // Top katmana çarptıysa (Üstten geliyorsa)
                     if (diff < RING_DEPTH && diff > 0 && ballVel < 0) {
                         if (isDown) {
-                            // KIRMA MODU
                             if (l.children[0].userData.fatal) {
                                 gameOver();
                                 return;
@@ -166,7 +159,6 @@
                             document.getElementById('score-display').innerText = score;
                             break; 
                         } else {
-                            // SEKME MODU
                             ballVel = JUMP_FORCE;
                             ballY = l.position.y + RING_DEPTH;
                             break;

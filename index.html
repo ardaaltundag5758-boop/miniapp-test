@@ -1,114 +1,173 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>3D Stack Ball Mini</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<style>
-body, html {margin:0; padding:0; width:100%; height:100%; overflow:hidden; background:#333;}
-canvas {display:block;}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Stack Ball</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; font-family: sans-serif; }
+        #game-ui { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; pointer-events: none; }
+        #start-btn { 
+            padding: 15px 40px; font-size: 24px; font-weight: bold; background: #fff; border: none; 
+            border-radius: 50px; cursor: pointer; pointer-events: auto; box-shadow: 0 10px 20px rgba(0,0,0,0.2); 
+        }
+        #score-display { position: absolute; top: 50px; font-size: 48px; font-weight: 900; color: white; text-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+    </style>
 </head>
 <body>
-<script>
-let scene, camera, renderer;
-let ball;
-let tower = [];
-let ballSpeed = 0.2;
-let isPressed = false;
-let gameOver = false;
+    <div id="game-ui">
+        <div id="score-display">0</div>
+        <button id="start-btn">BAŞLA</button>
+    </div>
 
-// başlangıç
-init();
-function init(){
-    scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x333333);
+    <script>
+        let scene, camera, renderer, ball, tower, layers = [], fragments = [];
+        let isDown = false, gameActive = false, score = 0;
+        let ballVel = 0, ballY = 20;
+        
+        const GRAVITY = 0.01;
+        const JUMP_FORCE = 0.18;
+        const CRUSH_SPEED = 0.4;
+        const LAYER_COUNT = 40;
+        const LAYER_GAP = 3.5;
 
-    camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight,0.1,1000);
-    camera.position.set(0,25,30);
-    camera.lookAt(0,5,0);
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x4facfe);
 
-    renderer = new THREE.WebGLRenderer({antialias:true});
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(window.devicePixelRatio);
-    document.body.appendChild(renderer.domElement);
+            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 30, 35);
+            camera.lookAt(0, 10, 0);
 
-    let light = new THREE.AmbientLight(0xffffff,0.7);
-    scene.add(light);
-    let dirLight = new THREE.DirectionalLight(0xffffff,0.5);
-    dirLight.position.set(5,15,10);
-    scene.add(dirLight);
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            document.body.appendChild(renderer.domElement);
 
-    // kule blokları
-    let y = 0;
-    for(let i=0;i<20;i++){
-        let color = Math.random() < 0.15 ? 0x000000 : Math.random()*0xffffff;
-        let geo = new THREE.CylinderGeometry(3,3,2,32,1,true);
-        let mat = new THREE.MeshPhongMaterial({color: color});
-        let mesh = new THREE.Mesh(geo, mat);
-        mesh.position.y = y;
-        tower.push(mesh);
-        scene.add(mesh);
-        y -= 2;
-    }
+            const ambient = new THREE.AmbientLight(0xffffff, 0.8);
+            const sun = new THREE.DirectionalLight(0xffffff, 0.5);
+            sun.position.set(5, 20, 10);
+            scene.add(ambient, sun);
 
-    // top
-    let ballGeo = new THREE.SphereGeometry(1.5,32,32);
-    let ballMat = new THREE.MeshPhongMaterial({color:0xff0000});
-    ball = new THREE.Mesh(ballGeo, ballMat);
-    ball.position.set(0,22,0);
-    scene.add(ball);
+            createLevel();
 
-    // dokunmatik ve mouse event
-    window.addEventListener('mousedown',()=>isPressed=true);
-    window.addEventListener('mouseup',()=>isPressed=false);
-    window.addEventListener('touchstart',()=>isPressed=true);
-    window.addEventListener('touchend',()=>isPressed=false);
+            document.getElementById('start-btn').addEventListener('click', () => {
+                gameActive = true;
+                document.getElementById('game-ui').style.display = 'none';
+            });
 
-    animate();
-}
+            window.addEventListener('pointerdown', () => { if(gameActive) isDown = true; });
+            window.addEventListener('pointerup', () => isDown = false);
+            
+            animate();
+        }
 
-// animasyon
-function animate(){
-    requestAnimationFrame(animate);
-    if(gameOver) return;
+        function createLevel() {
+            // Merkezi Kule
+            const towerGeo = new THREE.CylinderGeometry(2, 2, 1000, 32);
+            const towerMat = new THREE.MeshPhongMaterial({ color: 0xeeeeee });
+            tower = new THREE.Mesh(towerGeo, towerMat);
+            scene.add(tower);
 
-    // top pozisyonu
-    if(isPressed) ball.position.y -= ballSpeed*2;
-    else ball.position.y += ballSpeed;
+            // Top
+            const ballGeo = new THREE.SphereGeometry(0.8, 32, 32);
+            const ballMat = new THREE.MeshPhongMaterial({ color: 0xffffff });
+            ball = new THREE.Mesh(ballGeo, ballMat);
+            ball.position.set(0, ballY, 3.2);
+            scene.add(ball);
 
-    // max yukari ve asagi sinir
-    if(ball.position.y > 22) ball.position.y = 22;
-    if(ball.position.y < -2) ball.position.y = -2;
+            // Kare Bloklar
+            for (let i = 0; i < LAYER_COUNT; i++) {
+                const isBlack = i > 5 && Math.random() < 0.2 && i < LAYER_COUNT - 2;
+                const layer = new THREE.Group();
+                layer.position.y = 20 - (i * LAYER_GAP);
+                layer.rotation.y = i * 0.2;
 
-    // çarpma kontrolü
-    tower.forEach((blk)=>{
-        if(Math.abs(ball.position.y - blk.position.y)<1.5){
-            let col = blk.material.color.getHex();
-            if(col==0x000000){
-                alert('game over');
-                gameOver = true;
-            }else{
-                scene.remove(blk);
-                tower = tower.filter(b=>b!==blk);
+                const mat = new THREE.MeshPhongMaterial({ color: isBlack ? 0x222222 : 0x00ff88 });
+                
+                // 4 Parçalı Kare Yapı
+                for(let x=0; x<2; x++) {
+                    for(let z=0; z<2; z++) {
+                        const piece = new THREE.Mesh(new THREE.BoxGeometry(4.5, 0.8, 4.5), mat);
+                        piece.position.set(x === 0 ? -2.3 : 2.3, 0, z === 0 ? -2.3 : 2.3);
+                        piece.userData = { fatal: isBlack };
+                        layer.add(piece);
+                    }
+                }
+                scene.add(layer);
+                layers.push(layer);
             }
         }
-    });
 
-    // kamera hafif donus
-    camera.position.x = Math.sin(Date.now()*0.001)*30;
-    camera.lookAt(0,5,0);
+        function animate() {
+            requestAnimationFrame(animate);
 
-    renderer.render(scene,camera);
-}
+            // Parçalanma Animasyonu
+            for (let i = fragments.length - 1; i >= 0; i--) {
+                const f = fragments[i];
+                f.position.add(f.userData.vel);
+                f.userData.vel.y -= 0.02;
+                f.rotation.x += 0.1;
+                if(f.position.y < -50) {
+                    scene.remove(f);
+                    fragments.splice(i, 1);
+                }
+            }
 
-// ekran boyutu değişince
-window.addEventListener('resize',()=>{
-    camera.aspect = window.innerWidth/window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-});
-</script>
+            if (gameActive) {
+                if (isDown) {
+                    ballVel = -CRUSH_SPEED;
+                    checkCollision();
+                } else {
+                    ballVel += GRAVITY;
+                    const layer = layers.find(l => Math.abs(ball.position.y - (l.position.y + 1)) < 0.4);
+                    if (layer && ballVel > 0) {
+                        ballVel = -JUMP_FORCE;
+                    }
+                }
+
+                ballY -= ballVel;
+                ball.position.y = ballY;
+
+                // Kamera Sabit Takip
+                camera.position.y = ball.position.y + 15;
+                camera.lookAt(0, ball.position.y - 5, 0);
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        function checkCollision() {
+            const layerIdx = layers.findIndex(l => Math.abs(ball.position.y - l.position.y) < 1.0);
+            if (layerIdx !== -1) {
+                const layer = layers[layerIdx];
+                if (layer.children[0].userData.fatal) {
+                    location.reload(); // Kaybetme
+                    return;
+                }
+                explodeLayer(layer);
+                layers.splice(layerIdx, 1);
+                score += 10;
+                document.getElementById('score-display').innerText = score;
+            }
+        }
+
+        function explodeLayer(layer) {
+            while(layer.children.length > 0) {
+                const p = layer.children[0];
+                const worldPos = new THREE.Vector3();
+                p.getWorldPosition(worldPos);
+                scene.remove(p);
+                p.position.copy(worldPos);
+                p.userData.vel = new THREE.Vector3(p.position.x * 0.2, 0.1, p.position.z * 0.2);
+                scene.add(p);
+                fragments.push(p);
+            }
+            scene.remove(layer);
+        }
+
+        init();
+    </script>
 </body>
 </html>

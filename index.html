@@ -1,96 +1,106 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>3D Kule ve Top</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <style>
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #333333; }
-        #canvas-container { width: 100%; height: 100%; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>3D Stack Ball Mini</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+body, html {margin:0; padding:0; width:100%; height:100%; overflow:hidden; background:#333;}
+</style>
 </head>
 <body>
-    <div id="canvas-container"></div>
+<script>
+let scene, camera, renderer;
+let ball;
+let tower = [];
+let ballSpeed = 0.2;
+let isPressed = false;
+let gameOver = false;
 
-    <script>
-        let scene, camera, renderer;
-        let tower, ball;
-        let clock, deltaTime;
-        let ballVelocity = 0.15;
-        let isPressed = false;
-        let ballDirection = 1; // 1 yukari, -1 asagi
+init();
+function init(){
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x333333);
 
-        function init() {
-            const container = document.getElementById('canvas-container');
+    camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight,0.1,1000);
+    camera.position.set(0,25,30);
+    camera.lookAt(0,5,0);
 
-            scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x333333);
+    renderer = new THREE.WebGLRenderer({antialias:true});
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    document.body.appendChild(renderer.domElement);
 
-            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.set(0, 20, 30);
-            camera.lookAt(0, 5, 0);
+    let light = new THREE.AmbientLight(0xffffff,0.7);
+    scene.add(light);
+    let dirLight = new THREE.DirectionalLight(0xffffff,0.5);
+    dirLight.position.set(5,15,10);
+    scene.add(dirLight);
 
-            renderer = new THREE.WebGLRenderer({ antialias: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(window.devicePixelRatio);
-            container.appendChild(renderer.domElement);
+    // kule blokları
+    let y = 0;
+    for(let i=0;i<20;i++){
+        let color = Math.random() < 0.1 ? 0x000000 : Math.random()*0xffffff;
+        let geo = new THREE.CylinderGeometry(3,3,2,32,1,true);
+        let mat = new THREE.MeshPhongMaterial({color: color});
+        let mesh = new THREE.Mesh(geo, mat);
+        mesh.position.y = y;
+        tower.push(mesh);
+        scene.add(mesh);
+        y -= 2;
+    }
 
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
-            scene.add(ambientLight);
+    // top
+    let ballGeo = new THREE.SphereGeometry(1.5,32,32);
+    let ballMat = new THREE.MeshPhongMaterial({color:0xff0000});
+    ball = new THREE.Mesh(ballGeo, ballMat);
+    ball.position.set(0,22,0);
+    scene.add(ball);
 
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
-            directionalLight.position.set(5, 15, 10);
-            scene.add(directionalLight);
+    // basınca aşağı
+    window.addEventListener('mousedown',()=>isPressed=true);
+    window.addEventListener('mouseup',()=>isPressed=false);
+    window.addEventListener('touchstart',()=>isPressed=true);
+    window.addEventListener('touchend',()=>isPressed=false);
 
-            // Kule
-            const towerGeometry = new THREE.CylinderGeometry(3, 3, 40, 32);
-            const towerMaterial = new THREE.MeshPhongMaterial({ color: 0x888888 });
-            tower = new THREE.Mesh(towerGeometry, towerMaterial);
-            tower.position.y = 0;
-            scene.add(tower);
+    animate();
+}
 
-            // Top
-            const ballGeometry = new THREE.SphereGeometry(1.5, 32, 32);
-            const ballMaterial = new THREE.MeshPhongMaterial({ color: 0xff0000 });
-            ball = new THREE.Mesh(ballGeometry, ballMaterial);
-            ball.position.set(0, 22, 0);
-            scene.add(ball);
+function animate(){
+    requestAnimationFrame(animate);
+    if(gameOver) return;
 
-            clock = new THREE.Clock();
+    // top pozisyonu
+    if(isPressed) ball.position.y -= ballSpeed*2;
+    else ball.position.y += ballSpeed;
 
-            // dokunmatik ve mouse eventi
-            window.addEventListener('mousedown', () => { isPressed = true; ballDirection = -1; });
-            window.addEventListener('mouseup', () => { isPressed = false; ballDirection = 1; });
-            window.addEventListener('touchstart', () => { isPressed = true; ballDirection = -1; });
-            window.addEventListener('touchend', () => { isPressed = false; ballDirection = 1; });
+    // basit yercekimi ve max yukari sinir
+    if(ball.position.y > 22) ball.position.y = 22;
+    if(ball.position.y < -2) ball.position.y = -2;
 
-            animate();
+    // çarpma kontrolü
+    tower.forEach((blk)=>{
+        if(Math.abs(ball.position.y - blk.position.y)<1.5){
+            let col = blk.material.color.getHex();
+            if(col==0x000000){
+                alert('game over');
+                gameOver = true;
+            }else{
+                scene.remove(blk);
+                tower = tower.filter(b=>b!==blk);
+            }
         }
+    });
 
-        function animate() {
-            requestAnimationFrame(animate);
+    renderer.render(scene,camera);
+}
 
-            deltaTime = clock.getDelta();
-
-            // top ziplama mantigi
-            ball.position.y += ballVelocity * ballDirection;
-
-            // yukari sinir
-            if (ball.position.y >= 22 && ballDirection > 0) ballDirection = -1;
-            // asagi sinir
-            if (ball.position.y <= 2 && ballDirection < 0) ballDirection = 1;
-
-            renderer.render(scene, camera);
-        }
-
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-
-        init();
-    </script>
+window.addEventListener('resize',()=>{
+    camera.aspect = window.innerWidth/window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
 </body>
 </html>

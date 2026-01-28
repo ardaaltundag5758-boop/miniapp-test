@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Stack Ball - Wide & Thin Rings</title>
+    <title>Stack Ball - Fix Start & Position</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #4834d4; touch-action: none; }
@@ -39,16 +39,19 @@
         const LAYER_GAP = 0.5; 
         const TOTAL_STEP = RING_DEPTH + LAYER_GAP;
 
-        // --- YENİ ÖLÇÜLER ---
-        const OUTER_RADIUS = 10.5; // Genişletildi (Eski: 8.5)
-        const INNER_RADIUS = 8.5;  // Et kalınlığı inceltildi (Eski: 5.0)
+        const OUTER_RADIUS = 10.5; 
+        const INNER_RADIUS = 8.5;  
+
+        const START_Y = 30; // İlk halkanın Y pozisyonu
+        let ballY = START_Y + 4.5; // DÜZELTME: Topu ilk halkanın tam üzerine taşıdım
+        let ballVel = 0;
 
         function init() {
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0x4834d4); 
 
             camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.set(0, 35, 45);
+            camera.position.set(0, ballY + 15, 45);
 
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
@@ -73,27 +76,25 @@
                 new THREE.SphereGeometry(1.2, 24, 24),
                 new THREE.MeshPhongMaterial({ color: 0xff4757, shininess: 100 }) 
             );
-            // Genişleyen halkaya göre topun X/Z pozisyonu (OUTER + INNER) / 2 civarına çekildi
-            ball.position.set(0, 30, (OUTER_RADIUS + INNER_RADIUS) / 2); 
+            ball.position.set(0, ballY, (OUTER_RADIUS + INNER_RADIUS) / 2); 
             scene.add(ball);
 
             createLevel();
 
+            // DÜZELTME: Başlatma butonu için temiz dinleyici
             const btn = document.getElementById('start-btn');
-            const startAction = (e) => {
+            const onStart = (e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 if(!gameActive) startGame();
             };
-            btn.addEventListener('click', startAction);
-            btn.addEventListener('touchstart', startAction);
+            btn.addEventListener('pointerdown', onStart); // Mobil ve PC için en hızlı tepki
 
-            const handleDown = (e) => { if(gameActive) isDown = true; };
-            const handleUp = () => isDown = false;
-            window.addEventListener('mousedown', handleDown);
-            window.addEventListener('mouseup', handleUp);
-            window.addEventListener('touchstart', (e) => { if(gameActive) handleDown(); }, {passive: false});
-            window.addEventListener('touchend', handleUp);
+            // Oyun kontrolleri
+            window.addEventListener('pointerdown', (e) => { 
+                if(gameActive) isDown = true; 
+            });
+            window.addEventListener('pointerup', () => isDown = false);
             
             window.addEventListener('resize', onWindowResize, false);
             animate();
@@ -102,7 +103,7 @@
         function createLevel() {
             for (let i = 0; i < 100; i++) {
                 const layerGroup = new THREE.Group();
-                layerGroup.position.y = 30 - (i * TOTAL_STEP);
+                layerGroup.position.y = START_Y - (i * TOTAL_STEP);
                 
                 const isBlack = i > 5 && Math.random() < 0.25 && i < 95;
                 const color = isBlack ? 0x222222 : (i % 2 === 0 ? 0xffbe76 : 0xf0932b);
@@ -161,11 +162,11 @@
                 if (isDown) ballVel = CRUSH_SPEED;
                 else ballVel += GRAVITY * dt;
 
-                ball.position.y += ballVel * dt;
+                ballY += ballVel * dt;
 
                 for (let i = 0; i < layers.length; i++) {
                     const l = layers[i];
-                    const diff = ball.position.y - l.position.y;
+                    const diff = ballY - l.position.y;
 
                     if (diff < RING_DEPTH && diff > 0 && ballVel < 0) {
                         if (isDown) {
@@ -181,13 +182,14 @@
                             break; 
                         } else {
                             ballVel = JUMP_FORCE;
-                            ball.position.y = l.position.y + RING_DEPTH;
+                            ballY = l.position.y + RING_DEPTH;
                             break;
                         }
                     }
                 }
-                camera.position.y = THREE.MathUtils.lerp(camera.position.y, ball.position.y + 18, 5 * dt);
-                camera.lookAt(0, ball.position.y - 10, 0);
+                ball.position.y = ballY;
+                camera.position.y = THREE.MathUtils.lerp(camera.position.y, ballY + 18, 5 * dt);
+                camera.lookAt(0, ballY - 10, 0);
             }
             renderer.render(scene, camera);
         }

@@ -1,14 +1,78 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="utf-8">
-  <title>mini app test</title>
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flashy BTC Miner</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --main-bg: #0f0f0f; --accent: #f7931a; --text: #ffffff; --card-bg: #1e1e1e; }
+        body { font-family: sans-serif; background-color: var(--main-bg); color: var(--text); margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        
+        .content { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 80px; }
+        .page { display: none; text-align: center; }
+        .active { display: block; }
+
+        /* BTC Simge ve Skor */
+        .btc-logo { width: 100px; cursor: pointer; transition: transform 0.1s; margin: 20px auto; }
+        .btc-logo:active { transform: scale(0.9); }
+        .balance { font-size: 2rem; font-weight: bold; color: var(--accent); }
+
+        /* Kartlar ve Görevler */
+        .card { background: var(--card-bg); border-radius: 15px; padding: 15px; margin: 10px 0; display: flex; justify-content: space-between; align-items: center; }
+        .btn-action { background: var(--accent); border: none; color: white; padding: 8px 15px; border-radius: 8px; cursor: pointer; }
+
+        /* Alt Navigasyon */
+        .nav-bar { position: fixed; bottom: 0; width: 100%; background: #1a1a1a; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #333; }
+        .nav-item { color: #888; text-decoration: none; font-size: 0.8rem; display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+        .nav-item.active-nav { color: var(--accent); }
+        .nav-item i { font-size: 1.2rem; margin-bottom: 4px; }
+    </style>
 </head>
 <body>
-  <h3>telegram mini app test</h3>
-  <div id="info">yükleniyor</div>
 
-  <script src="script.js"></script>
+    <div class="content">
+        <div id="game" class="page active">
+            <h2>Madenci</h2>
+            <div class="balance"><span id="score">0</span> BTC</div>
+            <img src="https://cryptologos.cc/logos/bitcoin-btc-logo.png" class="btc-logo" id="clickBtn" alt="BTC">
+            <p>Ekrana dokunarak kaz!</p>
+        </div>
+
+        <div id="tasks" class="page">
+            <h2>Görevler</h2>
+            <div class="card">
+                <span>X Takip Et (@ADNFlashy)</span>
+                <button class="btn-action" onclick="doTask('https://x.com/ADNFlashy', 100)">Yap</button>
+            </div>
+        </div>
+
+        <div id="invite" class="page">
+            <h2>Arkadaşlarını Davet Et</h2>
+            <div class="card"><span>1 Kişi Davet Et</span> <span>+500 BTC</span></div>
+            <div class="card"><span>5 Kişi Davet Et</span> <span>+3000 BTC</span></div>
+            <div class="card"><span>10 Kişi Davet Et</span> <span>+10000 BTC</span></div>
+            <button class="btn-action" style="width: 100%; margin-top: 20px;" onclick="inviteFriend()">Davet Linkini Kopyala</button>
+        </div>
+
+        <div id="wallet" class="page">
+            <h2>Cüzdanım</h2>
+            <div class="card" style="flex-direction: column; gap: 10px;">
+                <span style="font-size: 0.9rem; color: #aaa;">Toplam Bakiye</span>
+                <span class="balance" id="walletScore">0 BTC</span>
+            </div>
+            <button class="btn-action" style="width: 100%; background: #333;">Cüzdan Bağla (Yakında)</button>
+        </div>
+    </div>
+
+    <div class="nav-bar">
+        <div class="nav-item active-nav" onclick="showPage('game', this)"><i class="fas fa-hammer"></i>Oyun</div>
+        <div class="nav-item" onclick="showPage('tasks', this)"><i class="fas fa-tasks"></i>Görevler</div>
+        <div class="nav-item" onclick="showPage('invite', this)"><i class="fas fa-users"></i>Davet</div>
+        <div class="nav-item" onclick="showPage('wallet', this)"><i class="fas fa-wallet"></i>Cüzdan</div>
+    </div>
+
+    <script src="script.js"></script>
 </body>
 </html>

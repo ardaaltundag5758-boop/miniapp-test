@@ -3,38 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Stack Ball - Fixed Speed</title>
+    <title>Stack Ball - Optimized Performance</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; font-family: 'Arial Black', sans-serif; background: #1a1a1a; }
         #game-ui { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; pointer-events: none; }
-        #start-btn { padding: 20px 60px; font-size: 28px; font-weight: bold; background: #fff; border: none; border-radius: 50px; cursor: pointer; pointer-events: auto; }
-        #score-display { position: absolute; top: 40px; font-size: 60px; font-weight: 900; color: white; }
+        #start-btn { padding: 15px 50px; font-size: 24px; font-weight: bold; background: #fff; border: none; border-radius: 50px; cursor: pointer; pointer-events: auto; box-shadow: 0 5px 20px rgba(0,0,0,0.3); }
+        #score-display { position: absolute; top: 40px; font-size: 50px; font-weight: 900; color: white; text-shadow: 0 3px 10px rgba(0,0,0,0.5); }
     </style>
 </head>
 <body>
     <div id="game-ui">
         <div id="score-display">0</div>
-        <button id="start-btn" onclick="startGame()">BAŞLA</button>
+        <button id="start-btn" onclick="startGame()">OYNA</button>
     </div>
 
     <script>
         let scene, camera, renderer, ball, mainPivot, layers = [], fragments = [];
         let isDown = false, gameActive = false, score = 0;
-        let clock = new THREE.Clock(); // Zaman takibi için
+        let clock = new THREE.Clock();
         
         const START_Y = 30;
         let ballY = START_Y + 5;
         let ballVel = 0; 
-        
-        // --- SENİN VERDİĞİN TAM DEĞERLER ---
-        const ROT_SPEED = 0.8;      // Delta time ile çarpmak için normalize edildi
-        const GRAVITY = 0.015;
-        const JUMP_FORCE = 0.18;
-        const CRUSH_SPEED = 0.35;
+
+        // --- STABİLİZE EDİLMİŞ AYARLAR ---
+        const ROT_SPEED = 1.2;        // Saniyedeki dönüş hızı
+        const GRAVITY = -38.0;        // Saniye bazlı yerçekimi
+        const JUMP_FORCE = 16.0;      // Saniye bazlı zıplama
+        const CRUSH_SPEED = -45.0;    // Saniye bazlı kırma hızı
         const RING_DEPTH = 2.2;
-        const LAYER_GAP = 0.3;      // Halkalar arası 0.3 birim boşluk
-        const TOTAL_GAP = RING_DEPTH + LAYER_GAP; // Toplam katman mesafesi
+        const LAYER_GAP = 0.3;        // İstediğin dar boşluk
+        const TOTAL_STEP = RING_DEPTH + LAYER_GAP;
 
         function init() {
             scene = new THREE.Scene();
@@ -45,7 +45,7 @@
 
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Performans için limit
             document.body.appendChild(renderer.domElement);
 
             scene.add(new THREE.AmbientLight(0xffffff, 1.0));
@@ -56,14 +56,16 @@
             mainPivot = new THREE.Group();
             scene.add(mainPivot);
 
+            // Merkez Direk
             const tower = new THREE.Mesh(
-                new THREE.CylinderGeometry(3.5, 3.5, 1000, 48),
+                new THREE.CylinderGeometry(3.5, 3.5, 1000, 32),
                 new THREE.MeshPhongMaterial({ color: 0x222222 })
             );
             mainPivot.add(tower);
 
+            // Top
             ball = new THREE.Mesh(
-                new THREE.SphereGeometry(1.0, 32, 32),
+                new THREE.SphereGeometry(1.1, 24, 24),
                 new THREE.MeshPhongMaterial({ color: 0xffffff })
             );
             ball.position.set(0, ballY, 6.8); 
@@ -71,19 +73,23 @@
 
             createLevel();
 
-            window.addEventListener('pointerdown', () => { if(gameActive) isDown = true; });
-            window.addEventListener('pointerup', () => isDown = false);
+            const handleDown = () => { if(gameActive) isDown = true; };
+            const handleUp = () => isDown = false;
+            window.addEventListener('mousedown', handleDown);
+            window.addEventListener('mouseup', handleUp);
+            window.addEventListener('touchstart', (e) => { e.preventDefault(); handleDown(); }, {passive: false});
+            window.addEventListener('touchend', handleUp);
             
             animate();
         }
 
         function createLevel() {
-            for (let i = 0; i < 80; i++) {
+            for (let i = 0; i < 100; i++) {
                 const layerGroup = new THREE.Group();
-                layerGroup.position.y = START_Y - (i * TOTAL_GAP);
+                layerGroup.position.y = START_Y - (i * TOTAL_STEP);
                 
-                const isBlack = i > 5 && Math.random() < 0.2 && i < 78;
-                const color = isBlack ? 0x222222 : (i % 2 === 0 ? 0xf1c40f : 0xe67e22); 
+                const isBlack = i > 5 && Math.random() < 0.2 && i < 95;
+                const color = isBlack ? 0x222222 : (i % 2 === 0 ? 0xf1c40f : 0xe67e22);
                 
                 const segments = 40; 
                 const innerRadius = 5.5; 
@@ -104,7 +110,7 @@
                     piece.userData = { fatal: isBlack };
                     layerGroup.add(piece);
                 }
-                layerGroup.rotation.y = i * 0.1; 
+                layerGroup.rotation.y = i * 0.15; 
                 mainPivot.add(layerGroup);
                 layers.push(layerGroup);
             }
@@ -113,58 +119,72 @@
         function startGame() {
             gameActive = true;
             document.getElementById('start-btn').style.display = 'none';
+            clock.start();
         }
 
         function animate() {
             requestAnimationFrame(animate);
-            let dt = clock.getDelta(); // Kareler arası geçen gerçek süre
-            if (dt > 0.1) dt = 0.016; // Sekme olmasın diye limit
+            let dt = clock.getDelta();
+            if (dt > 0.1) dt = 0.016; // FPS düşüşlerinde topun ışınlanmasını önler
 
-            // Cihazdan bağımsız sabit dönüş hızı
-            mainPivot.rotation.y += ROT_SPEED * dt * 60; 
+            // Sabit Dönüş
+            mainPivot.rotation.y += ROT_SPEED * dt; 
+
+            // Parça Efektleri
+            for (let i = fragments.length - 1; i >= 0; i--) {
+                const f = fragments[i];
+                f.position.add(f.userData.vel.clone().multiplyScalar(dt * 60));
+                f.userData.vel.y -= 0.5 * dt * 60;
+                if(f.position.y < -50) { scene.remove(f); fragments.splice(i, 1); }
+            }
 
             if (gameActive) {
                 if (isDown) {
                     ballVel = CRUSH_SPEED;
-                    ballY -= ballVel;
-                    checkCrush();
                 } else {
-                    ballVel -= GRAVITY; 
-                    ballY += ballVel;
+                    ballVel += GRAVITY * dt;
+                }
 
-                    const currentLayer = layers.find(l => 
-                        ballY <= l.position.y + (RING_DEPTH + 0.3) && 
-                        ballY >= l.position.y && 
-                        ballVel < 0
-                    );
+                ballY += ballVel * dt;
 
-                    if (currentLayer) {
-                        ballVel = JUMP_FORCE; 
-                        ballY = currentLayer.position.y + (RING_DEPTH + 0.1);
+                // Çarpışma ve Kırma Kontrolü
+                for (let i = 0; i < layers.length; i++) {
+                    const l = layers[i];
+                    const diff = ballY - l.position.y;
+
+                    // Top katmana çarptıysa (Üstten geliyorsa)
+                    if (diff < RING_DEPTH && diff > 0 && ballVel < 0) {
+                        if (isDown) {
+                            // KIRMA MODU
+                            if (l.children[0].userData.fatal) {
+                                gameOver();
+                                return;
+                            }
+                            explodeLayer(l);
+                            layers.splice(i, 1);
+                            score += 10;
+                            document.getElementById('score-display').innerText = score;
+                            break; 
+                        } else {
+                            // SEKME MODU
+                            ballVel = JUMP_FORCE;
+                            ballY = l.position.y + RING_DEPTH;
+                            break;
+                        }
                     }
                 }
 
                 ball.position.y = ballY;
-                camera.position.y = THREE.MathUtils.lerp(camera.position.y, ballY + 18, 0.1);
+                camera.position.y = THREE.MathUtils.lerp(camera.position.y, ballY + 18, 5 * dt);
                 camera.lookAt(0, ballY - 10, 0);
             }
             renderer.render(scene, camera);
         }
 
-        function checkCrush() {
-            const lIdx = layers.findIndex(l => Math.abs(ballY - l.position.y) < (TOTAL_GAP * 0.9));
-            if (lIdx !== -1) {
-                const l = layers[lIdx];
-                if (l.children[0].userData.fatal) {
-                    gameActive = false;
-                    setTimeout(() => location.reload(), 300);
-                    return;
-                }
-                explodeLayer(l);
-                layers.splice(lIdx, 1);
-                score += 10;
-                document.getElementById('score-display').innerText = score;
-            }
+        function gameOver() {
+            gameActive = false;
+            isDown = false;
+            setTimeout(() => location.reload(), 500);
         }
 
         function explodeLayer(layer) {
@@ -174,7 +194,7 @@
                 p.getWorldPosition(worldPos);
                 mainPivot.remove(p);
                 p.position.copy(worldPos);
-                p.userData.vel = new THREE.Vector3((Math.random()-0.5)*0.6, 0.3, (Math.random()-0.5)*0.6);
+                p.userData.vel = new THREE.Vector3((Math.random()-0.5)*0.8, 0.4, (Math.random()-0.5)*0.8);
                 scene.add(p);
                 fragments.push(p);
             }

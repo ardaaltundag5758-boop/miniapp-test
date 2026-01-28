@@ -1,304 +1,289 @@
 /**
- * FLASHY STACK 3D - PROFESYONEL OYUN SİSTEMİ
+ * 3D STACK ENGINE & MINI APP LOGIC
  */
 
 const tg = window.Telegram.WebApp;
 tg.expand();
 
-// --- GLOBAL STATE ---
-let AppState = {
-    balance: parseInt(localStorage.getItem('f_bal')) || 0,
-    currentLevel: 1,
+// GLOBAL STATE
+let state = {
+    bal: parseInt(localStorage.getItem('f_bal')) || 0,
+    lvl: 1,
     score: 0,
     friends: JSON.parse(localStorage.getItem('f_friends')) || [],
-    completedTasks: JSON.parse(localStorage.getItem('f_tasks')) || [],
-    isMuted: false
+    tasks: JSON.parse(localStorage.getItem('f_done_tasks')) || [],
+    lastTime: performance.now()
 };
 
-const BOT_USERNAME = "FlashyGameBot"; // Botunuzun gerçek kullanıcı adını buraya yazın
-const INVITE_LINK = `https://t.me/${BOT_USERNAME}?start=${tg.initDataUnsafe.user?.id || 0}`;
+// CONFIG
+const BOT_NAME = "FlashyGameBot";
+const REF_LINK = `https://t.me/${BOT_NAME}?start=${tg.initDataUnsafe.user?.id || '123'}`;
 
-// --- BAŞLATMA ---
+// 3D VARIABLES
+let scene, camera, renderer, ball, pole, layers = [];
+let isDown = false, gameRunning = true;
+let ballVel = 0, gravity = 0.015, jump = 0.22;
+
+// INIT
 window.onload = () => {
-    initUI();
-    updateGlobalBalance();
+    initUser();
+    updateUI();
+    init3D();
     renderTasks();
     renderFriends();
 };
 
-function initUI() {
+function initUser() {
     const user = tg.initDataUnsafe.user;
-    if(user) {
-        document.getElementById('user-name').innerText = user.first_name;
-        if(user.photo_url) document.getElementById('user-photo').src = user.photo_url;
+    if (user) {
+        document.getElementById('u-name').innerText = user.first_name;
+        if (user.photo_url) document.getElementById('u-pic').src = user.photo_url;
     }
 }
 
-// --- BAKİYE YÖNETİMİ ---
-function updateGlobalBalance(amount = 0) {
-    if(amount !== 0) {
-        AppState.balance += amount;
-        localStorage.setItem('f_bal', AppState.balance);
-    }
-    const val = AppState.balance.toLocaleString();
-    document.getElementById('global-balance').innerText = val;
-    document.getElementById('wallet-balance').innerText = val;
+function updateUI() {
+    const b = state.bal.toLocaleString();
+    document.getElementById('global-bal').innerText = b;
+    document.getElementById('wallet-bal').innerText = b;
+    document.getElementById('cur-lvl').innerText = state.lvl;
 }
 
-// --- 3D OYUN MOTORU (Game Object) ---
-const Game = {
-    scene: null, camera: null, renderer: null,
-    ball: null, blocks: [],
-    isActive: false, isDown: false,
-    gravity: 0.15, jumpForce: 0.25, ballV: 0,
-    lastTime: performance.now(),
+function showToast(text) {
+    const t = document.getElementById('toast');
+    t.innerText = text;
+    t.style.top = "20px";
+    setTimeout(() => t.style.top = "-100px", 3000);
+}
 
-    init() {
-        const container = document.getElementById('game-canvas-container');
-        this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color(0x050505);
+// 3D CORE
+function init3D() {
+    const container = document.getElementById('canvas-container');
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x050505);
 
-        this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / (window.innerHeight - 160), 0.1, 1000);
-        this.camera.position.set(0, 15, 25);
+    camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+    camera.position.set(0, 15, 25);
 
-        this.renderer = new THREE.WebGLRenderer({ antialias: true });
-        this.renderer.setSize(window.innerWidth, window.innerHeight - 160);
-        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        container.appendChild(this.renderer.domElement);
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    container.appendChild(renderer.domElement);
 
-        const light = new THREE.DirectionalLight(0xffffff, 1);
-        light.position.set(5, 10, 7);
-        this.scene.add(light, new THREE.AmbientLight(0xffffff, 0.4));
+    const light = new THREE.DirectionalLight(0xffffff, 1);
+    light.position.set(5, 10, 7);
+    scene.add(light, new THREE.AmbientLight(0xffffff, 0.4));
 
-        this.createLevel();
-        this.loop();
-    },
+    createLevel();
+    animate();
+}
 
-    createLevel() {
-        // Blokları ve topu oluştur (Fizik düzeltecek yapı)
-        this.blocks.forEach(b => this.scene.remove(b));
-        this.blocks = [];
+function createLevel() {
+    layers.forEach(l => scene.remove(l));
+    layers = [];
 
-        // Merkezi direk
-        const poleGeo = new THREE.CylinderGeometry(2, 2, 120, 32);
-        const poleMat = new THREE.MeshPhongMaterial({ color: 0x111111 });
-        const pole = new THREE.Mesh(poleGeo, poleMat);
-        pole.position.y = -50;
-        this.scene.add(pole);
-
-        // Top
-        const ballGeo = new THREE.SphereGeometry(0.7, 32, 32);
-        const ballMat = new THREE.MeshPhongMaterial({ color: 0xffffff });
-        this.ball = new THREE.Mesh(ballGeo, ballMat);
-        this.ball.position.set(0, 10, 4.5);
-        this.scene.add(this.ball);
-
-        // Katmanlar
-        const layerCount = 40 + (AppState.currentLevel * 5);
-        for(let i=0; i<layerCount; i++) {
-            const group = new THREE.Group();
-            group.position.y = 8 - (i * 2.8);
-            const isEnemy = Math.random() < 0.2;
-            
-            for(let j=0; j<8; j++) {
-                const geo = new THREE.TorusGeometry(4.5, 0.7, 12, 24, (Math.PI*2/8)*0.9);
-                const color = (isEnemy && (j===0 || j===4)) ? 0x222222 : new THREE.Color().setHSL(i/layerCount, 0.8, 0.5);
-                const mat = new THREE.MeshPhongMaterial({ color });
-                const part = new THREE.Mesh(geo, mat);
-                part.rotation.z = Math.PI/2;
-                part.rotation.x = j * (Math.PI*2/8);
-                part.userData = { fatal: (isEnemy && (j===0 || j===4)) };
-                group.add(part);
-            }
-            group.rotation.y = Math.random() * Math.PI;
-            this.scene.add(group);
-            this.blocks.push(group);
-        }
-    },
-
-    loop() {
-        requestAnimationFrame((t) => this.loop(t));
-        const dt = (performance.now() - this.lastTime) / 16;
-        this.lastTime = performance.now();
-
-        if(this.isActive && this.ball) {
-            this.blocks.forEach(b => b.rotation.y += 0.03 * dt);
-            
-            // Fizik ve Yerçekimi
-            if(this.isDown) {
-                this.ballV = -0.6 * dt; // Kontrollü hızlı iniş
-                this.checkCollision();
-            } else {
-                this.ballV += this.gravity * 0.1 * dt; // Yumuşak yerçekimi
-                
-                // Zıplama Kontrolü (Sadece blok üstünde)
-                const currentIdx = Math.floor((10 - this.ball.position.y) / 2.8);
-                if(this.ball.position.y <= 10 && currentIdx < this.blocks.length) {
-                    this.ball.position.y = 10;
-                    this.ballV = -this.jumpForce * dt;
-                }
-            }
-            this.ball.position.y -= this.ballV;
-
-            // Kamera Takibi
-            this.camera.position.y = THREE.MathUtils.lerp(this.camera.position.y, this.ball.position.y + 8, 0.1);
-            this.camera.lookAt(0, this.ball.position.y - 2, 0);
-
-            // Level Sonu
-            if(this.ball.position.y < -this.blocks.length * 2.8) this.win();
-        }
-        this.renderer.render(this.scene, this.camera);
-    },
-
-    checkCollision() {
-        const idx = Math.floor((10 - this.ball.position.y) / 2.8);
-        if(idx >= 0 && idx < this.blocks.length) {
-            const block = this.blocks[idx];
-            // Siyah blok kontrolü
-            if(this.isDown && block.children[0].userData.fatal) {
-                this.die();
-                return;
-            }
-            this.scene.remove(block);
-            AppState.score += 10;
-            document.getElementById('live-score').innerText = AppState.score;
-        }
-    },
-
-    start() {
-        document.getElementById('start-screen').style.display = 'none';
-        this.isActive = true;
-    },
-
-    die() {
-        this.isActive = false;
-        const reward = Math.floor(AppState.score / 5);
-        updateGlobalBalance(reward);
-        document.getElementById('reward-val').innerText = reward;
-        document.getElementById('over-screen').style.display = 'flex';
-    },
-
-    win() {
-        this.isActive = false;
-        AppState.currentLevel++;
-        updateGlobalBalance(100); // Level bonus
-        tg.HapticFeedback.notificationOccurred('success');
-        this.reset();
-    },
-
-    reset() {
-        AppState.score = 0;
-        document.getElementById('live-score').innerText = 0;
-        document.getElementById('live-level').innerText = AppState.currentLevel;
-        document.getElementById('over-screen').style.display = 'none';
-        document.getElementById('start-screen').style.display = 'flex';
-        this.createLevel();
-        this.camera.position.set(0, 15, 25);
+    // Pole
+    if(!pole) {
+        pole = new THREE.Mesh(new THREE.CylinderGeometry(2, 2, 200, 32), new THREE.MeshPhongMaterial({color: 0x151515}));
+        pole.position.y = -80;
+        scene.add(pole);
     }
-};
 
-// --- GÖREV SİSTEMİ ---
-const TASKS = [
-    { id: 'tg_join', title: 'Kanalı Takip Et', reward: 100, link: 'https://t.me/AirdropNoktasiDuyuru' },
-    { id: 'inv_1', title: '1 Arkadaş Davet Et', reward: 60, req: 1 },
-    { id: 'inv_5', title: '5 Arkadaş Davet Et', reward: 300, req: 5 },
-    { id: 'inv_10', title: '10 Arkadaş Davet Et', reward: 600, req: 10 }
+    // Ball
+    if(!ball) {
+        ball = new THREE.Mesh(new THREE.SphereGeometry(0.7, 32, 32), new THREE.MeshPhongMaterial({color: 0xffffff}));
+        ball.position.set(0, 10, 4.5);
+        scene.add(ball);
+    } else {
+        ball.position.set(0, 10, 4.5);
+        ballVel = 0;
+    }
+
+    const count = 30 + (state.lvl * 5);
+    for(let i=0; i<count; i++) {
+        const group = new THREE.Group();
+        group.position.y = 8 - (i * 2.8);
+        const isEnemyLayer = Math.random() < 0.15;
+
+        for(let j=0; j<8; j++) {
+            const isSiyah = isEnemyLayer && (j === 0 || j === 4);
+            const mat = new THREE.MeshPhongMaterial({
+                color: isSiyah ? 0x222222 : new THREE.Color().setHSL(i/count, 0.7, 0.5)
+            });
+            const part = new THREE.Mesh(new THREE.TorusGeometry(4, 0.6, 16, 32, (Math.PI*2/8)*0.9), mat);
+            part.rotation.z = Math.PI/2;
+            part.rotation.x = j * (Math.PI*2/8);
+            part.userData = { fatal: isSiyah };
+            group.add(part);
+        }
+        group.rotation.y = Math.random() * Math.PI;
+        scene.add(group);
+        layers.push(group);
+    }
+}
+
+function animate() {
+    requestAnimationFrame(animate);
+    const now = performance.now();
+    const dt = (now - state.lastTime) / 16.67;
+    state.lastTime = now;
+
+    if(gameRunning) {
+        // Rotate
+        layers.forEach(l => l.rotation.y += 0.02 * dt);
+        pole.rotation.y += 0.02 * dt;
+
+        // Physics
+        if(isDown) {
+            ballVel = -0.5 * dt;
+            checkCollision();
+        } else {
+            ballVel += gravity * dt;
+            const idx = Math.floor((10 - ball.position.y) / 2.8);
+            if(ball.position.y <= 10 && idx < layers.length && ballVel > 0) {
+                ballVel = -jump;
+                ball.position.y = 10;
+            }
+        }
+        ball.position.y -= ballVel;
+
+        // Camera
+        camera.position.y = THREE.MathUtils.lerp(camera.position.y, ball.position.y + 8, 0.1);
+        camera.lookAt(0, ball.position.y - 2, 0);
+
+        if(ball.position.y < -layers.length * 2.8) nextLvl();
+    }
+    renderer.render(scene, camera);
+}
+
+function checkCollision() {
+    const idx = Math.floor((10 - ball.position.y) / 2.8);
+    if(idx >= 0 && idx < layers.length) {
+        const l = layers[idx];
+        if(l.children[0].userData.fatal) return die();
+        scene.remove(l);
+        state.score += 5;
+        document.getElementById('cur-score').innerText = state.score;
+    }
+}
+
+function die() {
+    gameRunning = false;
+    const reward = Math.floor(state.score / 2);
+    addBal(reward, false);
+    document.getElementById('pop-reward').innerText = "+" + reward;
+    document.getElementById('game-over').style.display = "flex";
+}
+
+function nextLvl() {
+    state.lvl++;
+    addBal(50, false);
+    showToast("Level Tamamlandı! +50");
+    state.score = 0;
+    document.getElementById('cur-score').innerText = 0;
+    updateUI();
+    createLevel();
+}
+
+function resetGame() {
+    document.getElementById('game-over').style.display = "none";
+    state.score = 0;
+    document.getElementById('cur-score').innerText = 0;
+    gameRunning = true;
+    createLevel();
+}
+
+// BALANCE
+function addBal(amt, toast = true) {
+    state.bal += amt;
+    localStorage.setItem('f_bal', state.bal);
+    updateUI();
+    if(toast) showToast(`+${amt} bakiyeye eklendi`);
+}
+
+// TASKS & FRIENDS
+const TASK_DATA = [
+    { id: 1, txt: "Kanalı Takip Et", reward: 100, link: "https://t.me/AirdropNoktasiDuyuru" },
+    { id: 2, txt: "1 Arkadaş Davet Et", reward: 60, req: 1 },
+    { id: 3, txt: "5 Arkadaş Davet Et", reward: 300, req: 5 },
+    { id: 4, txt: "10 Arkadaş Davet Et", reward: 600, req: 10 }
 ];
 
 function renderTasks() {
-    const container = document.getElementById('tasks-container');
-    container.innerHTML = '';
-    TASKS.forEach(t => {
-        const isDone = AppState.completedTasks.includes(t.id);
-        const div = document.createElement('div');
-        div.className = 'task-item';
-        div.innerHTML = `
-            <div class="info-group">
-                <div style="background:#222; padding:10px; border-radius:12px;"><i class="fas fa-star" style="color:var(--accent)"></i></div>
-                <div><b>${t.title}</b><br><small style="color:var(--accent)">+${t.reward} FLASHY</small></div>
-            </div>
-            <button class="btn-action" ${isDone ? 'disabled' : ''} onclick="doTask('${t.id}')">
-                ${isDone ? 'Tamamlandı' : 'Git'}
-            </button>
+    const cont = document.getElementById('tasks-list');
+    cont.innerHTML = '';
+    TASK_DATA.forEach(t => {
+        const done = state.tasks.includes(t.id);
+        const canClaim = t.req ? (state.friends.length >= t.req) : true;
+        
+        const item = document.createElement('div');
+        item.className = 'list-item';
+        item.innerHTML = `
+            <div><b>${t.txt}</b><br><small style="color:var(--accent)">+${t.reward} Flashy</small></div>
+            ${done ? '<span style="color:var(--gray)">Tamamlandı</span>' : 
+              (canClaim ? `<button class="btn btn-accent" onclick="claimTask(${t.id}, ${t.reward})">Talep Et</button>` : 
+              `<button class="btn btn-gray" onclick="${t.req ? "nav('friends')" : `goTask('${t.link}')`}">Git</button>`)}
         `;
-        container.appendChild(div);
+        cont.appendChild(item);
     });
 }
 
-function doTask(id) {
-    const task = TASKS.find(t => t.id === id);
-    if(task.link) {
-        tg.openTelegramLink(task.link);
-        // Basit kontrol: Gidip geldiğinde ödül hazır
-        setTimeout(() => {
-            completeTask(id, task.reward);
-        }, 2000);
-    } else if(task.req) {
-        if(AppState.friends.length >= task.req) {
-            completeTask(id, task.reward);
-        } else {
-            tg.showAlert(`Henüz yeterli arkadaşın yok! (${AppState.friends.length}/${task.req})`);
-        }
-    }
+function goTask(link) {
+    tg.openTelegramLink(link);
+    renderTasks(); // Re-render to show claim button for link tasks
 }
 
-function completeTask(id, reward) {
-    if(!AppState.completedTasks.includes(id)) {
-        AppState.completedTasks.push(id);
-        localStorage.setItem('f_tasks', JSON.stringify(AppState.completedTasks));
-        updateGlobalBalance(reward);
-        renderTasks();
-        tg.showAlert(`Tebrikler! ${reward} FLASHY kazandın.`);
-    }
+function claimTask(id, reward) {
+    state.tasks.push(id);
+    localStorage.setItem('f_done_tasks', JSON.stringify(state.tasks));
+    addBal(reward);
+    renderTasks();
 }
 
-// --- REFERANS SİSTEMİ ---
 function renderFriends() {
-    document.getElementById('friend-count').innerText = AppState.friends.length;
-    const list = document.getElementById('friends-list');
-    list.innerHTML = AppState.friends.length === 0 ? '<p style="text-align:center; color:var(--gray)">Henüz kimseyi davet etmedin.</p>' : '';
+    const cont = document.getElementById('friends-list');
+    document.getElementById('friend-count').innerText = `Dostların (${state.friends.length})`;
+    cont.innerHTML = state.friends.length ? '' : '<p style="text-align:center; color:var(--gray); margin-top:20px;">Henüz kimse yok.</p>';
     
-    AppState.friends.forEach(f => {
-        const div = document.createElement('div');
-        div.className = 'friend-item';
-        div.innerHTML = `
-            <div class="info-group">
-                <img src="${f.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" style="width:40px; border-radius:50%">
+    state.friends.forEach(f => {
+        const item = document.createElement('div');
+        item.className = 'list-item';
+        item.innerHTML = `
+            <div style="display:flex; align-items:center; gap:10px;">
+                <img src="${f.pic}" style="width:35px; border-radius:50%">
                 <div><b>${f.name}</b><br><small style="color:var(--gray)">ID: ${f.id}</small></div>
             </div>
-            <div style="color:var(--accent); font-weight:bold;">+30</div>
+            <div style="color:var(--accent)">+30</div>
         `;
-        list.appendChild(div);
+        cont.appendChild(item);
     });
 }
 
-function copyInviteLink() {
-    navigator.clipboard.writeText(INVITE_LINK);
-    tg.showScanQrPopup({ text: "Link Kopyalandı!" });
-    setTimeout(() => tg.closeScanQrPopup(), 1000);
+function copyRef() {
+    const el = document.createElement('textarea');
+    el.value = REF_LINK;
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+    tg.showAlert("Link kopyalandı!");
 }
 
-function shareInviteLink() {
-    const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(INVITE_LINK)}&text=${encodeURIComponent("Efsane 3D Stack Ball oyna, Flashy kazan!")}`;
-    tg.openTelegramLink(shareUrl);
+function shareRef() {
+    tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(REF_LINK)}&text=Flashy oyna, beraber kazanalım!`);
 }
 
-// --- SAYFA YÖNETİMİ ---
-function switchPage(pageId, el) {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
-    document.getElementById('page-' + pageId).classList.add('active-page');
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    el.classList.add('active');
+// NAVIGATION
+function nav(id, el) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-' + id).classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+    if(el) el.classList.add('active');
     
-    if(pageId === 'game') {
-        if(!Game.renderer) Game.init();
-    } else {
-        Game.isActive = false;
-    }
+    gameRunning = (id === 'game');
 }
 
-// Dokunmatik Eventler
-window.addEventListener('mousedown', () => Game.isDown = true);
-window.addEventListener('mouseup', () => Game.isDown = false);
-window.addEventListener('touchstart', (e) => { Game.isDown = true; e.preventDefault(); }, {passive:false});
-window.addEventListener('touchend', () => Game.isDown = false);
+// EVENTS
+window.addEventListener('mousedown', () => isDown = true);
+window.addEventListener('mouseup', () => isDown = false);
+window.addEventListener('touchstart', (e) => { isDown = true; e.preventDefault(); }, {passive: false});
+window.addEventListener('touchend', () => isDown = false);

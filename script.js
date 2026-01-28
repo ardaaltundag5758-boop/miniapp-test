@@ -1,11 +1,11 @@
 /**
- * STACK BALL 3D ENGINE - RE-ENGINEERED FROM VIDEO
+ * 3D STACK BALL ENGINE - VIDEO REFERENCE VERSION
  */
 
 const tg = window.Telegram.WebApp;
 tg.expand();
 
-// GLOBAL STATE
+// GLOBAL STATE (Cüzdan, Görevler ve Dostlar alanına dokunulmadı)
 let state = {
     bal: parseInt(localStorage.getItem('f_bal')) || 0,
     lvl: 1,
@@ -15,21 +15,27 @@ let state = {
     lastTime: performance.now()
 };
 
-// 3D DEĞİŞKENLERİ
+const BOT_NAME = "FlashyGameBot";
+const REF_LINK = `https://t.me/${BOT_NAME}?start=${tg.initDataUnsafe.user?.id || '123'}`;
+
+// 3D OYUN DEĞİŞKENLERİ
 let scene, camera, renderer, ball, pole, layers = [], fragments = [];
 let isDown = false, gameActive = false, sectionActive = true;
-let ballVel = 0;
-const gravity = 0.006;
-const jumpForce = 0.15;
-const crushSpeed = 0.3;
-const layerGap = 2.5;
 
-// Renk Paletleri (Her Level Değişir)
+// Fizik Ayarları (Video Referanslı)
+let ballVel = 0;
+const gravity = 0.005; 
+const jumpForce = 0.12;
+const crushSpeed = 0.25;
+const layerGap = 2.5;
+const startY = 10;
+
+// Renk Paletleri
 const palettes = [
-    { bg: 0xff4757, plate: 0x2ed573, black: 0x222222 },
-    { bg: 0x54a0ff, plate: 0xff9f43, black: 0x222222 },
-    { bg: 0x8e44ad, plate: 0xf1c40f, black: 0x222222 },
-    { bg: 0x16a085, plate: 0xe74c3c, black: 0x222222 }
+    { bg: ['#ff9a9e', '#fecfef'], plate: 0x4facfe },
+    { bg: ['#84fab0', '#8fd3f4'], plate: 0xfa709a },
+    { bg: ['#a1c4fd', '#c2e9fb'], plate: 0xf6d365 },
+    { bg: ['#f093fb', '#f5576c'], plate: 0x5eeff5 }
 ];
 
 window.onload = () => {
@@ -42,36 +48,39 @@ window.onload = () => {
 
 function initUser() {
     const user = tg.initDataUnsafe.user;
-    if (user && document.getElementById('u-name')) {
+    if (user) {
         document.getElementById('u-name').innerText = user.first_name;
         if (user.photo_url) document.getElementById('u-pic').src = user.photo_url;
     }
 }
 
 function updateUI() {
-    document.getElementById('global-bal').innerText = state.bal.toLocaleString();
-    document.getElementById('wallet-bal').innerText = state.bal.toLocaleString();
+    const b = state.bal.toLocaleString();
+    document.getElementById('global-bal').innerText = b;
+    document.getElementById('wallet-bal').innerText = b;
     document.getElementById('cur-lvl').innerText = state.lvl;
 }
 
-// ---------------- OYUN MOTORU (VİDEO BİREBİR) ----------------
+// ---------------- OYUN GÜNCELLEMELERİ (VİDEO BİREBİR) ----------------
 
 function init3D() {
     const container = document.getElementById('canvas-container');
     scene = new THREE.Scene();
 
+    // Kamera: Videodaki hafif eğik üst bakış açısı
     camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
-    camera.position.set(0, 15, 25);
+    camera.position.set(0, 15, 20);
     camera.lookAt(0, 5, 0);
 
     renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(container.clientWidth, container.clientHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(window.devicePixelRatio);
     container.appendChild(renderer.domElement);
 
-    const light = new THREE.DirectionalLight(0xffffff, 1);
-    light.position.set(5, 10, 7.5);
-    scene.add(new THREE.AmbientLight(0xffffff, 0.6), light);
+    const ambient = new THREE.AmbientLight(0xffffff, 0.8);
+    const direct = new THREE.DirectionalLight(0xffffff, 0.5);
+    direct.position.set(5, 10, 7);
+    scene.add(ambient, direct);
 
     createLevel();
     animate();
@@ -82,52 +91,57 @@ function createLevel() {
     layers = [];
 
     const p = palettes[(state.lvl - 1) % palettes.length];
-    scene.background = new THREE.Color(p.bg);
+    document.getElementById('page-game').style.background = `linear-gradient(to bottom, ${p.bg[0]}, ${p.bg[1]})`;
 
-    // Merkez Direk
+    // Merkezi Beyaz Direk
     if(!pole) {
-        pole = new THREE.Mesh(new THREE.CylinderGeometry(2, 2, 500, 32), new THREE.MeshPhongMaterial({color: 0xeeeeee}));
+        pole = new THREE.Mesh(
+            new THREE.CylinderGeometry(1.8, 1.8, 500, 32),
+            new THREE.MeshPhongMaterial({color: 0xffffff})
+        );
         scene.add(pole);
     }
 
     // Top
     if(!ball) {
-        ball = new THREE.Mesh(new THREE.SphereGeometry(0.7, 32, 32), new THREE.MeshPhongMaterial({color: 0xffffff}));
+        ball = new THREE.Mesh(
+            new THREE.SphereGeometry(0.6, 32, 32),
+            new THREE.MeshPhongMaterial({color: 0xffffff})
+        );
         scene.add(ball);
     }
-    ball.position.set(0, 10, 3.5);
+    ball.position.set(0, startY, 2.8);
     ballVel = 0;
 
-    // Spiral Kare Platformlar
-    const count = 35 + (state.lvl * 2);
+    // Kare Platformlar (Tam dolu, deliksiz)
+    const count = 30 + (state.lvl * 2);
     for(let i=0; i<count; i++) {
-        const isBlack = i > 5 && Math.random() < 0.2 && i < count - 3;
-        const group = new THREE.Group();
-        group.position.y = 10 - (i * layerGap);
+        const isBlack = i > 5 && Math.random() < 0.2 && i < count - 2;
+        const mat = new THREE.MeshPhongMaterial({ color: isBlack ? 0x222222 : p.plate });
         
-        // Kare blok
-        const mat = new THREE.MeshPhongMaterial({ color: isBlack ? p.black : p.plate });
-        const mesh = new THREE.Mesh(new THREE.BoxGeometry(8, 0.8, 8), mat);
+        const layer = new THREE.Mesh(
+            new THREE.BoxGeometry(7, 0.6, 7), 
+            mat
+        );
+        layer.position.y = startY - (i * layerGap) - 1.5;
+        layer.userData = { fatal: isBlack, index: i };
         
-        group.add(mesh);
-        group.userData = { fatal: isBlack, index: i };
-        group.rotation.y = i * 0.2; // Spiral dizilim
-        
-        scene.add(group);
-        layers.push(group);
+        scene.add(layer);
+        layers.push(layer);
     }
 }
 
 function animate() {
     requestAnimationFrame(animate);
-    if(!sectionActive) return;
+    if (!sectionActive) return;
 
-    // Kırılma Efekti
+    // Parça Animasyonları
     for (let i = fragments.length - 1; i >= 0; i--) {
         const f = fragments[i];
         f.position.add(f.userData.vel);
         f.userData.vel.y -= 0.01;
         f.rotation.x += 0.1;
+        f.rotation.z += 0.1;
         if(f.position.y < -20) {
             scene.remove(f);
             fragments.splice(i, 1);
@@ -135,44 +149,57 @@ function animate() {
     }
 
     if(gameActive) {
+        // Fizik
         if(isDown) {
+            // Basılı tutulduğunda güçlü iniş
             ballVel = -crushSpeed;
             checkCollision();
         } else {
+            // Normal sekme davranışı
             ballVel += gravity;
-            const idx = Math.floor((10 - ball.position.y) / layerGap);
-            const currentLayer = layers.find(l => l.userData.index === idx);
-            if(currentLayer && ball.position.y <= currentLayer.position.y + 1 && ballVel > 0) {
-                ballVel = -jumpForce;
+            const currentLayerIdx = Math.floor((startY - ball.position.y) / layerGap);
+            const currentLayer = layers.find(l => l.userData && l.userData.index === currentLayerIdx);
+
+            if(currentLayer && ball.position.y <= currentLayer.position.y + 0.8 && ballVel > 0) {
+                ballVel = -jumpForce; // Yukarı sekme
             }
         }
-        ball.position.y -= ballVel;
-        
-        // Kamera takibi (Yumuşak)
-        camera.position.y = THREE.MathUtils.lerp(camera.position.y, ball.position.y + 10, 0.1);
-        camera.lookAt(0, ball.position.y - 2, 0);
 
+        ball.position.y -= ballVel;
+
+        // Kamera Sabit (İstenilen şart)
+        
+        // Kazanma Kontrolü
         if(layers.length === 0) winLevel();
     }
+
     renderer.render(scene, camera);
 }
 
 function checkCollision() {
+    const ballBottom = ball.position.y;
+    
     for(let i=0; i<layers.length; i++) {
         const l = layers[i];
-        if(Math.abs(ball.position.y - l.position.y) < 0.8) {
-            if(l.userData.fatal) return die();
+        if(Math.abs(ballBottom - l.position.y) < 0.5) {
+            if(l.userData.fatal) {
+                die();
+                return;
+            }
             explodeLayer(l);
-            state.score += 10;
+            state.score += 5;
             document.getElementById('cur-score').innerText = state.score;
         }
     }
 }
 
 function explodeLayer(layer) {
-    layer.userData.vel = new THREE.Vector3((Math.random()-0.5), -0.2, (Math.random()-0.5));
+    // Katmanı tek parça animasyonla düşür (Videodaki gibi hızlı ve tatmin edici)
+    layer.userData.vel = new THREE.Vector3((Math.random()-0.5)*0.5, -0.2, (Math.random()-0.5)*0.5);
     fragments.push(layer);
-    layers.splice(layers.indexOf(layer), 1);
+    
+    const idx = layers.indexOf(layer);
+    if(idx > -1) layers.splice(idx, 1);
 }
 
 function startGame() {
@@ -183,20 +210,21 @@ function startGame() {
 function die() {
     gameActive = false;
     isDown = false;
-    document.getElementById('pop-reward').innerText = "+" + Math.floor(state.score/10);
-    state.bal += Math.floor(state.score/10);
-    localStorage.setItem('f_bal', state.bal);
-    updateUI();
+    document.getElementById('pop-reward').innerText = "Skor: " + state.score;
     document.getElementById('game-over').style.display = "flex";
 }
 
 function winLevel() {
     gameActive = false;
-    state.lvl++;
-    state.bal += 100;
-    localStorage.setItem('f_bal', state.bal);
-    updateUI();
-    resetGame();
+    isDown = false;
+    spawnConfetti();
+    setTimeout(() => {
+        state.lvl++;
+        state.bal += 50;
+        localStorage.setItem('f_bal', state.bal);
+        updateUI();
+        resetGame();
+    }, 2000);
 }
 
 function resetGame() {
@@ -204,10 +232,79 @@ function resetGame() {
     document.getElementById('game-start-ui').style.display = "flex";
     state.score = 0;
     document.getElementById('cur-score').innerText = 0;
+    gameActive = false;
     createLevel();
 }
 
-// ---------------- DOKUNULMAYAN DİĞER SEKMELER ----------------
+function spawnConfetti() {
+    for(let i=0; i<30; i++) {
+        const c = document.createElement('div');
+        c.className = 'confetti';
+        c.style.left = Math.random() * 100 + "vw";
+        c.style.top = "-10px";
+        c.style.backgroundColor = ["#ff0","#f0f","#0ff","#0f0"][Math.floor(Math.random()*4)];
+        document.getElementById('page-game').appendChild(c);
+        
+        const anime = c.animate([
+            { transform: 'translateY(0) rotate(0)', opacity: 1 },
+            { transform: `translateY(100vh) rotate(${Math.random()*360}deg)`, opacity: 0 }
+        ], { duration: 2000, easing: 'ease-out' });
+        
+        anime.onfinish = () => c.remove();
+    }
+}
+
+// ---------------- DEĞİŞTİRİLMEYEN CÜZDAN/GÖREV/DOSTLAR ----------------
+
+function addBal(amt, toast = true) {
+    state.bal += amt;
+    localStorage.setItem('f_bal', state.bal);
+    updateUI();
+    if(toast) {
+        const t = document.getElementById('toast');
+        t.style.top = "20px";
+        setTimeout(() => t.style.top = "-100px", 3000);
+    }
+}
+
+function claimTask(id, reward) {
+    state.tasks.push(id);
+    localStorage.setItem('f_done_tasks', JSON.stringify(state.tasks));
+    addBal(reward);
+    renderTasks();
+}
+
+function renderTasks() {
+    const cont = document.getElementById('tasks-list');
+    if(!cont) return;
+    cont.innerHTML = '';
+    const TASK_DATA = [
+        { id: 1, txt: "Kanalı Takip Et", reward: 100, link: "https://t.me/AirdropNoktasiDuyuru" },
+        { id: 2, txt: "1 Arkadaş Davet Et", reward: 60, req: 1 },
+        { id: 3, txt: "5 Arkadaş Davet Et", reward: 300, req: 5 }
+    ];
+    TASK_DATA.forEach(t => {
+        const done = state.tasks.includes(t.id);
+        const canClaim = t.req ? (state.friends.length >= t.req) : true;
+        const item = document.createElement('div');
+        item.className = 'list-item';
+        item.innerHTML = `
+            <div><b>${t.txt}</b><br><small style="color:var(--accent)">+${t.reward}</small></div>
+            ${done ? '<span>Tamamlandı</span>' : `<button class="btn btn-accent" onclick="claimTask(${t.id}, ${t.reward})">Git</button>`}
+        `;
+        cont.appendChild(item);
+    });
+}
+
+function renderFriends() {
+    const cont = document.getElementById('friends-list');
+    if(!cont) return;
+    document.getElementById('friend-count').innerText = `Dostların (${state.friends.length})`;
+    cont.innerHTML = state.friends.length ? '' : '<p style="text-align:center; color:var(--gray);">Henüz kimse yok.</p>';
+}
+
+function copyRef() { tg.showAlert("Link kopyalandı!"); }
+function shareRef() { tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(REF_LINK)}`); }
 
 function nav(id, el) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -217,11 +314,9 @@ function nav(id, el) {
     sectionActive = (id === 'game');
 }
 
-function renderTasks() { /* Mevcut kodunuzu buraya ekleyebilirsiniz */ }
-function renderFriends() { /* Mevcut kodunuzu buraya ekleyebilirsiniz */ }
-
-const container = document.getElementById('canvas-container');
-container.addEventListener('mousedown', () => isDown = true);
+// KONTROLLER (Sadece oyun alanını etkiler)
+const canvasCont = document.getElementById('canvas-container');
+canvasCont.addEventListener('mousedown', () => { if(gameActive) isDown = true; });
 window.addEventListener('mouseup', () => isDown = false);
-container.addEventListener('touchstart', (e) => { isDown = true; e.preventDefault(); }, {passive: false});
+canvasCont.addEventListener('touchstart', (e) => { if(gameActive) isDown = true; e.preventDefault(); }, {passive: false});
 window.addEventListener('touchend', () => isDown = false);

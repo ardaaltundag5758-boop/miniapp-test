@@ -107,7 +107,7 @@ function doTask(type) {
 
 function inviteFriend() {
     const userId = tg.initDataUnsafe.user?.id || "0";
-    const link = `https://t.me/BOT_ADINIZ?start=${userId}`;
+    const link = `https://t.me/@miniapptestttt123_bot?start=${userId}`;
     tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=Flashy Farm'da benimle birlikte kazan!`);
 }
 

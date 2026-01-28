@@ -3,132 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Flashy BTC Miner</title>
+    <title>Flashy Mini App</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --main-bg: #0f0f0f; --accent: #f7931a; --text: #ffffff; --card-bg: #1e1e1e; }
+        :root { --main-bg: #0a0a0a; --accent: #0088cc; --text: #ffffff; --card-bg: #161616; --flashy-color: #ffd700; }
         * { -webkit-tap-highlight-color: transparent; outline: none; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--main-bg); color: var(--text); margin: 0; padding: 0; overflow: hidden; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--main-bg); color: var(--text); margin: 0; padding: 0; overflow: hidden; }
         
-        .content { height: 100vh; overflow-y: auto; padding: 20px; padding-bottom: 100px; }
-        .page { display: none; }
+        /* ÖZEL BİLDİRİM (TOAST) */
+        #custom-toast {
+            position: fixed; top: -100px; left: 50%; transform: translateX(-50%);
+            background: rgba(255, 215, 0, 0.9); color: black; padding: 12px 25px;
+            border-radius: 50px; font-weight: bold; z-index: 1000; transition: 0.5s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 10px;
+        }
+
+        .content { height: 100vh; overflow-y: auto; padding: 20px; padding-bottom: 110px; }
+        .page { display: none; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .active { display: block; }
 
-        /* Oyun Alanı */
-        #game-container { position: relative; width: 100%; height: 400px; background: #151515; border-radius: 20px; border: 2px solid #333; overflow: hidden; display: none; }
-        #game-canvas { width: 100%; height: 100%; }
-        .game-ui { text-align: center; padding: 20px; }
+        .balance-card { background: linear-gradient(180deg, #1a1a1a 0%, #0a0a0a 100%); padding: 30px; border-radius: 25px; text-align: center; margin-bottom: 20px; border: 1px solid #333; }
+        .balance { font-size: 2.8rem; font-weight: 800; color: var(--flashy-color); }
+        .flashy-img { width: 100px; height: 100px; border-radius: 50%; border: 2px solid var(--flashy-color); margin-bottom: 15px; object-fit: cover; }
 
-        /* Kart Yapıları */
-        .balance-card { background: linear-gradient(135deg, #2c2c2c, #1a1a1a); padding: 25px; border-radius: 20px; text-align: center; margin-bottom: 20px; border: 1px solid #333; }
-        .balance { font-size: 2.5rem; font-weight: bold; color: var(--accent); text-shadow: 0 0 10px rgba(247, 147, 26, 0.3); }
+        .card { background: var(--card-bg); border-radius: 18px; padding: 18px; margin: 12px 0; display: flex; justify-content: space-between; align-items: center; }
+        .btn-action { background: var(--flashy-color); border: none; color: black; padding: 10px 22px; border-radius: 12px; cursor: pointer; font-weight: bold; }
         
-        .card { background: var(--card-bg); border-radius: 15px; padding: 18px; margin: 12px 0; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--accent); }
-        .card-info { display: flex; flex-direction: column; gap: 4px; }
-        .card-title { font-weight: bold; font-size: 1rem; }
-        .card-reward { color: var(--accent); font-size: 0.85rem; font-weight: bold; }
+        /* Davet Listesi */
+        .friend-list { background: #111; border-radius: 15px; padding: 10px; margin-top: 15px; }
+        .friend-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #222; font-size: 0.9rem; }
 
-        .btn-action { background: var(--accent); border: none; color: white; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-weight: bold; }
-        .btn-copy { background: #333; width: 100%; padding: 15px; border-radius: 12px; border: 1px dashed var(--accent); color: var(--text); margin-top: 10px; cursor: pointer; }
-
-        /* Navigasyon */
-        .nav-bar { position: fixed; bottom: 0; width: 100%; background: rgba(26, 26, 26, 0.95); backdrop-filter: blur(10px); display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #333; }
-        .nav-item { color: #666; font-size: 0.75rem; display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: 0.3s; }
-        .nav-item.active-nav { color: var(--accent); }
-        .nav-item i { font-size: 1.3rem; margin-bottom: 5px; }
+        .nav-bar { position: fixed; bottom: 0; width: 100%; background: #000; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #222; }
+        .nav-item { color: #555; font-size: 0.7rem; display: flex; flex-direction: column; align-items: center; }
+        .nav-item.active-nav { color: var(--flashy-color); }
+        .nav-item i { font-size: 1.4rem; margin-bottom: 4px; }
     </style>
 </head>
 <body>
 
+    <div id="custom-toast"><i class="fas fa-check-circle"></i> <span id="toast-msg"></span></div>
+
     <div class="content">
         <div id="game" class="page active">
             <div class="balance-card">
-                <div style="font-size: 0.8rem; color: #aaa; margin-bottom: 5px;">TOPLAM KAZANÇ</div>
-                <div class="balance"><span id="score">0</span> BTC</div>
+                <img src="https://cdn.discordapp.com/attachments/539009365391441921/1465903677524017421/5769619140443311194_99.jpg?ex=697accaf&is=69797b2f&hm=bd5109b04f86f6ded0f30cd3a19944d060f22a65084d2caa821df5b8995dd604&" class="flashy-img">
+                <div class="balance"><span id="score">0</span> FLASHY</div>
             </div>
-            
-            <div id="game-start-ui" class="game-ui">
-                <img src="https://cryptologos.cc/logos/bitcoin-btc-logo.png" style="width: 80px; margin-bottom: 20px;" alt="BTC">
-                <h3>BTC Space Jump</h3>
-                <p style="color: #aaa;">Engellere çarpmadan yüksel, her engelde BTC kazan!</p>
-                <button class="btn-action" onclick="startGame()" style="width: 100%; padding: 15px; font-size: 1.1rem;">OYUNU BAŞLAT</button>
-            </div>
-
-            <div id="game-container">
+            <div id="game-container" style="display:none; height: 350px; border-radius: 20px; overflow:hidden; border: 1px solid #333;">
                 <canvas id="game-canvas"></canvas>
             </div>
+            <button id="start-btn" class="btn-action" style="width:100%; padding:20px;" onclick="startGame()">OYUNA BAŞLA</button>
         </div>
 
         <div id="tasks" class="page">
-            <h2 style="text-align: center;">Para Kazan</h2>
-            
+            <h2 style="text-align: center;">Görevler</h2>
             <div class="card">
-                <div class="card-info">
-                    <div class="card-title">X Hesabımızı Takip Et</div>
-                    <div class="card-reward">+500 BTC Ödül</div>
+                <div>
+                    <b>X Takip Et</b><br>
+                    <small style="color:var(--flashy-color)">+500 Flashy</small>
                 </div>
-                <button class="btn-action" onclick="doTask('https://x.com/ADNFlashy', 500)">Yap</button>
+                <button class="btn-action" onclick="doTask('https://x.com/ADNFlashy', 500)">Takip Et</button>
             </div>
 
-            <div style="margin-top: 25px; font-size: 0.9rem; color: #888; border-bottom: 1px solid #333; padding-bottom: 10px;">REFERANS GÖREVLERİ</div>
-            
+            <div style="margin-top:20px; color:#666; font-size:0.8rem;">REFERANS GÖREVLERİ</div>
             <div class="card">
-                <div class="card-info">
-                    <div class="card-title">1 Kişi Davet Et</div>
-                    <div class="card-reward">+1,000 BTC</div>
-                </div>
-                <div style="font-size: 0.8rem; color: #555;">0 / 1</div>
+                <div>1 Arkadaş <small id="ref-count-1">(0/1)</small></div>
+                <div style="color:var(--flashy-color)">+1,000</div>
             </div>
-
             <div class="card">
-                <div class="card-info">
-                    <div class="card-title">5 Kişi Davet Et</div>
-                    <div class="card-reward">+7,500 BTC</div>
-                </div>
-                <div style="font-size: 0.8rem; color: #555;">0 / 5</div>
-            </div>
-
-            <div class="card">
-                <div class="card-info">
-                    <div class="card-title">10 Kişi Davet Et</div>
-                    <div class="card-reward">+20,000 BTC</div>
-                </div>
-                <div style="font-size: 0.8rem; color: #555;">0 / 10</div>
+                <div>5 Arkadaş <small id="ref-count-5">(0/5)</small></div>
+                <div style="color:var(--flashy-color)">+7,500</div>
             </div>
         </div>
 
         <div id="invite" class="page">
-            <h2 style="text-align: center;">Arkadaşlarını Çağır</h2>
-            <div class="balance-card">
-                <i class="fas fa-user-plus" style="font-size: 3rem; color: var(--accent); margin-bottom: 15px;"></i>
-                <p>Her başarılı davet için <b>500 BTC</b> anında hesabına geçer!</p>
-                <p style="font-size: 0.8rem; color: #aaa;">Ayrıca arkadaşının kazancının %10'u kadar bonus kazanırsın.</p>
+            <h2 style="text-align: center;">Referanslarım</h2>
+            <div class="balance-card" style="padding: 20px;">
+                <h1 id="friend-count">0</h1>
+                <p>Davet Edilen Arkadaş</p>
             </div>
+            <button class="btn-action" style="width:100%" onclick="shareTelegram()">ARKADAŞINI DAVET ET</button>
             
-            <label style="font-size: 0.8rem; color: #888;">SENİN DAVET LİNKİN:</label>
-            <button class="btn-copy" onclick="copyLink()">
-                <span id="invite-link-text">https://t.me/bot?start=123...</span>
-                <i class="fas fa-copy" style="margin-left: 10px;"></i>
-            </button>
-            <button class="btn-action" style="width: 100%; margin-top: 15px; padding: 15px;" onclick="shareTelegram()">ARKADAŞLARINA GÖNDER</button>
+            <div class="friend-list" id="friend-list-container">
+                <div style="text-align:center; color:#444; padding:20px;">Henüz kimse davet edilmedi.</div>
+            </div>
         </div>
 
         <div id="wallet" class="page">
             <h2 style="text-align: center;">Cüzdan</h2>
-            <div class="balance-card" style="background: #1e1e1e;">
-                <img src="https://cryptologos.cc/logos/bitcoin-btc-logo.png" style="width: 40px;" alt="BTC">
-                <div style="font-size: 1.5rem; margin: 10px 0;" id="walletScoreDisplay">0 BTC</div>
-                <div style="font-size: 0.8rem; color: #2ecc71;">● Çekimler Açık</div>
+            <div class="balance-card">
+                <p>Toplam Bakiyen</p>
+                <div class="balance"><span id="wallet-balance">0</span> FLASHY</div>
             </div>
-            <button class="btn-action" style="width: 100%; background: #333; color: #888;">CÜZDAN BAĞLA (YAKINDA)</button>
         </div>
     </div>
 
     <div class="nav-bar">
-        <div class="nav-item active-nav" onclick="showPage('game', this)"><i class="fas fa-gamepad"></i>Oyun</div>
-        <div class="nav-item" onclick="showPage('tasks', this)"><i class="fas fa-star"></i>Görevler</div>
-        <div class="nav-item" onclick="showPage('invite', this)"><i class="fas fa-users"></i>Davet</div>
+        <div class="nav-item active-nav" onclick="showPage('game', this)"><i class="fas fa-bolt"></i>Oyun</div>
+        <div class="nav-item" onclick="showPage('tasks', this)"><i class="fas fa-list-check"></i>Görevler</div>
+        <div class="nav-item" onclick="showPage('invite', this)"><i class="fas fa-user-group"></i>Davet</div>
         <div class="nav-item" onclick="showPage('wallet', this)"><i class="fas fa-wallet"></i>Cüzdan</div>
     </div>
 

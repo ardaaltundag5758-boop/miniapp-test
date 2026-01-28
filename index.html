@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Stack Ball - Smooth & Balanced</title>
+    <title>Stack Ball - Slow & Smooth</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; font-family: 'Arial Black', sans-serif; background: #000; }
@@ -29,11 +29,11 @@
         let ballY = START_Y + 5;
         let ballVel = 0; 
         
-        // HIZ AYARLARI (DAHA DA YAVAŞLATILMIŞ ORTA HIZ)
-        const GRAVITY = 0.008;      // Çok daha yumuşak düşüş
-        const JUMP_FORCE = 0.16;     // Alçak ve kontrollü zıplama
-        const CRUSH_SPEED = 0.45;    // Kırma hızı videodaki gibi akıcı
-        const ROT_SPEED = 0.015;     // Platform dönüşü sakinleştirildi
+        // --- HIZ AYARLARI (BAŞTAN AŞAĞI YAVAŞLATILDI) ---
+        const GRAVITY = 0.005;      // İyice düşürüldü, top tüy gibi düşer
+        const JUMP_FORCE = 0.12;     // Zıplama yüksekliği çok azaltıldı
+        const CRUSH_SPEED = 0.35;    // Blok kırma hızı daha sakin
+        const ROT_SPEED = 0.008;     // Platform dönüşü çok yavaşlatıldı
         const LAYER_GAP = 5.5;
 
         function init() {
@@ -85,11 +85,11 @@
                 const isBlack = i > 5 && Math.random() < 0.2 && i < 58;
                 const color = isBlack ? 0x222222 : 0xeb4d4b;
                 
-                const piecesPerLayer = 16; // Parça sayısı artırılarak daha yuvarlak bir halka sağlandı
+                const piecesPerLayer = 16; 
                 const angleStep = (Math.PI * 2) / piecesPerLayer;
 
                 for(let j = 0; j < piecesPerLayer; j++) {
-                    const geometry = new THREE.BoxGeometry(2.5, 1.2, 3.5); // Daha dar ama çok parça
+                    const geometry = new THREE.BoxGeometry(2.5, 1.2, 3.5);
                     const material = new THREE.MeshPhongMaterial({ color: color });
                     const piece = new THREE.Mesh(geometry, material);
                     
@@ -117,13 +117,13 @@
             requestAnimationFrame(animate);
 
             if(gameActive) {
-                mainPivot.rotation.y += ROT_SPEED; // Sabit yavaş dönüş
+                mainPivot.rotation.y += ROT_SPEED; 
             }
 
             for (let i = fragments.length - 1; i >= 0; i--) {
                 const f = fragments[i];
                 f.position.add(f.userData.vel);
-                f.userData.vel.y -= 0.02;
+                f.userData.vel.y -= 0.015;
                 f.rotation.x += 0.2;
                 if(f.position.y < -50) { scene.remove(f); fragments.splice(i, 1); }
             }
@@ -134,7 +134,7 @@
                     ballY -= ballVel;
                     checkCrush();
                 } else {
-                    ballVel -= GRAVITY; // Yerçekimi etkisi
+                    ballVel -= GRAVITY; 
                     ballY += ballVel;
 
                     const currentLayer = layers.find(l => 
@@ -144,14 +144,13 @@
                     );
 
                     if (currentLayer) {
-                        ballVel = JUMP_FORCE; // Orta hızda sekme
+                        ballVel = JUMP_FORCE; 
                         ballY = currentLayer.position.y + 2.2;
                     }
                 }
 
                 ball.position.y = ballY;
-                // Kamera yumuşak takip (0.05 değeri tepki hızını düşürür, akıcılık sağlar)
-                camera.position.y = THREE.MathUtils.lerp(camera.position.y, ballY + 18, 0.05);
+                camera.position.y = THREE.MathUtils.lerp(camera.position.y, ballY + 18, 0.03); // Takip iyice yavaşlatıldı
                 camera.lookAt(0, ballY - 10, 0);
             }
 
@@ -181,7 +180,7 @@
                 p.getWorldPosition(worldPos);
                 mainPivot.remove(p);
                 p.position.copy(worldPos);
-                p.userData.vel = new THREE.Vector3((Math.random()-0.5)*0.4, 0.2, (Math.random()-0.5)*0.4);
+                p.userData.vel = new THREE.Vector3((Math.random()-0.5)*0.3, 0.15, (Math.random()-0.5)*0.3);
                 scene.add(p);
                 fragments.push(p);
             }

@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Stack Ball - Smooth Circle</title>
+    <title>Stack Ball - Kesin Çözüm</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; font-family: 'Arial Black', sans-serif; background: #000; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; font-family: 'Arial Black', sans-serif; background: #22a6b3; }
         #game-ui { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; pointer-events: none; }
         #start-btn { 
             padding: 20px 60px; font-size: 28px; font-weight: bold; background: #fff; border: none; 
             border-radius: 50px; cursor: pointer; pointer-events: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
         }
-        #score-display { position: absolute; top: 40px; font-size: 60px; font-weight: 900; color: white; text-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+        #score-display { position: absolute; top: 40px; font-size: 60px; font-weight: 900; color: white; text-shadow: 0 5px 15px rgba(0,0,0,0.3); }
     </style>
 </head>
 <body>
@@ -29,7 +29,7 @@
         let ballY = START_Y + 5;
         let ballVel = 0; 
         
-        // Hız Ayarları (Yavaş ve kontrollü)
+        // Sabitlenmiş Yavaş Hız Ayarları
         const GRAVITY = 0.005;      
         const JUMP_FORCE = 0.12;     
         const CRUSH_SPEED = 0.35;    
@@ -56,19 +56,19 @@
             mainPivot = new THREE.Group();
             scene.add(mainPivot);
 
-            // Merkez Direk
+            // Siyah Direk
             const tower = new THREE.Mesh(
                 new THREE.CylinderGeometry(2.5, 2.5, 1000, 48),
                 new THREE.MeshPhongMaterial({ color: 0x111111 })
             );
             mainPivot.add(tower);
 
-            // Top
+            // Beyaz Top
             ball = new THREE.Mesh(
                 new THREE.SphereGeometry(1.2, 32, 32),
                 new THREE.MeshPhongMaterial({ color: 0xffffff })
             );
-            ball.position.set(0, ballY, 5.5);
+            ball.position.set(0, ballY, 5.2); // Top tam halkanın üzerinde duracak
             scene.add(ball);
 
             createLevel();
@@ -87,24 +87,20 @@
                 const isBlack = i > 5 && Math.random() < 0.2 && i < 58;
                 const color = isBlack ? 0x222222 : 0xeb4d4b;
                 
-                // Tam pürüzsüz halka için Torus (Simit) Geometrisi kullanımı
-                // CylinderGeometry de kullanılabilir ancak dilimlere bölmek için 
-                // parçalı silindir yapısı en temizidir.
-                const segments = 40; // 40 parça ile tam yuvarlak görünüm
+                // Tam Daire İçin Dilimleme Mantığı
+                const segments = 40; 
                 const radius = 5.2;
                 const angleStep = (Math.PI * 2) / segments;
 
-                // Stack Ball mantığı: Halka parçalardan oluşur ama yan yana gelince kusursuz görünür
                 for(let j = 0; j < segments; j++) {
-                    // Silindir dilimi kullanarak kenarlardaki "dişli" çıkıntıları yok ediyoruz
-                    const geometry = new THREE.CylinderGeometry(2.5, 2.5, 1.2, 8, 1, false, j * angleStep, angleStep * 0.95);
+                    // Kutucuk yerine 'CylinderGeometry' kullanarak dilim oluşturuyoruz.
+                    // thetaLength parametresi parçaların birbirine tam yapışmasını sağlar.
+                    const geometry = new THREE.CylinderGeometry(radius, radius, 1.2, 8, 1, false, j * angleStep, angleStep);
                     const material = new THREE.MeshPhongMaterial({ color: color });
                     const piece = new THREE.Mesh(geometry, material);
                     
-                    piece.rotation.x = Math.PI / 2;
-                    piece.position.x = Math.cos(j * angleStep + angleStep/2) * radius;
-                    piece.position.z = Math.sin(j * angleStep + angleStep/2) * radius;
-                    piece.rotation.z = -(j * angleStep + angleStep/2);
+                    // İç içe geçmeyi ve boşlukları önlemek için ölçekleme
+                    piece.scale.set(0.9, 1, 0.9); 
                     
                     piece.userData = { fatal: isBlack };
                     layerGroup.add(piece);
@@ -124,11 +120,8 @@
         function animate() {
             requestAnimationFrame(animate);
 
-            if(gameActive) {
-                mainPivot.rotation.y += ROT_SPEED; 
-            }
+            if(gameActive) mainPivot.rotation.y += ROT_SPEED; 
 
-            // Parçalanma efektleri
             for (let i = fragments.length - 1; i >= 0; i--) {
                 const f = fragments[i];
                 f.position.add(f.userData.vel);
@@ -167,7 +160,7 @@
         }
 
         function checkCrush() {
-            const lIdx = layers.findIndex(l => Math.abs(ballY - l.position.y) < 2.0);
+            const lIdx = layers.findIndex(l => Math.abs(ballY - l.position.y) < 1.8);
             if (lIdx !== -1) {
                 const l = layers[lIdx];
                 if (l.children[0].userData.fatal) {

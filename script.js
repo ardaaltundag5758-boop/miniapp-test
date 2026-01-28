@@ -2,7 +2,7 @@ const tg = window.Telegram.WebApp;
 tg.expand();
 
 let score = parseInt(localStorage.getItem('btc_balance')) || 0;
-let botUsername = "SeninBotAdin"; // BURAYI DEĞİŞTİR
+let botUsername = "@miniapptestttt123_bot"; // BURAYI DEĞİŞTİR
 
 // Başlangıç Ayarları
 updateDisplays();

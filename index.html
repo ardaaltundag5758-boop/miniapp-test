@@ -3,16 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Stack Ball - Constant Rotation</title>
+    <title>Stack Ball - Fixed Speed</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; font-family: 'Arial Black', sans-serif; background: #1a1a1a; }
         #game-ui { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; pointer-events: none; }
-        #start-btn { 
-            padding: 20px 60px; font-size: 28px; font-weight: bold; background: #fff; border: none; 
-            border-radius: 50px; cursor: pointer; pointer-events: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
-        }
-        #score-display { position: absolute; top: 40px; font-size: 60px; font-weight: 900; color: white; text-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+        #start-btn { padding: 20px 60px; font-size: 28px; font-weight: bold; background: #fff; border: none; border-radius: 50px; cursor: pointer; pointer-events: auto; }
+        #score-display { position: absolute; top: 40px; font-size: 60px; font-weight: 900; color: white; }
     </style>
 </head>
 <body>
@@ -24,18 +21,20 @@
     <script>
         let scene, camera, renderer, ball, mainPivot, layers = [], fragments = [];
         let isDown = false, gameActive = false, score = 0;
+        let clock = new THREE.Clock(); // Zaman takibi için
         
         const START_Y = 30;
         let ballY = START_Y + 5;
         let ballVel = 0; 
         
-        // --- HIZ AYARLARI ---
-        const ROT_SPEED = 0.025;      // Orta hızda, akıcı dönüş
-        const RING_DEPTH = 2.0;       // Halka kalınlığı
-        const LAYER_GAP = 2.2;        // 2-3 cm boşluk hissi (neredeyse birleşik)
-        const GRAVITY = 0.005;        
-        const JUMP_FORCE = 0.12;      
-        const CRUSH_SPEED = 0.4;     
+        // --- SENİN VERDİĞİN TAM DEĞERLER ---
+        const ROT_SPEED = 0.8;      // Delta time ile çarpmak için normalize edildi
+        const GRAVITY = 0.015;
+        const JUMP_FORCE = 0.18;
+        const CRUSH_SPEED = 0.35;
+        const RING_DEPTH = 2.2;
+        const LAYER_GAP = 0.3;      // Halkalar arası 0.3 birim boşluk
+        const TOTAL_GAP = RING_DEPTH + LAYER_GAP; // Toplam katman mesafesi
 
         function init() {
             scene = new THREE.Scene();
@@ -54,7 +53,6 @@
             sun.position.set(10, 25, 20);
             scene.add(sun);
 
-            // TÜM DÖNEN YAPI BU PIVOT İÇİNDE
             mainPivot = new THREE.Group();
             scene.add(mainPivot);
 
@@ -64,7 +62,6 @@
             );
             mainPivot.add(tower);
 
-            // TOP PIVOT DIŞINDA (SABİT)
             ball = new THREE.Mesh(
                 new THREE.SphereGeometry(1.0, 32, 32),
                 new THREE.MeshPhongMaterial({ color: 0xffffff })
@@ -83,7 +80,7 @@
         function createLevel() {
             for (let i = 0; i < 80; i++) {
                 const layerGroup = new THREE.Group();
-                layerGroup.position.y = START_Y - (i * LAYER_GAP);
+                layerGroup.position.y = START_Y - (i * TOTAL_GAP);
                 
                 const isBlack = i > 5 && Math.random() < 0.2 && i < 78;
                 const color = isBlack ? 0x222222 : (i % 2 === 0 ? 0xf1c40f : 0xe67e22); 
@@ -104,11 +101,9 @@
                     const piece = new THREE.Mesh(geometry, material);
                     piece.rotation.x = Math.PI / 2;
                     piece.position.y = RING_DEPTH / 2; 
-                    
                     piece.userData = { fatal: isBlack };
                     layerGroup.add(piece);
                 }
-                
                 layerGroup.rotation.y = i * 0.1; 
                 mainPivot.add(layerGroup);
                 layers.push(layerGroup);
@@ -122,18 +117,11 @@
 
         function animate() {
             requestAnimationFrame(animate);
+            let dt = clock.getDelta(); // Kareler arası geçen gerçek süre
+            if (dt > 0.1) dt = 0.016; // Sekme olmasın diye limit
 
-            // DÖNÜŞ KODU: gameActive şartını kaldırdım, kule her zaman döner.
-            mainPivot.rotation.y += ROT_SPEED; 
-
-            if (fragments.length > 0) {
-                for (let i = fragments.length - 1; i >= 0; i--) {
-                    const f = fragments[i];
-                    f.position.add(f.userData.vel);
-                    f.userData.vel.y -= 0.015;
-                    if(f.position.y < -50) { scene.remove(f); fragments.splice(i, 1); }
-                }
-            }
+            // Cihazdan bağımsız sabit dönüş hızı
+            mainPivot.rotation.y += ROT_SPEED * dt * 60; 
 
             if (gameActive) {
                 if (isDown) {
@@ -157,14 +145,14 @@
                 }
 
                 ball.position.y = ballY;
-                camera.position.y = THREE.MathUtils.lerp(camera.position.y, ballY + 18, 0.05);
+                camera.position.y = THREE.MathUtils.lerp(camera.position.y, ballY + 18, 0.1);
                 camera.lookAt(0, ballY - 10, 0);
             }
             renderer.render(scene, camera);
         }
 
         function checkCrush() {
-            const lIdx = layers.findIndex(l => Math.abs(ballY - l.position.y) < (LAYER_GAP * 0.8));
+            const lIdx = layers.findIndex(l => Math.abs(ballY - l.position.y) < (TOTAL_GAP * 0.9));
             if (lIdx !== -1) {
                 const l = layers[lIdx];
                 if (l.children[0].userData.fatal) {

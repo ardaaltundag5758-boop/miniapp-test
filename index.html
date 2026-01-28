@@ -10,99 +10,129 @@
         :root { --bg: #000000; --card: #121212; --accent: #fcd535; --text: #ffffff; --gray: #888888; --blue: #007aff; }
         * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; outline: none; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; overflow-x: hidden; }
-        .header { display: flex; align-items: center; padding: 20px; gap: 10px; }
-        .profile-pic { width: 40px; height: 40px; border-radius: 50%; background: #333; overflow: hidden; border: 1px solid #444; }
-        .profile-pic img { width: 100%; height: 100%; object-fit: cover; }
-        .main-balance { text-align: center; padding: 20px 0; }
-        .token-icon { width: 60px; height: 60px; border-radius: 50%; margin-bottom: 10px; border: 1px solid var(--accent); }
-        .balance-val { font-size: 3rem; font-weight: bold; margin-bottom: 5px; }
-        .token-name { color: var(--gray); font-size: 1.2rem; }
-        .container { padding: 0 20px 100px 20px; }
-        .farm-card { background: var(--card); border-radius: 24px; padding: 24px; border: 1px solid #222; position: relative; }
-        .status-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .active-dot { color: #00ff00; font-size: 0.8rem; }
-        .live-mining { font-size: 2.2rem; font-weight: bold; margin: 15px 0; font-variant-numeric: tabular-nums; }
-        .stats { display: flex; flex-direction: column; gap: 10px; color: var(--gray); font-size: 0.9rem; }
-        .stat-row { display: flex; justify-content: space-between; }
-        .val-white { color: white; font-weight: 500; }
-        .btn-boost { background: var(--blue); color: white; width: 100%; padding: 16px; border-radius: 16px; border: none; font-weight: bold; margin-top: 20px; font-size: 1rem; cursor: pointer; }
-        .btn-boost:disabled { background: #1a1a1a; color: #444; cursor: not-allowed; }
         
-        /* Görevler ve Arkadaşlar */
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; }
+        .user-info { display: flex; align-items: center; gap: 10px; }
+        .profile-pic { width: 35px; height: 35px; border-radius: 50%; border: 1px solid #444; overflow: hidden; }
+        .profile-pic img { width: 100%; height: 100%; object-fit: cover; }
+        .top-balance { background: var(--card); padding: 5px 12px; border-radius: 20px; border: 1px solid var(--accent); font-weight: bold; font-size: 0.9rem; display: flex; align-items: center; gap: 5px; }
+
+        .container { padding: 10px 20px 100px 20px; }
+        .farm-card { background: var(--card); border-radius: 24px; padding: 24px; border: 1px solid #222; position: relative; overflow: hidden; }
+        .progress-bg { position: absolute; left: 0; bottom: 0; height: 100%; background: rgba(0, 122, 255, 0.1); width: 0%; transition: width 1s linear; }
+        
+        .live-mining { font-size: 2.5rem; font-weight: bold; margin: 20px 0; text-align: center; }
+        .btn-boost { position: relative; z-index: 2; background: var(--blue); color: white; width: 100%; padding: 16px; border-radius: 16px; border: none; font-weight: bold; font-size: 1.1rem; cursor: pointer; }
+        .btn-boost:disabled { background: #1a1a1a; color: #555; }
+
         .task-card { background: var(--card); border-radius: 16px; padding: 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #222; }
         .btn-claim { background: var(--accent); color: black; padding: 8px 16px; border-radius: 12px; font-weight: bold; border: none; }
-        .btn-go { background: #222; color: white; padding: 8px 16px; border-radius: 12px; border: none; }
-        .nav-bar { position: fixed; bottom: 0; width: 100%; background: rgba(0,0,0,0.95); display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #222; backdrop-filter: blur(10px); }
-        .nav-item { color: var(--gray); font-size: 0.65rem; display: flex; flex-direction: column; align-items: center; gap: 5px; text-decoration: none; cursor: pointer; }
-        .nav-item.active { color: white; }
-        .nav-item i { font-size: 1.2rem; }
+        .btn-go { background: #222; color: white; padding: 8px 16px; border-radius: 12px; border: none; font-weight: bold; }
+
+        .friend-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #0a0a0a; border-radius: 12px; margin-bottom: 8px; border: 1px solid #1a1a1a; }
+        
+        .nav-bar { position: fixed; bottom: 0; width: 100%; background: rgba(0,0,0,0.95); display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #222; backdrop-filter: blur(10px); z-index: 100; }
+        .nav-item { color: var(--gray); font-size: 0.7rem; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; }
+        .nav-item.active { color: var(--accent); }
+        .nav-item i { font-size: 1.3rem; }
+
         .page { display: none; }
         .page.active-page { display: block; }
+
+        .wallet-btn-group { display: flex; gap: 10px; margin-top: 20px; }
+        .btn-wallet { flex: 1; padding: 15px; border-radius: 12px; border: none; font-weight: bold; font-size: 1rem; }
     </style>
 </head>
 <body>
     <div class="header">
-        <div class="profile-pic"><img id="user-photo" src="https://cdn-icons-png.flaticon.com/512/149/149071.png"></div>
-        <div id="user-name" style="font-weight: bold;">Yükleniyor...</div>
-    </div>
-    
-    <div class="main-balance">
-        <img src="https://cdn.discordapp.com/attachments/539009365391441921/1465903677524017421/5769619140443311194_99.jpg?ex=697accaf&is=69797b2f&hm=bd5109b04f86f6ded0f30cd3a19944d060f22a65084d2caa821df5b8995dd604&" class="token-icon">
-        <div class="balance-val" id="total-balance">0</div>
-        <div class="token-name">FLASHY</div>
+        <div class="user-info">
+            <div class="profile-pic"><img id="user-photo" src="https://cdn-icons-png.flaticon.com/512/149/149071.png"></div>
+            <div id="user-name" style="font-weight: bold; font-size: 0.9rem;">Yükleniyor...</div>
+        </div>
+        <div class="top-balance">
+            <img src="https://cdn.discordapp.com/attachments/539009365391441921/1465903677524017421/5769619140443311194_99.jpg" style="width:18px; border-radius:50%">
+            <span id="top-balance-val">0</span>
+        </div>
     </div>
 
     <div class="container">
         <div id="page-farm" class="page active-page">
             <div class="farm-card">
-                <div class="status-header">
-                    <span><i class="fas fa-coins" style="color: gold;"></i> Farming Status</span>
-                    <span class="active-dot" id="farm-status-text">● Active</span>
+                <div class="progress-bg" id="farm-progress"></div>
+                <div style="position:relative; z-index:2">
+                    <div style="display:flex; justify-content:space-between; color:var(--gray); font-size:0.8rem;">
+                        <span><i class="fas fa-bolt" style="color:var(--accent)"></i> Kazım Hızı</span>
+                        <span>22 FLASHY/saat</span>
+                    </div>
+                    <div class="live-mining" id="live-farm-val">0.00000</div>
+                    <div style="text-align:center; color:var(--gray); font-size:0.9rem; margin-bottom:20px;" id="timer">Kalan Süre: 24s 00d</div>
+                    <button class="btn-boost" id="farm-btn" onclick="handleFarmClick()">Farming'i Başlat</button>
                 </div>
-                <div class="live-mining" id="live-farm-val">0.00000</div>
-                <div class="stats">
-                    <div class="stat-row"><span>Hourly Rate</span> <span class="val-white">22 FLASHY/hr</span></div>
-                    <div class="stat-row"><span>Next Claim</span> <span class="val-white" id="timer">01h 00m 00s</span></div>
-                </div>
-                <button class="btn-boost" id="farm-btn" onclick="handleFarmClick()">Start Farm</button>
             </div>
         </div>
 
         <div id="page-tasks" class="page">
-            <h3 style="margin-bottom: 20px;">Tasks</h3>
-            <div class="task-card">
-                <div><b>Kanalı Takip Et</b><br><small style="color:var(--accent)">+100 Flashy</small></div>
-                <button class="btn-go" id="btn-task-tg" onclick="doTask('tg')">Git</button>
-            </div>
-            <div class="task-card">
-                <div><b>1 Arkadaş Davet Et</b><br><small style="color:var(--accent)">+50 Flashy</small></div>
-                <button class="btn-go" id="btn-task-ref1" onclick="doTask('ref1')">Git</button>
-            </div>
-            <div class="task-card">
-                <div><b>5 Arkadaş Davet Et</b><br><small style="color:var(--accent)">+300 Flashy</small></div>
-                <button class="btn-go" id="btn-task-ref5" onclick="doTask('ref5')">Git</button>
-            </div>
-            <div class="task-card">
-                <div><b>10 Arkadaş Davet Et</b><br><small style="color:var(--accent)">+600 Flashy</small></div>
-                <button class="btn-go" id="btn-task-ref10" onclick="doTask('ref10')">Git</button>
+            <h3 style="margin-bottom: 20px;">Görevler</h3>
+            <div id="task-list">
+                <div class="task-card">
+                    <div><b>Kanalı Takip Et</b><br><small style="color:var(--accent)">+100 Flashy</small></div>
+                    <button class="btn-go" id="btn-task-tg" onclick="doTask('tg')">Git</button>
+                </div>
+                <div class="task-card">
+                    <div><b>X (Twitter) Takip Et</b><br><small style="color:var(--accent)">+100 Flashy</small></div>
+                    <button class="btn-go" id="btn-task-x" onclick="doTask('x')">Git</button>
+                </div>
+                <div class="task-card">
+                    <div><b>1 Arkadaş Davet Et</b><br><small style="color:var(--accent)">+50 Flashy</small></div>
+                    <button class="btn-go" id="btn-task-ref1" onclick="doTask('ref1')">Git</button>
+                </div>
+                <div class="task-card">
+                    <div><b>5 Arkadaş Davet Et</b><br><small style="color:var(--accent)">+300 Flashy</small></div>
+                    <button class="btn-go" id="btn-task-ref5" onclick="doTask('ref5')">Git</button>
+                </div>
             </div>
         </div>
 
         <div id="page-friends" class="page">
-            <h3 style="margin-bottom: 10px;">Invite Friends</h3>
-            <p style="color: var(--gray); font-size: 0.9rem;">Her davet için <b style="color:white">+30 Flashy</b> kazanırsın.</p>
-            <div class="farm-card" style="text-align: center; margin-top: 30px;">
-                <i class="fas fa-users" style="font-size: 3rem; color: var(--accent); margin-bottom: 15px;"></i>
-                <h4>Arkadaşlarını Çağır!</h4>
-                <button class="btn-boost" onclick="inviteFriend()">Davet Linkini Kopyala</button>
+            <h3>Arkadaşlarını Davet Et</h3>
+            <p style="color: var(--gray); font-size: 0.85rem;">Her davet için anında <b style="color:white">+30 Flashy</b> kazan.</p>
+            
+            <div style="background:var(--card); padding:15px; border-radius:12px; margin:20px 0; border:1px solid #222;">
+                <code id="invite-link-text" style="font-size:0.7rem; color:var(--accent)">Yükleniyor...</code>
+                <div style="display:flex; gap:10px; margin-top:10px;">
+                    <button onclick="copyLink()" style="flex:1; padding:10px; border-radius:8px; border:none; background:#333; color:white; font-weight:bold;">Kopyala</button>
+                    <button onclick="inviteFriend()" style="flex:2; padding:10px; border-radius:8px; border:none; background:var(--blue); color:white; font-weight:bold;">Arkadaşına Gönder</button>
+                </div>
+            </div>
+
+            <div id="friends-list-container">
+                <h4 style="font-size:0.9rem; color:var(--gray)">Davet Edilenler</h4>
+                <div id="friends-list">
+                    <p style="font-size:0.8rem; color:#444; text-align:center;">Henüz kimse yok.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="page-wallet" class="page">
+            <div class="farm-card" style="text-align:center;">
+                <p style="color:var(--gray); margin:0;">Toplam Varlıklar</p>
+                <h2 style="font-size:2.5rem; margin:10px 0;" id="wallet-balance">0</h2>
+                <p style="color:var(--accent); font-weight:bold;">FLASHY TOKEN</p>
+                
+                <div class="wallet-btn-group">
+                    <button class="btn-wallet" style="background:#1a1a1a; color:#555;">Yatır</button>
+                    <button class="btn-wallet" style="background:#1a1a1a; color:#555;">Çek</button>
+                </div>
+                <p style="font-size:0.7rem; color:var(--gray); margin-top:15px;">Çekim işlemleri yakında aktif edilecektir.</p>
             </div>
         </div>
     </div>
 
     <div class="nav-bar">
-        <div class="nav-item active" onclick="switchPage('farm', this)"><i class="fas fa-ghost"></i>FARM</div>
-        <div class="nav-item" onclick="switchPage('tasks', this)"><i class="fas fa-tasks"></i>TASKS</div>
-        <div class="nav-item" onclick="switchPage('friends', this)"><i class="fas fa-users"></i>FRIENDS</div>
+        <div class="nav-item active" onclick="switchPage('farm', this)"><i class="fas fa-tractor"></i>ÇİFTLİK</div>
+        <div class="nav-item" onclick="switchPage('tasks', this)"><i class="fas fa-star"></i>GÖREVLER</div>
+        <div class="nav-item" onclick="switchPage('friends', this)"><i class="fas fa-user-plus"></i>DOSTLAR</div>
+        <div class="nav-item" onclick="switchPage('wallet', this)"><i class="fas fa-wallet"></i>CÜZDAN</div>
     </div>
     <script src="script.js"></script>
 </body>

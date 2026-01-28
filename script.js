@@ -1,66 +1,123 @@
-// Telegram WebApp Başlatma
 const tg = window.Telegram.WebApp;
 tg.expand();
-tg.ready();
 
-// Puanı Hafızadan Çek (Yoksa 0 yap)
 let score = parseInt(localStorage.getItem('btc_balance')) || 0;
+let botUsername = "SeninBotAdin"; // BURAYI DEĞİŞTİR
 
-// Elementleri Seç
-const scoreDisplay = document.getElementById('score');
-const walletDisplay = document.getElementById('walletScore');
-const clickBtn = document.getElementById('clickBtn');
-
-// İlk açılışta puanları yazdır
+// Başlangıç Ayarları
 updateDisplays();
 
-// Tıklama Fonksiyonu
-clickBtn.addEventListener('click', () => {
-    score += 1;
-    saveScore();
-    updateDisplays();
-    tg.HapticFeedback.impactOccurred('medium'); // Telefon titretme
-});
-
-// Puanı Güncelleme ve Kaydetme
 function updateDisplays() {
-    scoreDisplay.innerText = score.toLocaleString(); // Rakamları 1,000 şeklinde formatlar
-    walletDisplay.innerText = score.toLocaleString();
+    document.getElementById('score').innerText = score.toLocaleString();
+    document.getElementById('walletScoreDisplay').innerText = score.toLocaleString() + " BTC";
+    
+    const userId = tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : "0000";
+    document.getElementById('invite-link-text').innerText = `https://t.me/${botUsername}?start=ref_${userId}`;
 }
 
-function saveScore() {
-    localStorage.setItem('btc_balance', score);
-}
-
-// Sayfa Değiştirme
 function showPage(pageId, element) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById(pageId).classList.add('active');
-    
     document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active-nav'));
     element.classList.add('active-nav');
     tg.HapticFeedback.selectionChanged();
 }
 
-// Görev Yapma
+// GÖREV VE PAYLAŞIM
 function doTask(url, reward) {
     tg.openLink(url);
-    // 5 saniye bekleme simülasyonu
     setTimeout(() => {
         score += reward;
-        saveScore();
-        updateDisplays();
-        tg.showAlert("Tebrikler! " + reward + " BTC kazandın.");
-    }, 5000);
+        saveData();
+        tg.showAlert(reward + " BTC Eklendi!");
+    }, 3000);
 }
 
-// Arkadaş Davet Sistemi (Dinamik Link)
-function inviteFriend() {
-    const userId = tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : "testuser";
-    const botUsername = "SeninBotUserAdin"; // BURAYI KENDİ BOT ADINLA DEĞİŞTİR (Örn: FlashyGoldBot)
-    const inviteLink = `https://t.me/${botUsername}?start=ref_${userId}`;
-    
-    // Telegram paylaşma penceresini açar
-    const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(inviteLink)}&text=${encodeURIComponent("BTC madenciliği yapmaya başla! 🚀")}`;
-    tg.openTelegramLink(shareUrl);
+function copyLink() {
+    const link = document.getElementById('invite-link-text').innerText;
+    navigator.clipboard.writeText(link);
+    tg.showAlert("Link kopyalandı!");
+}
+
+function shareTelegram() {
+    const link = document.getElementById('invite-link-text').innerText;
+    tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=BTC kazanmaya başla!`);
+}
+
+function saveData() {
+    localStorage.setItem('btc_balance', score);
+    updateDisplays();
+}
+
+// --- OYUN MANTIĞI: BTC SPACE JUMP ---
+const canvas = document.getElementById('game-canvas');
+const ctx = canvas.getContext('2d');
+let gameActive = false;
+let player = { x: 50, y: 200, w: 30, h: 30, dy: 0 };
+let gravity = 0.25;
+let jump = -5;
+let obstacles = [];
+let frame = 0;
+
+function startGame() {
+    document.getElementById('game-start-ui').style.display = 'none';
+    document.getElementById('game-container').style.display = 'block';
+    gameActive = true;
+    player.y = 200;
+    player.dy = 0;
+    obstacles = [];
+    requestAnimationFrame(gameLoop);
+}
+
+canvas.onclick = () => { player.dy = jump; tg.HapticFeedback.impactOccurred('light'); };
+
+function gameLoop() {
+    if (!gameActive) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Oyuncu Hareketi
+    player.dy += gravity;
+    player.y += player.dy;
+
+    // Oyuncu Çizimi (BTC Logosu)
+    ctx.fillStyle = "#f7931a";
+    ctx.beginPath();
+    ctx.arc(player.x, player.y, 15, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Engeller
+    if (frame % 100 === 0) {
+        let gap = 120;
+        let pos = Math.random() * (canvas.height - gap);
+        obstacles.push({ x: canvas.width, y: 0, w: 40, h: pos });
+        obstacles.push({ x: canvas.width, y: pos + gap, w: 40, h: canvas.height });
+    }
+
+    obstacles.forEach((obs, i) => {
+        obs.x -= 2;
+        ctx.fillStyle = "#333";
+        ctx.fillRect(obs.x, obs.y, obs.w, obs.h);
+
+        // Çarpışma Kontrolü
+        if (player.x + 15 > obs.x && player.x - 15 < obs.x + obs.w &&
+            player.y + 15 > obs.y && player.y - 15 < obs.y + obs.h) {
+            gameOver();
+        }
+    });
+
+    if (player.y > canvas.height || player.y < 0) gameOver();
+
+    // Puan Kazanma
+    if (frame % 50 === 0) { score += 1; saveData(); }
+
+    frame++;
+    requestAnimationFrame(gameLoop);
+}
+
+function gameOver() {
+    gameActive = false;
+    tg.HapticFeedback.notificationOccurred('error');
+    alert("Oyun Bitti! Mevcut Bakiye: " + score);
+    document.getElementById('game-start-ui').style.display = 'block';
+    document.getElementById('game-container').style.display = 'none';
 }

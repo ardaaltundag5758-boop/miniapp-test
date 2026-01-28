@@ -1,160 +1,181 @@
+// TELEGRAM AYARLARI
 const tg = window.Telegram.WebApp;
-const BOT_ID = "miniapptestttt123_bot";
 tg.expand();
 
-// VERİLER
-let balance = parseFloat(localStorage.getItem('f_bal')) || 0;
-let lastClaim = parseInt(localStorage.getItem('f_last')) || 0;
-let isMining = localStorage.getItem('f_mining') === 'true';
-let tasksStatus = JSON.parse(localStorage.getItem('f_tasks')) || { tg: 'none', x: 'none', ref1: 'none' };
-let invitedFriends = JSON.parse(localStorage.getItem('f_friends_list')) || [];
+// GLOBAL DEĞİŞKENLER
+let balance = parseInt(localStorage.getItem('f_bal')) || 0;
+let currentLevel = 1;
+let score = 0;
+let isMuted = false;
+let ownedSkins = JSON.parse(localStorage.getItem('f_owned')) || [0xffffff];
+let activeSkin = parseInt(localStorage.getItem('f_active_skin')) || 0xffffff;
 
-const HOURLY_RATE = 22;
-const CLAIM_MS = 24 * 3600000;
+const SKINS = [
+    { color: 0xffffff, price: 0 },
+    { color: 0xff4400, price: 500 },
+    { color: 0x00ff00, price: 1000 },
+    { color: 0xfcd535, price: 2500 }
+];
 
-// BAŞLANGIÇ AYARLARI
-document.getElementById('user-name').innerText = tg.initDataUnsafe.user?.first_name || "Flashy User";
-if (tg.initDataUnsafe.user?.photo_url) document.getElementById('user-photo').src = tg.initDataUnsafe.user.photo_url;
-document.getElementById('invite-link-text').innerText = `https://t.me/${BOT_ID}?start=${tg.initDataUnsafe.user?.id || 0}`;
+// THREE.JS DEĞİŞKENLERİ
+let scene, camera, renderer, ball, blocks = [];
+let isDown = false, isDead = false, levelComplete = false;
+let ballVelocity = 0;
 
-function updateUI() {
-    const val = Math.floor(balance).toLocaleString();
-    document.getElementById('top-balance-val').innerText = val;
-    document.getElementById('wallet-balance').innerText = val;
-    
-    Object.keys(tasksStatus).forEach(id => {
-        const btn = document.getElementById('btn-task-' + id);
-        if (btn) {
-            if (tasksStatus[id] === 'ready') { btn.innerText = "Talep Et"; btn.className = "btn-claim"; }
-            else if (tasksStatus[id] === 'claimed') { btn.innerText = "Bitti"; btn.disabled = true; btn.style.opacity = "0.5"; }
+// BAŞLATMA
+window.onload = () => {
+    document.getElementById('top-balance-val').innerText = balance;
+    init3D();
+    renderShop();
+};
+
+function init3D() {
+    const container = document.getElementById('three-canvas-container');
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x050505);
+
+    camera = new THREE.PerspectiveCamera(45, window.innerWidth / (window.innerHeight - 140), 0.1, 1000);
+    camera.position.set(0, 15, 25);
+
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight - 140);
+    container.appendChild(renderer.domElement);
+
+    const light = new THREE.DirectionalLight(0xffffff, 1);
+    light.position.set(5, 10, 7);
+    scene.add(light);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+
+    createBall();
+    createLevel();
+    animate();
+}
+
+function createBall() {
+    if(ball) scene.remove(ball);
+    const geo = new THREE.SphereGeometry(0.7, 32, 32);
+    const mat = new THREE.MeshPhongMaterial({ color: activeSkin });
+    ball = new THREE.Mesh(geo, mat);
+    ball.position.set(0, 10, 4.5);
+    scene.add(ball);
+}
+
+function createLevel() {
+    blocks.forEach(b => scene.remove(b));
+    blocks = [];
+    const count = 30 + (currentLevel * 2);
+    for (let i = 0; i < count; i++) {
+        const group = new THREE.Group();
+        group.position.y = 8 - (i * 2.5);
+        const isEnemyLayer = Math.random() < 0.2;
+        
+        for (let j = 0; j < 8; j++) {
+            const isEnemy = isEnemyLayer && (j === 0 || j === 4);
+            const geo = new THREE.TorusGeometry(4.5, 0.6, 16, 32, (Math.PI*2)/8 * 0.9);
+            const mat = new THREE.MeshPhongMaterial({ color: isEnemy ? 0x111111 : new THREE.Color().setHSL(i/count, 0.7, 0.5) });
+            const part = new THREE.Mesh(geo, mat);
+            part.rotation.z = Math.PI/2;
+            part.rotation.x = j * (Math.PI*2)/8;
+            part.userData = { isEnemy };
+            group.add(part);
         }
-    });
-}
-
-// FARM SİSTEMİ
-setInterval(() => {
-    if (!isMining) return;
-    let elapsed = Date.now() - lastClaim;
-    const progress = document.getElementById('farm-progress');
-    
-    if (elapsed < CLAIM_MS) {
-        document.getElementById('live-farm-val').innerText = ((elapsed / 3600000) * HOURLY_RATE).toFixed(5);
-        let rem = CLAIM_MS - elapsed;
-        document.getElementById('timer').innerText = `Kalan: ${Math.floor(rem/3600000)}s ${Math.floor((rem%3600000)/60000)}d`;
-        progress.style.width = (elapsed / CLAIM_MS * 100) + "%";
-        document.getElementById('farm-btn').innerText = "Farming...";
-        document.getElementById('farm-btn').disabled = true;
-    } else {
-        isMining = false;
-        document.getElementById('farm-btn').innerText = "Bakiyeyi Topla";
-        document.getElementById('farm-btn').disabled = false;
+        scene.add(group);
+        blocks.push(group);
     }
-}, 1000);
-
-function handleFarmClick() {
-    if (!isMining && lastClaim === 0) {
-        lastClaim = Date.now(); isMining = true;
-        localStorage.setItem('f_last', lastClaim); localStorage.setItem('f_mining', 'true');
-    } else if (!isMining && Date.now() - lastClaim >= CLAIM_MS) {
-        balance += (HOURLY_RATE * 24); lastClaim = 0;
-        localStorage.setItem('f_bal', balance); localStorage.setItem('f_last', 0);
-        updateUI();
-    }
-}
-
-// STACK BALL OYUN MOTORU (2D Canvas Versiyon)
-const canvas = document.getElementById('game-canvas');
-const ctx = canvas.getContext('2d');
-let gameActive = false, score = 0, ballY = 100, ballV = 0, isPressing = false;
-let stacks = [];
-
-function initGame() {
-    canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight;
-    stacks = [];
-    for(let i=0; i<15; i++) {
-        stacks.push({ y: 300 + (i * 50), type: Math.random() > 0.2 ? 'normal' : 'enemy' });
-    }
-    gameActive = true; animate();
 }
 
 function animate() {
-    if(!gameActive) return;
-    ctx.clearRect(0,0,canvas.width, canvas.height);
-    
-    // Top fiziği
-    if (isPressing) ballV = 8; else ballV += 0.4;
-    ballY += ballV;
-
-    // Katman çizimi
-    stacks.forEach((s, index) => {
-        ctx.fillStyle = s.type === 'enemy' ? '#ff4444' : varColor('--blue');
-        ctx.fillRect(canvas.width/2 - 60, s.y - ballY + 300, 120, 20);
-        
-        // Çarpışma
-        if (ballY > s.y && ballY < s.y + 20) {
-            if (s.type === 'enemy' && !isPressing) {
-                gameOver();
-            } else {
-                stacks.splice(index, 1);
-                stacks.push({ y: stacks[stacks.length-1].y + 50, type: Math.random() > 0.2 ? 'normal' : 'enemy' });
-                score++;
-                document.getElementById('game-score').innerText = score;
-                if (score % 50 === 0) addReward(5); // Her 50 skorda 5 FLASHY
-            }
-        }
-    });
-
-    // Top çizimi
-    ctx.beginPath();
-    ctx.arc(canvas.width/2, 300, 10, 0, Math.PI*2);
-    ctx.fillStyle = 'white'; ctx.fill();
-
-    if (ballY > 5000) ballY = 300; // Sonsuz döngü
     requestAnimationFrame(animate);
-}
+    if (!isDead && !levelComplete && ball) {
+        blocks.forEach(b => b.rotation.y += 0.03);
+        if (isDown) {
+            ballVelocity = -0.5;
+            checkCollision();
+        } else {
+            ballVelocity = Math.sin(Date.now() * 0.01) * 0.2;
+        }
+        ball.position.y += ballVelocity;
+        if(ball.position.y < -blocks.length * 2.5) nextLevel();
 
-function gameOver() {
-    gameActive = false;
-    tg.showAlert(`Oyun Bitti! Skor: ${score}`);
-    score = 0; ballY = 100; ballV = 0;
-    setTimeout(initGame, 1000);
-}
-
-function addReward(amt) {
-    balance += amt;
-    localStorage.setItem('f_bal', balance);
-    updateUI();
-}
-
-function varColor(name) { return getComputedStyle(document.documentElement).getPropertyValue(name); }
-
-canvas.addEventListener('mousedown', () => isPressing = true);
-canvas.addEventListener('mouseup', () => isPressing = false);
-canvas.addEventListener('touchstart', (e) => { e.preventDefault(); isPressing = true; });
-canvas.addEventListener('touchend', () => isPressing = false);
-
-// SAYFA GEÇİŞLERİ
-function switchPage(pageId, el) {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
-    document.getElementById('page-' + pageId).classList.add('active-page');
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    el.classList.add('active');
-    if (pageId === 'game') initGame(); else gameActive = false;
-}
-
-function doTask(type) {
-    if (tasksStatus[type] === 'none') {
-        if (type === 'tg') tg.openTelegramLink("https://t.me/AirdropNoktasiDuyuru");
-        if (type === 'x') tg.openLink("https://x.com/ADNFlashy");
-        tasksStatus[type] = 'ready';
-    } else if (tasksStatus[type] === 'ready') {
-        let r = { tg: 100, x: 100, ref1: 50 }[type];
-        balance += r; tasksStatus[type] = 'claimed';
-        tg.showAlert(`Tebrikler! ${r} FLASHY eklendi.`);
+        camera.position.y = ball.position.y + 5;
+        camera.lookAt(0, ball.position.y - 2, 0);
     }
-    localStorage.setItem('f_tasks', JSON.stringify(tasksStatus));
-    localStorage.setItem('f_bal', balance);
-    updateUI();
+    renderer.render(scene, camera);
 }
 
-updateUI();
+function checkCollision() {
+    const idx = Math.floor((10 - ball.position.y) / 2.5);
+    if (idx >= 0 && idx < blocks.length) {
+        const b = blocks[idx];
+        // Basit düşman kontrolü
+        if (isDown && b.children[0].userData.isEnemy) { die(); return; }
+        scene.remove(b);
+        score += 10;
+        document.getElementById('game-score').innerText = score;
+    }
+}
+
+function die() {
+    isDead = true;
+    const reward = Math.floor(score / 10);
+    balance += reward;
+    localStorage.setItem('f_bal', balance);
+    document.getElementById('reward-amt').innerText = reward;
+    document.getElementById('top-balance-val').innerText = balance;
+    showScreen('screen-over');
+}
+
+function nextLevel() {
+    levelComplete = true;
+    currentLevel++;
+    setTimeout(() => {
+        levelComplete = false;
+        createLevel();
+        ball.position.y = 10;
+        document.getElementById('game-lvl').innerText = currentLevel;
+    }, 500);
+}
+
+// UI KONTROLLERİ
+function startGame() { showScreen(''); isDead = false; score = 0; }
+function resetGame() { location.reload(); }
+function showScreen(id) {
+    document.querySelectorAll('.game-screen').forEach(s => s.classList.add('hidden'));
+    if(id) document.getElementById(id).classList.remove('hidden');
+}
+
+function openShop() { showScreen('screen-shop'); }
+function closeShop() { showScreen('screen-main'); }
+
+function renderShop() {
+    const list = document.getElementById('skin-list');
+    list.innerHTML = '';
+    SKINS.forEach(s => {
+        const owned = ownedSkins.includes(s.color);
+        const btn = document.createElement('div');
+        btn.style.cssText = `width:50px; height:50px; background:#${s.color.toString(16).padStart(6,'0')}; border-radius:50%; border:3px solid ${activeSkin === s.color ? '#fcd535' : '#444'}`;
+        btn.onclick = () => {
+            if(owned) {
+                activeSkin = s.color;
+                localStorage.setItem('f_active_skin', s.color);
+                createBall();
+            } else if(balance >= s.price) {
+                balance -= s.price;
+                ownedSkins.push(s.color);
+                localStorage.setItem('f_bal', balance);
+                localStorage.setItem('f_owned', JSON.stringify(ownedSkins));
+                renderShop();
+                document.getElementById('top-balance-val').innerText = balance;
+            }
+            renderShop();
+        };
+        list.appendChild(btn);
+    });
+}
+
+// DOKUNMATİK KONTROLLER
+const canvas = document.getElementById('three-canvas-container');
+canvas.addEventListener('touchstart', (e) => { isDown = true; e.preventDefault(); }, {passive:false});
+canvas.addEventListener('touchend', () => isDown = false);
+canvas.addEventListener('mousedown', () => isDown = true);
+canvas.addEventListener('mouseup', () => isDown = false);

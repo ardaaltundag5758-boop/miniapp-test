@@ -1,50 +1,66 @@
-let score = 0;
+// Telegram WebApp Başlatma
 const tg = window.Telegram.WebApp;
-tg.expand(); // Uygulamayı tam ekran yap
+tg.expand();
+tg.ready();
 
-// Sayfa Değiştirme Fonksiyonu
-function showPage(pageId, element) {
-    // Tüm sayfaları gizle
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    // Seçilen sayfayı göster
-    document.getElementById(pageId).classList.add('active');
-    
-    // Navigasyon renklerini güncelle
-    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active-nav'));
-    element.classList.add('active-nav');
-}
+// Puanı Hafızadan Çek (Yoksa 0 yap)
+let score = parseInt(localStorage.getItem('btc_balance')) || 0;
 
-// Tıklama Oyunu
-const clickBtn = document.getElementById('clickBtn');
+// Elementleri Seç
 const scoreDisplay = document.getElementById('score');
 const walletDisplay = document.getElementById('walletScore');
+const clickBtn = document.getElementById('clickBtn');
 
+// İlk açılışta puanları yazdır
+updateDisplays();
+
+// Tıklama Fonksiyonu
 clickBtn.addEventListener('click', () => {
     score += 1;
+    saveScore();
     updateDisplays();
-    // Hafif titreşim (Haptic Feedback)
-    tg.HapticFeedback.impactOccurred('light');
+    tg.HapticFeedback.impactOccurred('medium'); // Telefon titretme
 });
 
+// Puanı Güncelleme ve Kaydetme
 function updateDisplays() {
-    scoreDisplay.innerText = score;
-    walletDisplay.innerText = score;
+    scoreDisplay.innerText = score.toLocaleString(); // Rakamları 1,000 şeklinde formatlar
+    walletDisplay.innerText = score.toLocaleString();
+}
+
+function saveScore() {
+    localStorage.setItem('btc_balance', score);
+}
+
+// Sayfa Değiştirme
+function showPage(pageId, element) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(pageId).classList.add('active');
+    
+    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active-nav'));
+    element.classList.add('active-nav');
+    tg.HapticFeedback.selectionChanged();
 }
 
 // Görev Yapma
 function doTask(url, reward) {
     tg.openLink(url);
-    // Basit bir simülasyon: 5 saniye sonra ödül ver (Normalde backend ile kontrol edilir)
+    // 5 saniye bekleme simülasyonu
     setTimeout(() => {
         score += reward;
+        saveScore();
         updateDisplays();
-        alert(reward + " BTC Ödül Alındı!");
+        tg.showAlert("Tebrikler! " + reward + " BTC kazandın.");
     }, 5000);
 }
 
-// Arkadaş Davet Etme
+// Arkadaş Davet Sistemi (Dinamik Link)
 function inviteFriend() {
-    const inviteLink = "https://t.me/SeninBotUserAdin?start=" + tg.initDataUnsafe.user.id;
-    // Linki kopyalama veya Telegram paylaşım penceresini açma
-    alert("Davet Linkin: " + inviteLink);
+    const userId = tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : "testuser";
+    const botUsername = "SeninBotUserAdin"; // BURAYI KENDİ BOT ADINLA DEĞİŞTİR (Örn: FlashyGoldBot)
+    const inviteLink = `https://t.me/${botUsername}?start=ref_${userId}`;
+    
+    // Telegram paylaşma penceresini açar
+    const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(inviteLink)}&text=${encodeURIComponent("BTC madenciliği yapmaya başla! 🚀")}`;
+    tg.openTelegramLink(shareUrl);
 }

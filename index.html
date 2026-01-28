@@ -34,9 +34,8 @@
         .nav-item { color: var(--gray); font-size: 0.65rem; display: flex; flex-direction: column; align-items: center; gap: 5px; text-decoration: none; cursor: pointer; }
         .nav-item.active { color: white; }
         .nav-item i { font-size: 1.2rem; }
-        .page { display: none; animation: fadeIn 0.3s ease-in-out; }
+        .page { display: none; }
         .page.active-page { display: block; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
@@ -44,61 +43,43 @@
         <div class="profile-pic"><img id="user-photo" src="https://cdn-icons-png.flaticon.com/512/149/149071.png"></div>
         <div id="user-name" style="font-weight: bold;">Yükleniyor...</div>
     </div>
-
     <div class="main-balance">
         <img src="https://cdn.discordapp.com/attachments/539009365391441921/1465903677524017421/5769619140443311194_99.jpg?ex=697accaf&is=69797b2f&hm=bd5109b04f86f6ded0f30cd3a19944d060f22a65084d2caa821df5b8995dd604&" class="token-icon">
         <div class="balance-val" id="total-balance">0</div>
         <div class="token-name">FLASHY</div>
     </div>
-
     <div class="container">
         <div id="page-farm" class="page active-page">
             <div class="farm-card">
                 <div class="status-header">
                     <span><i class="fas fa-coins" style="color: gold;"></i> Farming Status</span>
-                    <span class="active-dot" id="farm-status">● Active</span>
+                    <span class="active-dot">● Active</span>
                 </div>
                 <div class="live-mining" id="live-farm-val">0.00000</div>
                 <div class="stats">
                     <div class="stat-row"><span>Hourly Rate</span> <span class="val-white">22 FLASHY/hr</span></div>
                     <div class="stat-row"><span>Next Claim</span> <span class="val-white" id="timer">00m 00s</span></div>
                 </div>
-                <button class="btn-boost" id="farm-btn" onclick="handleFarmClick()">Farming...</button>
+                <button class="btn-boost" id="farm-btn" onclick="handleFarmClick()">Boost Farm</button>
             </div>
         </div>
-
         <div id="page-tasks" class="page">
             <h3 style="margin-bottom: 20px;">Tasks</h3>
-            <div id="task-list">
-                <div class="task-card">
-                    <div><b>Kanalı Takip Et</b><br><small style="color:var(--accent)">+100 Flashy</small></div>
-                    <button class="btn-go" id="btn-task-tg" onclick="doTask('tg')">Git</button>
-                </div>
-                <div class="task-card">
-                    <div><b>1 Arkadaş Davet Et</b><br><small style="color:var(--accent)">+50 Flashy</small></div>
-                    <button class="btn-go" id="btn-task-ref1" onclick="doTask('ref1')">Git</button>
-                </div>
+            <div class="task-card">
+                <div><b>Kanalı Takip Et</b><br><small style="color:var(--accent)">+100 Flashy</small></div>
+                <button class="btn-go" id="btn-task-tg" onclick="doTask('tg')">Git</button>
             </div>
-        </div>
-
-        <div id="page-friends" class="page">
-            <div style="text-align: center; padding: 20px;">
-                <img src="https://cdn-icons-png.flaticon.com/512/8138/8138333.png" width="80" style="margin-bottom: 20px;">
-                <h2>Invite Friends</h2>
-                <p style="color: #888;">Arkadaşlarını davet et, her arkadaş için 30 Flashy kazan!</p>
+            <div class="task-card">
+                <div><b>1 Arkadaş Davet Et</b><br><small style="color:var(--accent)">+50 Flashy</small></div>
+                <button class="btn-go" id="btn-task-ref1" onclick="doTask('ref1')">Git</button>
             </div>
-            <button class="btn-boost" style="background: var(--accent); color: black;" onclick="inviteFriend()">Invite Friends</button>
         </div>
     </div>
-
     <div class="nav-bar">
         <div class="nav-item active" onclick="switchPage('farm', this)"><i class="fas fa-ghost"></i>FARM</div>
         <div class="nav-item" onclick="switchPage('tasks', this)"><i class="fas fa-tasks"></i>TASKS</div>
-        <div class="nav-item" onclick="switchPage('leaders', this)"><i class="fas fa-chart-bar"></i>LEADERS</div>
         <div class="nav-item" onclick="switchPage('friends', this)"><i class="fas fa-users"></i>FRIENDS</div>
-        <div class="nav-item" onclick="switchPage('token', this)"><i class="fas fa-coins"></i>TOKEN</div>
     </div>
-
     <script src="script.js"></script>
 </body>
 </html>

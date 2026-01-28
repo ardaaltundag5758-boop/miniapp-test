@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Stack Ball - Kesin Çözüm</title>
+    <title>Stack Ball - Large Smooth Rings</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; font-family: 'Arial Black', sans-serif; background: #22a6b3; }
@@ -29,7 +29,7 @@
         let ballY = START_Y + 5;
         let ballVel = 0; 
         
-        // Sabitlenmiş Yavaş Hız Ayarları
+        // --- AYARLAR ---
         const GRAVITY = 0.005;      
         const JUMP_FORCE = 0.12;     
         const CRUSH_SPEED = 0.35;    
@@ -38,10 +38,10 @@
 
         function init() {
             scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x22a6b3);
+            scene.background = new THREE.Color(0x3498db);
 
             camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.set(0, ballY + 15, 45);
+            camera.position.set(0, ballY + 15, 40);
 
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
@@ -49,17 +49,17 @@
             document.body.appendChild(renderer.domElement);
 
             scene.add(new THREE.AmbientLight(0xffffff, 1.0));
-            const sun = new THREE.DirectionalLight(0xffffff, 0.4);
+            const sun = new THREE.DirectionalLight(0xffffff, 0.5);
             sun.position.set(10, 20, 15);
             scene.add(sun);
 
             mainPivot = new THREE.Group();
             scene.add(mainPivot);
 
-            // Siyah Direk
+            // Siyah Direk (Biraz kalınlaştırıldı)
             const tower = new THREE.Mesh(
-                new THREE.CylinderGeometry(2.5, 2.5, 1000, 48),
-                new THREE.MeshPhongMaterial({ color: 0x111111 })
+                new THREE.CylinderGeometry(3.5, 3.5, 1000, 48),
+                new THREE.MeshPhongMaterial({ color: 0x222222 })
             );
             mainPivot.add(tower);
 
@@ -68,7 +68,7 @@
                 new THREE.SphereGeometry(1.2, 32, 32),
                 new THREE.MeshPhongMaterial({ color: 0xffffff })
             );
-            ball.position.set(0, ballY, 5.2); // Top tam halkanın üzerinde duracak
+            ball.position.set(0, ballY, 7.5); // Yarıçap büyüdüğü için topun Z pozisyonu dışarı çekildi
             scene.add(ball);
 
             createLevel();
@@ -84,23 +84,27 @@
                 const layerGroup = new THREE.Group();
                 layerGroup.position.y = START_Y - (i * LAYER_GAP);
                 
-                const isBlack = i > 5 && Math.random() < 0.2 && i < 58;
-                const color = isBlack ? 0x222222 : 0xeb4d4b;
+                const isBlack = i > 5 && Math.random() < 0.25 && i < 58;
+                const color = isBlack ? 0x222222 : 0xf1c40f; // Sarı renk (fotoğraftaki gibi)
                 
-                // Tam Daire İçin Dilimleme Mantığı
                 const segments = 40; 
-                const radius = 5.2;
+                const innerRadius = 3.5; // Direğe tam oturması için
+                const outerRadius = 8.5; // HALKA BÜYÜTÜLDÜ (Daha geniş görünüm)
                 const angleStep = (Math.PI * 2) / segments;
 
                 for(let j = 0; j < segments; j++) {
-                    // Kutucuk yerine 'CylinderGeometry' kullanarak dilim oluşturuyoruz.
-                    // thetaLength parametresi parçaların birbirine tam yapışmasını sağlar.
-                    const geometry = new THREE.CylinderGeometry(radius, radius, 1.2, 8, 1, false, j * angleStep, angleStep);
+                    // RingGeometry yerine tam birleşim sağlayan Shape tabanlı yapı
+                    const shape = new THREE.Shape();
+                    shape.absarc(0, 0, outerRadius, j * angleStep, (j + 1) * angleStep, false);
+                    shape.absarc(0, 0, innerRadius, (j + 1) * angleStep, j * angleStep, true);
+
+                    const extrudeSettings = { depth: 1.5, bevelEnabled: false };
+                    const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
                     const material = new THREE.MeshPhongMaterial({ color: color });
-                    const piece = new THREE.Mesh(geometry, material);
                     
-                    // İç içe geçmeyi ve boşlukları önlemek için ölçekleme
-                    piece.scale.set(0.9, 1, 0.9); 
+                    const piece = new THREE.Mesh(geometry, material);
+                    piece.rotation.x = Math.PI / 2;
+                    piece.position.y = 0.75;
                     
                     piece.userData = { fatal: isBlack };
                     layerGroup.add(piece);
@@ -119,14 +123,12 @@
 
         function animate() {
             requestAnimationFrame(animate);
-
             if(gameActive) mainPivot.rotation.y += ROT_SPEED; 
 
             for (let i = fragments.length - 1; i >= 0; i--) {
                 const f = fragments[i];
                 f.position.add(f.userData.vel);
                 f.userData.vel.y -= 0.015;
-                f.rotation.x += 0.2;
                 if(f.position.y < -50) { scene.remove(f); fragments.splice(i, 1); }
             }
 
@@ -140,14 +142,14 @@
                     ballY += ballVel;
 
                     const currentLayer = layers.find(l => 
-                        ballY <= l.position.y + 2.2 && 
+                        ballY <= l.position.y + 2.5 && 
                         ballY >= l.position.y + 0.5 && 
                         ballVel < 0
                     );
 
                     if (currentLayer) {
                         ballVel = JUMP_FORCE; 
-                        ballY = currentLayer.position.y + 2.2;
+                        ballY = currentLayer.position.y + 2.5;
                     }
                 }
 
@@ -155,12 +157,11 @@
                 camera.position.y = THREE.MathUtils.lerp(camera.position.y, ballY + 18, 0.03);
                 camera.lookAt(0, ballY - 10, 0);
             }
-
             renderer.render(scene, camera);
         }
 
         function checkCrush() {
-            const lIdx = layers.findIndex(l => Math.abs(ballY - l.position.y) < 1.8);
+            const lIdx = layers.findIndex(l => Math.abs(ballY - l.position.y) < 2.0);
             if (lIdx !== -1) {
                 const l = layers[lIdx];
                 if (l.children[0].userData.fatal) {
@@ -182,7 +183,7 @@
                 p.getWorldPosition(worldPos);
                 mainPivot.remove(p);
                 p.position.copy(worldPos);
-                p.userData.vel = new THREE.Vector3((Math.random()-0.5)*0.3, 0.15, (Math.random()-0.5)*0.3);
+                p.userData.vel = new THREE.Vector3((Math.random()-0.5)*0.5, 0.2, (Math.random()-0.5)*0.5);
                 scene.add(p);
                 fragments.push(p);
             }

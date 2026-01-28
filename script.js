@@ -1,104 +1,90 @@
 const tg = window.Telegram.WebApp;
 tg.expand();
 
-// Verileri Yükle
+// VERİLERİ YÜKLE
 let balance = parseFloat(localStorage.getItem('f_bal')) || 0;
 let lastClaim = parseInt(localStorage.getItem('f_last')) || Date.now();
-let isFarming = localStorage.getItem('f_active') === 'true';
-let friendsCount = parseInt(localStorage.getItem('f_refs')) || 0;
 let tasksStatus = JSON.parse(localStorage.getItem('f_tasks')) || { tg: 'none', ref1: 'none' };
 
 const HOURLY_RATE = 22;
-const CLAIM_MS = 3600000; // 1 Saat
+const CLAIM_MS = 3600000; // 1 Saat (60 Dakika)
 
-// Telegram Profil Bilgileri
-document.getElementById('user-name').innerText = tg.initDataUnsafe.user?.first_name || "Bilinmeyen Kullanıcı";
-document.getElementById('user-photo').src = tg.initDataUnsafe.user?.photo_url || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+// TELEGRAM BİLGİLERİ
+document.getElementById('user-name').innerText = tg.initDataUnsafe.user?.first_name || "Flashy User";
+if (tg.initDataUnsafe.user?.photo_url) {
+    document.getElementById('user-photo').src = tg.initDataUnsafe.user.photo_url;
+}
 
 function updateUI() {
     document.getElementById('total-balance').innerText = Math.floor(balance).toLocaleString();
     
-    // Görev Butonlarını Güncelle
-    updateTaskButton('tg', 'btn-task-tg');
-    updateTaskButton('ref1', 'btn-task-ref1');
+    // Görev butonlarını kontrol et
+    checkTaskStatus('tg', 'btn-task-tg');
+    checkTaskStatus('ref1', 'btn-task-ref1');
 }
 
-function updateTaskButton(taskId, btnId) {
+function checkTaskStatus(id, btnId) {
     const btn = document.getElementById(btnId);
-    if (tasksStatus[taskId] === 'ready') {
+    if (tasksStatus[id] === 'ready') {
         btn.innerText = "Talep Et";
         btn.className = "btn-claim";
-    } else if (tasksStatus[taskId] === 'claimed') {
-        btn.innerText = "Tamamlandı";
+    } else if (tasksStatus[id] === 'claimed') {
+        btn.innerText = "Bitti";
         btn.disabled = true;
         btn.style.opacity = "0.5";
     }
 }
 
-// FARMING SÜRECİ
+// FARM SÜRECİ
 setInterval(() => {
-    if (isFarming) {
-        let now = Date.now();
-        let elapsed = now - lastClaim;
+    let now = Date.now();
+    let elapsed = now - lastClaim;
+    
+    if (elapsed < CLAIM_MS) {
+        let earned = (elapsed / CLAIM_MS) * HOURLY_RATE;
+        document.getElementById('live-farm-val').innerText = earned.toFixed(5);
         
-        if (elapsed < CLAIM_MS) {
-            let earned = (elapsed / CLAIM_MS) * HOURLY_RATE;
-            document.getElementById('live-farm-val').innerText = earned.toFixed(5);
-            
-            let remaining = CLAIM_MS - elapsed;
-            let mins = Math.floor(remaining / 60000);
-            let secs = Math.floor((remaining % 60000) / 1000);
-            document.getElementById('timer').innerText = `${mins}m ${secs}s`;
-            
-            document.getElementById('farm-btn').disabled = true;
-            document.getElementById('farm-btn').innerText = "Farming...";
-        } else {
-            document.getElementById('live-farm-val').innerText = HOURLY_RATE.toFixed(5);
-            document.getElementById('timer').innerText = "Ready to Claim!";
-            document.getElementById('farm-btn').disabled = false;
-            document.getElementById('farm-btn').innerText = "Claim Flashy";
-            document.getElementById('farm-status').innerText = "● Ready";
-            document.getElementById('farm-status').style.color = "yellow";
-        }
+        let rem = CLAIM_MS - elapsed;
+        let m = Math.floor(rem / 60000);
+        let s = Math.floor((rem % 60000) / 1000);
+        document.getElementById('timer').innerText = `${m}m ${s}s`;
+        
+        document.getElementById('farm-btn').innerText = "Farming...";
+        document.getElementById('farm-btn').disabled = true;
+    } else {
+        document.getElementById('live-farm-val').innerText = HOURLY_RATE.toFixed(5);
+        document.getElementById('timer').innerText = "Ready!";
+        document.getElementById('farm-btn').innerText = "Claim Flashy";
+        document.getElementById('farm-btn').disabled = false;
     }
 }, 1000);
 
 function handleFarmClick() {
     let now = Date.now();
     if (now - lastClaim >= CLAIM_MS) {
-        // Claim Et
         balance += HOURLY_RATE;
         lastClaim = now;
         localStorage.setItem('f_bal', balance);
         localStorage.setItem('f_last', lastClaim);
         tg.HapticFeedback.notificationOccurred('success');
-    } else if (!isFarming) {
-        // Farmı Başlat
-        isFarming = true;
-        lastClaim = now;
-        localStorage.setItem('f_active', 'true');
-        localStorage.setItem('f_last', lastClaim);
+        updateUI();
     }
-    updateUI();
 }
 
-// GÖREVLER
 function doTask(type) {
     if (tasksStatus[type] === 'none') {
         if (type === 'tg') {
             tg.openTelegramLink("https://t.me/AirdropNoktasiDuyuru");
             tasksStatus.tg = 'ready';
-        } else if (type === 'ref1' && friendsCount >= 1) {
-            tasksStatus.ref1 = 'ready';
         } else {
-            tg.showAlert("Önce görevi tamamlamalısın!");
-            return;
+            tg.showAlert("Önce davet linkini paylaşmalısın!");
+            tasksStatus.ref1 = 'ready';
         }
     } else if (tasksStatus[type] === 'ready') {
         let reward = (type === 'tg') ? 100 : 50;
         balance += reward;
         tasksStatus[type] = 'claimed';
-        tg.showAlert(`${reward} Flashy Hesabına Eklendi!`);
+        tg.showAlert(reward + " Flashy eklendi!");
     }
     localStorage.setItem('f_tasks', JSON.stringify(tasksStatus));
     localStorage.setItem('f_bal', balance);
@@ -106,9 +92,8 @@ function doTask(type) {
 }
 
 function inviteFriend() {
-    const userId = tg.initDataUnsafe.user?.id || "0";
-    const link = `https://t.me/@miniapptestttt123_bot?start=${userId}`;
-    tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=Flashy Farm'da benimle birlikte kazan!`);
+    const link = `https://t.me/BOT_ADINIZ?start=${tg.initDataUnsafe.user?.id || 0}`;
+    tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=Flashy Farm'da birlikte kazanalım!`);
 }
 
 function switchPage(pageId, el) {

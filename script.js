@@ -8,7 +8,7 @@ let tasksStatus = JSON.parse(localStorage.getItem('f_tasks')) || { tg: 'none', r
 const HOURLY_RATE = 22;
 const CLAIM_MS = 3600000;
 
-// Kullanıcı Bilgileri
+// Kullanıcı Bilgilerini Güncelle
 const userNameElem = document.getElementById('user-name');
 if (userNameElem) userNameElem.innerText = tg.initDataUnsafe.user?.first_name || "Flashy User";
 
@@ -27,8 +27,7 @@ function updateUI() {
             if (tasksStatus[id] === 'ready') { 
                 btn.innerText = "Talep Et"; 
                 btn.className = "btn-claim"; 
-            }
-            if (tasksStatus[id] === 'claimed') { 
+            } else if (tasksStatus[id] === 'claimed') { 
                 btn.innerText = "Bitti"; 
                 btn.disabled = true; 
                 btn.style.opacity = "0.5"; 
@@ -85,32 +84,25 @@ function doTask(type) {
     } else if (tasksStatus[type] === 'ready') {
         balance += (type === 'tg' ? 100 : 50); 
         tasksStatus[type] = 'claimed';
-        tg.showAlert("Ödül eklendi!");
+        tg.showAlert("Ödül başarıyla eklendi!");
     }
     localStorage.setItem('f_tasks', JSON.stringify(tasksStatus)); 
     localStorage.setItem('f_bal', balance);
     updateUI();
 }
 
-// Eksik olan Davet fonksiyonu
 function inviteFriend() {
     const inviteLink = `https://t.me/BOT_ADINIZ?start=${tg.initDataUnsafe.user?.id || 0}`;
     tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(inviteLink)}&text=Flashy Farm'da birlikte kazanalım!`);
 }
 
 function switchPage(pageId, el) {
-    const pages = document.querySelectorAll('.page');
-    pages.forEach(p => p.classList.remove('active-page'));
-    
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
     const targetPage = document.getElementById('page-' + pageId);
-    if (targetPage) {
-        targetPage.classList.add('active-page');
-    }
+    if (targetPage) targetPage.classList.add('active-page');
 
-    const navItems = document.querySelectorAll('.nav-item');
-    navItems.forEach(n => n.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     if (el) el.classList.add('active');
 }
 
-// Başlat
 updateUI();

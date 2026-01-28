@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Stack Ball - Pink Edition</title>
+    <title>Stack Ball - Wide & Thin Rings</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #4834d4; touch-action: none; }
@@ -31,14 +31,17 @@
         let isDown = false, gameActive = false, score = 0;
         let clock = new THREE.Clock();
         
-        // --- AYARLAR ---
         const ROT_SPEED = 1.2;        
         const GRAVITY = -45.0;        
         const JUMP_FORCE = 18.0;      
         const CRUSH_SPEED = -35.0;    
         const RING_DEPTH = 2.4;
-        const LAYER_GAP = 0.5; // Katmanlar arasındaki dikey boşluk
+        const LAYER_GAP = 0.5; 
         const TOTAL_STEP = RING_DEPTH + LAYER_GAP;
+
+        // --- YENİ ÖLÇÜLER ---
+        const OUTER_RADIUS = 10.5; // Genişletildi (Eski: 8.5)
+        const INNER_RADIUS = 8.5;  // Et kalınlığı inceltildi (Eski: 5.0)
 
         function init() {
             scene = new THREE.Scene();
@@ -66,17 +69,16 @@
             );
             mainPivot.add(tower);
 
-            // --- PEMBE TOP ---
             ball = new THREE.Mesh(
                 new THREE.SphereGeometry(1.2, 24, 24),
-                new THREE.MeshPhongMaterial({ color: 0xff4757, shininess: 100 }) // Canlı pembe
+                new THREE.MeshPhongMaterial({ color: 0xff4757, shininess: 100 }) 
             );
-            ball.position.set(0, 30, 7.2); 
+            // Genişleyen halkaya göre topun X/Z pozisyonu (OUTER + INNER) / 2 civarına çekildi
+            ball.position.set(0, 30, (OUTER_RADIUS + INNER_RADIUS) / 2); 
             scene.add(ball);
 
             createLevel();
 
-            // Buton Fix (Hem tıklama hem dokunma)
             const btn = document.getElementById('start-btn');
             const startAction = (e) => {
                 e.preventDefault();
@@ -86,10 +88,8 @@
             btn.addEventListener('click', startAction);
             btn.addEventListener('touchstart', startAction);
 
-            // Kontroller
             const handleDown = (e) => { if(gameActive) isDown = true; };
             const handleUp = () => isDown = false;
-            
             window.addEventListener('mousedown', handleDown);
             window.addEventListener('mouseup', handleUp);
             window.addEventListener('touchstart', (e) => { if(gameActive) handleDown(); }, {passive: false});
@@ -112,9 +112,8 @@
 
                 for(let j = 0; j < segments; j++) {
                     const shape = new THREE.Shape();
-                    // Boşluksuz bütün daire (0.01 minimal teknik boşluk, görselde birleşik durur)
-                    shape.absarc(0, 0, 8.5, j * angleStep, (j + 1) * angleStep, false);
-                    shape.absarc(0, 0, 5.0, (j + 1) * angleStep, j * angleStep, true);
+                    shape.absarc(0, 0, OUTER_RADIUS, j * angleStep, (j + 1) * angleStep, false);
+                    shape.absarc(0, 0, INNER_RADIUS, (j + 1) * angleStep, j * angleStep, true);
 
                     const geometry = new THREE.ExtrudeGeometry(shape, { depth: RING_DEPTH, bevelEnabled: false });
                     const material = new THREE.MeshPhongMaterial({ color: color });
@@ -150,7 +149,6 @@
 
             mainPivot.rotation.y += ROT_SPEED * dt; 
 
-            // Patlama Efekti
             for (let i = fragments.length - 1; i >= 0; i--) {
                 const f = fragments[i];
                 f.position.add(f.userData.vel.clone().multiplyScalar(dt * 60));

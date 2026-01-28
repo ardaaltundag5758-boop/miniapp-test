@@ -1,105 +1,121 @@
 const tg = window.Telegram.WebApp;
 tg.expand();
 
-let score = parseInt(localStorage.getItem('flashy_balance')) || 0;
-let friends = JSON.parse(localStorage.getItem('flashy_friends')) || [];
-let botUsername = "SeninBotAdin"; 
+// Verileri Yükle
+let balance = parseFloat(localStorage.getItem('f_bal')) || 0;
+let lastClaim = parseInt(localStorage.getItem('f_last')) || Date.now();
+let isFarming = localStorage.getItem('f_active') === 'true';
+let friendsCount = parseInt(localStorage.getItem('f_refs')) || 0;
+let tasksStatus = JSON.parse(localStorage.getItem('f_tasks')) || { tg: 'none', ref1: 'none' };
 
-function showToast(message) {
-    const toast = document.getElementById('custom-toast');
-    document.getElementById('toast-msg').innerText = message;
-    toast.style.top = "20px";
-    setTimeout(() => { toast.style.top = "-100px"; }, 3000);
-}
+const HOURLY_RATE = 22;
+const CLAIM_MS = 3600000; // 1 Saat
+
+// Telegram Profil Bilgileri
+document.getElementById('user-name').innerText = tg.initDataUnsafe.user?.first_name || "Bilinmeyen Kullanıcı";
+document.getElementById('user-photo').src = tg.initDataUnsafe.user?.photo_url || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
 
 function updateUI() {
-    document.getElementById('score').innerText = score.toLocaleString();
-    document.getElementById('wallet-balance').innerText = score.toLocaleString();
-    document.getElementById('friend-count').innerText = friends.length;
+    document.getElementById('total-balance').innerText = Math.floor(balance).toLocaleString();
     
-    // Davet Listesi Güncelleme
-    const list = document.getElementById('friend-list-container');
-    if(friends.length > 0) {
-        list.innerHTML = friends.map(f => `<div class="friend-item"><span>${f.name}</span><span style="color:gold">+500 F</span></div>`).join('');
-    }
-
-    // Görev Durumları
-    document.getElementById('ref-count-1').innerText = `(${friends.length}/1)`;
-    document.getElementById('ref-count-5').innerText = `(${friends.length}/5)`;
+    // Görev Butonlarını Güncelle
+    updateTaskButton('tg', 'btn-task-tg');
+    updateTaskButton('ref1', 'btn-task-ref1');
 }
 
-// DAVET MANTĞI (Simülasyon: İlk kez giren biri ref ile gelirse listeye eklenir)
-function checkReferral() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const refId = urlParams.get('start');
-    if (refId && !localStorage.getItem('i_was_referred')) {
-        // Gerçekte bu bilgi backend'e gider, şimdilik test için kendimizi listeye ekliyoruz
-        localStorage.setItem('i_was_referred', 'true');
-        // Bu bölümü gerçek bir kullanıcı geldiğinde tetiklenecek şekilde düşün
+function updateTaskButton(taskId, btnId) {
+    const btn = document.getElementById(btnId);
+    if (tasksStatus[taskId] === 'ready') {
+        btn.innerText = "Talep Et";
+        btn.className = "btn-claim";
+    } else if (tasksStatus[taskId] === 'claimed') {
+        btn.innerText = "Tamamlandı";
+        btn.disabled = true;
+        btn.style.opacity = "0.5";
     }
 }
 
-function shareTelegram() {
-    const userId = tg.initDataUnsafe.user?.id || "user";
-    const link = `https://t.me/${botUsername}?start=${userId}`;
-    tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=Flashy kazanmaya başla! ⚡`);
-}
-
-function doTask(url, reward) {
-    tg.openLink(url);
-    setTimeout(() => {
-        score += reward;
-        localStorage.setItem('flash_balance', score);
-        updateUI();
-        showToast(`${reward} FLASHY Eklendi!`);
-    }, 4000);
-}
-
-// --- OYUN (FLASHY JUMP) ---
-const canvas = document.getElementById('game-canvas');
-const ctx = canvas.getContext('2d');
-let gameActive = false;
-let bird = { x: 50, y: 150, v: 0 };
-let gravity = 0.4;
-let pipes = [];
-
-function startGame() {
-    document.getElementById('start-btn').style.display = 'none';
-    document.getElementById('game-container').style.display = 'block';
-    gameActive = true;
-    bird.y = 150; bird.v = 0; pipes = [];
-    requestAnimationFrame(gameLoop);
-}
-
-canvas.onclick = () => { bird.v = -6; tg.HapticFeedback.impactOccurred('light'); };
-
-function gameLoop() {
-    if(!gameActive) return;
-    ctx.clearRect(0,0, canvas.width, canvas.height);
-    
-    bird.v += gravity;
-    bird.y += bird.v;
-    
-    // Flashy Görselini Çiz
-    const img = new Image();
-    img.src = "https://cdn.discordapp.com/attachments/539009365391441921/1465903677524017421/5769619140443311194_99.jpg?ex=697accaf&is=69797b2f&hm=bd5109b04f86f6ded0f30cd3a19944d060f22a65084d2caa821df5b8995dd604&";
-    ctx.drawImage(img, bird.x, bird.y, 30, 30);
-
-    if(bird.y > canvas.height || bird.y < 0) {
-        gameActive = false;
-        alert("Oyun Bitti!");
-        document.getElementById('start-btn').style.display = 'block';
-        document.getElementById('game-container').style.display = 'none';
+// FARMING SÜRECİ
+setInterval(() => {
+    if (isFarming) {
+        let now = Date.now();
+        let elapsed = now - lastClaim;
+        
+        if (elapsed < CLAIM_MS) {
+            let earned = (elapsed / CLAIM_MS) * HOURLY_RATE;
+            document.getElementById('live-farm-val').innerText = earned.toFixed(5);
+            
+            let remaining = CLAIM_MS - elapsed;
+            let mins = Math.floor(remaining / 60000);
+            let secs = Math.floor((remaining % 60000) / 1000);
+            document.getElementById('timer').innerText = `${mins}m ${secs}s`;
+            
+            document.getElementById('farm-btn').disabled = true;
+            document.getElementById('farm-btn').innerText = "Farming...";
+        } else {
+            document.getElementById('live-farm-val').innerText = HOURLY_RATE.toFixed(5);
+            document.getElementById('timer').innerText = "Ready to Claim!";
+            document.getElementById('farm-btn').disabled = false;
+            document.getElementById('farm-btn').innerText = "Claim Flashy";
+            document.getElementById('farm-status').innerText = "● Ready";
+            document.getElementById('farm-status').style.color = "yellow";
+        }
     }
-    requestAnimationFrame(gameLoop);
+}, 1000);
+
+function handleFarmClick() {
+    let now = Date.now();
+    if (now - lastClaim >= CLAIM_MS) {
+        // Claim Et
+        balance += HOURLY_RATE;
+        lastClaim = now;
+        localStorage.setItem('f_bal', balance);
+        localStorage.setItem('f_last', lastClaim);
+        tg.HapticFeedback.notificationOccurred('success');
+    } else if (!isFarming) {
+        // Farmı Başlat
+        isFarming = true;
+        lastClaim = now;
+        localStorage.setItem('f_active', 'true');
+        localStorage.setItem('f_last', lastClaim);
+    }
+    updateUI();
 }
 
-function showPage(pageId, element) {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.getElementById(pageId).classList.add('active');
-    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active-nav'));
-    element.classList.add('active-nav');
+// GÖREVLER
+function doTask(type) {
+    if (tasksStatus[type] === 'none') {
+        if (type === 'tg') {
+            tg.openTelegramLink("https://t.me/AirdropNoktasiDuyuru");
+            tasksStatus.tg = 'ready';
+        } else if (type === 'ref1' && friendsCount >= 1) {
+            tasksStatus.ref1 = 'ready';
+        } else {
+            tg.showAlert("Önce görevi tamamlamalısın!");
+            return;
+        }
+    } else if (tasksStatus[type] === 'ready') {
+        let reward = (type === 'tg') ? 100 : 50;
+        balance += reward;
+        tasksStatus[type] = 'claimed';
+        tg.showAlert(`${reward} Flashy Hesabına Eklendi!`);
+    }
+    localStorage.setItem('f_tasks', JSON.stringify(tasksStatus));
+    localStorage.setItem('f_bal', balance);
+    updateUI();
+}
+
+function inviteFriend() {
+    const userId = tg.initDataUnsafe.user?.id || "0";
+    const link = `https://t.me/BOT_ADINIZ?start=${userId}`;
+    tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=Flashy Farm'da benimle birlikte kazan!`);
+}
+
+function switchPage(pageId, el) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
+    document.getElementById('page-' + pageId).classList.add('active-page');
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    el.classList.add('active');
 }
 
 updateUI();
-checkReferral();

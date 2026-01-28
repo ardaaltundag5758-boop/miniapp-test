@@ -6,147 +6,155 @@ tg.expand();
 let balance = parseFloat(localStorage.getItem('f_bal')) || 0;
 let lastClaim = parseInt(localStorage.getItem('f_last')) || 0;
 let isMining = localStorage.getItem('f_mining') === 'true';
-let tasksStatus = JSON.parse(localStorage.getItem('f_tasks')) || { tg: 'none', x: 'none', ref1: 'none', ref5: 'none' };
+let tasksStatus = JSON.parse(localStorage.getItem('f_tasks')) || { tg: 'none', x: 'none', ref1: 'none' };
 let invitedFriends = JSON.parse(localStorage.getItem('f_friends_list')) || [];
 
 const HOURLY_RATE = 22;
-const CLAIM_MS = 24 * 3600000; // 24 Saat
+const CLAIM_MS = 24 * 3600000;
 
-// Kullanıcı Kurulumu
-document.getElementById('user-name').innerText = tg.initDataUnsafe.user?.first_name || "Flashy Kullanıcı";
+// BAŞLANGIÇ AYARLARI
+document.getElementById('user-name').innerText = tg.initDataUnsafe.user?.first_name || "Flashy User";
 if (tg.initDataUnsafe.user?.photo_url) document.getElementById('user-photo').src = tg.initDataUnsafe.user.photo_url;
 document.getElementById('invite-link-text').innerText = `https://t.me/${BOT_ID}?start=${tg.initDataUnsafe.user?.id || 0}`;
 
 function updateUI() {
-    const formattedBal = Math.floor(balance).toLocaleString();
-    document.getElementById('top-balance-val').innerText = formattedBal;
-    document.getElementById('wallet-balance').innerText = formattedBal;
-
-    // Görev Butonları
+    const val = Math.floor(balance).toLocaleString();
+    document.getElementById('top-balance-val').innerText = val;
+    document.getElementById('wallet-balance').innerText = val;
+    
     Object.keys(tasksStatus).forEach(id => {
         const btn = document.getElementById('btn-task-' + id);
         if (btn) {
-            if (tasksStatus[id] === 'ready') { 
-                btn.innerText = "Talep Et"; btn.className = "btn-claim"; 
-            } else if (tasksStatus[id] === 'claimed') { 
-                btn.innerText = "Bitti"; btn.disabled = true; btn.style.opacity = "0.5"; 
-            }
+            if (tasksStatus[id] === 'ready') { btn.innerText = "Talep Et"; btn.className = "btn-claim"; }
+            else if (tasksStatus[id] === 'claimed') { btn.innerText = "Bitti"; btn.disabled = true; btn.style.opacity = "0.5"; }
         }
     });
-
-    // Arkadaş Listesi
-    const list = document.getElementById('friends-list');
-    if (invitedFriends.length > 0) {
-        list.innerHTML = invitedFriends.map(f => `
-            <div class="friend-item">
-                <span>👤 ${f.name}</span>
-                <span style="color:var(--accent)">+30 FLASHY</span>
-            </div>
-        `).join('');
-    }
 }
 
-// 24 Saatlik Sayaç ve Farm Yönetimi
+// FARM SİSTEMİ
 setInterval(() => {
     if (!isMining) return;
-
-    let now = Date.now();
-    let elapsed = now - lastClaim;
-    const liveValElem = document.getElementById('live-farm-val');
-    const timerElem = document.getElementById('timer');
-    const farmBtn = document.getElementById('farm-btn');
+    let elapsed = Date.now() - lastClaim;
     const progress = document.getElementById('farm-progress');
-
+    
     if (elapsed < CLAIM_MS) {
-        // Canlı Bakiye
-        let currentMining = (elapsed / 3600000) * HOURLY_RATE;
-        liveValElem.innerText = currentMining.toFixed(5);
-        
-        // Geri Sayım
+        document.getElementById('live-farm-val').innerText = ((elapsed / 3600000) * HOURLY_RATE).toFixed(5);
         let rem = CLAIM_MS - elapsed;
-        let h = Math.floor(rem / 3600000);
-        let m = Math.floor((rem % 3600000) / 60000);
-        timerElem.innerText = `Kalan Süre: ${h}s ${m}d`;
-        
-        // Progress Bar
+        document.getElementById('timer').innerText = `Kalan: ${Math.floor(rem/3600000)}s ${Math.floor((rem%3600000)/60000)}d`;
         progress.style.width = (elapsed / CLAIM_MS * 100) + "%";
-
-        farmBtn.innerText = "Kazım Yapılıyor...";
-        farmBtn.disabled = true;
+        document.getElementById('farm-btn').innerText = "Farming...";
+        document.getElementById('farm-btn').disabled = true;
     } else {
         isMining = false;
-        localStorage.setItem('f_mining', 'false');
-        liveValElem.innerText = (24 * HOURLY_RATE).toFixed(5);
-        timerElem.innerText = "Hasat Zamanı!";
-        farmBtn.innerText = "Bakiyeyi Topla";
-        farmBtn.disabled = false;
-        progress.style.width = "100%";
+        document.getElementById('farm-btn').innerText = "Bakiyeyi Topla";
+        document.getElementById('farm-btn').disabled = false;
     }
 }, 1000);
 
 function handleFarmClick() {
-    let now = Date.now();
-    if (!isMining && (now - lastClaim >= CLAIM_MS || lastClaim === 0)) {
-        // Yeni Farm Başlat
-        lastClaim = now;
-        isMining = true;
-        localStorage.setItem('f_last', lastClaim);
-        localStorage.setItem('f_mining', 'true');
-        tg.HapticFeedback.impactOccurred('medium');
-    } else if (!isMining && now - lastClaim >= CLAIM_MS) {
-        // Süre bitti, topla
-        balance += (HOURLY_RATE * 24);
-        lastClaim = 0; // Reset
-        isMining = false;
-        localStorage.setItem('f_bal', balance);
-        localStorage.setItem('f_last', 0);
-        localStorage.setItem('f_mining', 'false');
+    if (!isMining && lastClaim === 0) {
+        lastClaim = Date.now(); isMining = true;
+        localStorage.setItem('f_last', lastClaim); localStorage.setItem('f_mining', 'true');
+    } else if (!isMining && Date.now() - lastClaim >= CLAIM_MS) {
+        balance += (HOURLY_RATE * 24); lastClaim = 0;
+        localStorage.setItem('f_bal', balance); localStorage.setItem('f_last', 0);
         updateUI();
     }
+}
+
+// STACK BALL OYUN MOTORU (2D Canvas Versiyon)
+const canvas = document.getElementById('game-canvas');
+const ctx = canvas.getContext('2d');
+let gameActive = false, score = 0, ballY = 100, ballV = 0, isPressing = false;
+let stacks = [];
+
+function initGame() {
+    canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight;
+    stacks = [];
+    for(let i=0; i<15; i++) {
+        stacks.push({ y: 300 + (i * 50), type: Math.random() > 0.2 ? 'normal' : 'enemy' });
+    }
+    gameActive = true; animate();
+}
+
+function animate() {
+    if(!gameActive) return;
+    ctx.clearRect(0,0,canvas.width, canvas.height);
+    
+    // Top fiziği
+    if (isPressing) ballV = 8; else ballV += 0.4;
+    ballY += ballV;
+
+    // Katman çizimi
+    stacks.forEach((s, index) => {
+        ctx.fillStyle = s.type === 'enemy' ? '#ff4444' : varColor('--blue');
+        ctx.fillRect(canvas.width/2 - 60, s.y - ballY + 300, 120, 20);
+        
+        // Çarpışma
+        if (ballY > s.y && ballY < s.y + 20) {
+            if (s.type === 'enemy' && !isPressing) {
+                gameOver();
+            } else {
+                stacks.splice(index, 1);
+                stacks.push({ y: stacks[stacks.length-1].y + 50, type: Math.random() > 0.2 ? 'normal' : 'enemy' });
+                score++;
+                document.getElementById('game-score').innerText = score;
+                if (score % 50 === 0) addReward(5); // Her 50 skorda 5 FLASHY
+            }
+        }
+    });
+
+    // Top çizimi
+    ctx.beginPath();
+    ctx.arc(canvas.width/2, 300, 10, 0, Math.PI*2);
+    ctx.fillStyle = 'white'; ctx.fill();
+
+    if (ballY > 5000) ballY = 300; // Sonsuz döngü
+    requestAnimationFrame(animate);
+}
+
+function gameOver() {
+    gameActive = false;
+    tg.showAlert(`Oyun Bitti! Skor: ${score}`);
+    score = 0; ballY = 100; ballV = 0;
+    setTimeout(initGame, 1000);
+}
+
+function addReward(amt) {
+    balance += amt;
+    localStorage.setItem('f_bal', balance);
+    updateUI();
+}
+
+function varColor(name) { return getComputedStyle(document.documentElement).getPropertyValue(name); }
+
+canvas.addEventListener('mousedown', () => isPressing = true);
+canvas.addEventListener('mouseup', () => isPressing = false);
+canvas.addEventListener('touchstart', (e) => { e.preventDefault(); isPressing = true; });
+canvas.addEventListener('touchend', () => isPressing = false);
+
+// SAYFA GEÇİŞLERİ
+function switchPage(pageId, el) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
+    document.getElementById('page-' + pageId).classList.add('active-page');
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    el.classList.add('active');
+    if (pageId === 'game') initGame(); else gameActive = false;
 }
 
 function doTask(type) {
     if (tasksStatus[type] === 'none') {
         if (type === 'tg') tg.openTelegramLink("https://t.me/AirdropNoktasiDuyuru");
         if (type === 'x') tg.openLink("https://x.com/ADNFlashy");
-        
         tasksStatus[type] = 'ready';
     } else if (tasksStatus[type] === 'ready') {
-        let reward = { tg: 100, x: 100, ref1: 50, ref5: 300 }[type];
-        balance += reward;
-        tasksStatus[type] = 'claimed';
-        tg.showAlert(`${reward} FLASHY hesabına eklendi!`);
+        let r = { tg: 100, x: 100, ref1: 50 }[type];
+        balance += r; tasksStatus[type] = 'claimed';
+        tg.showAlert(`Tebrikler! ${r} FLASHY eklendi.`);
     }
     localStorage.setItem('f_tasks', JSON.stringify(tasksStatus));
     localStorage.setItem('f_bal', balance);
     updateUI();
-}
-
-function inviteFriend() {
-    const link = `https://t.me/${BOT_ID}?start=${tg.initDataUnsafe.user?.id || 0}`;
-    tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=Flashy'de benimle kazmaya başla!`);
-    
-    // Test amaçlı arkadaş ekleme simülasyonu
-    invitedFriends.push({ name: "Yeni Dost", id: Date.now() });
-    balance += 30;
-    localStorage.setItem('f_friends_list', JSON.stringify(invitedFriends));
-    localStorage.setItem('f_bal', balance);
-    updateUI();
-}
-
-function copyLink() {
-    const link = document.getElementById('invite-link-text').innerText;
-    navigator.clipboard.writeText(link);
-    tg.showAlert("Link kopyalandı!");
-}
-
-function switchPage(pageId, el) {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
-    const target = document.getElementById('page-' + pageId);
-    if (target) target.classList.add('active-page');
-
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    if (el) el.classList.add('active');
 }
 
 updateUI();

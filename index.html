@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Stack Ball Telegram Edition</title>
+    <title>Stack Ball - Pink Edition</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #4834d4; touch-action: none; }
@@ -11,11 +11,11 @@
             position: absolute; inset: 0; display: flex; flex-direction: column; 
             align-items: center; justify-content: space-between; z-index: 100; pointer-events: none; 
         }
-        #score { margin-top: 50px; font-size: 50px; font-family: sans-serif; font-weight: 900; color: white; }
+        #score { margin-top: 50px; font-size: 50px; font-family: sans-serif; font-weight: 900; color: white; text-shadow: 0 4px 10px rgba(0,0,0,0.3); }
         #start-btn { 
-            margin-bottom: 100px; padding: 20px 60px; font-size: 24px; background: white; 
+            margin-bottom: 120px; padding: 20px 70px; font-size: 26px; background: #fff; 
             border: none; border-radius: 50px; font-weight: bold; pointer-events: auto;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.3); cursor: pointer;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4); cursor: pointer;
             -webkit-tap-highlight-color: transparent;
         }
     </style>
@@ -31,13 +31,13 @@
         let isDown = false, gameActive = false, score = 0;
         let clock = new THREE.Clock();
         
-        // --- MOBİL / TELEGRAM AYARLARI ---
-        const ROT_SPEED = 1.1;        
+        // --- AYARLAR ---
+        const ROT_SPEED = 1.2;        
         const GRAVITY = -45.0;        
         const JUMP_FORCE = 18.0;      
         const CRUSH_SPEED = -35.0;    
-        const RING_DEPTH = 2.2;
-        const LAYER_GAP = 0.5; // Görseldeki gibi daha belirgin boşluklar
+        const RING_DEPTH = 2.4;
+        const LAYER_GAP = 0.5; // Katmanlar arasındaki dikey boşluk
         const TOTAL_STEP = RING_DEPTH + LAYER_GAP;
 
         function init() {
@@ -66,21 +66,25 @@
             );
             mainPivot.add(tower);
 
+            // --- PEMBE TOP ---
             ball = new THREE.Mesh(
                 new THREE.SphereGeometry(1.2, 24, 24),
-                new THREE.MeshPhongMaterial({ color: 0xffffff })
+                new THREE.MeshPhongMaterial({ color: 0xff4757, shininess: 100 }) // Canlı pembe
             );
             ball.position.set(0, 30, 7.2); 
             scene.add(ball);
 
             createLevel();
 
-            // Buton için güvenli tıklama
+            // Buton Fix (Hem tıklama hem dokunma)
             const btn = document.getElementById('start-btn');
-            btn.addEventListener('click', (e) => {
+            const startAction = (e) => {
+                e.preventDefault();
                 e.stopPropagation();
-                startGame();
-            });
+                if(!gameActive) startGame();
+            };
+            btn.addEventListener('click', startAction);
+            btn.addEventListener('touchstart', startAction);
 
             // Kontroller
             const handleDown = (e) => { if(gameActive) isDown = true; };
@@ -88,7 +92,7 @@
             
             window.addEventListener('mousedown', handleDown);
             window.addEventListener('mouseup', handleUp);
-            window.addEventListener('touchstart', (e) => { handleDown(); }, {passive: false});
+            window.addEventListener('touchstart', (e) => { if(gameActive) handleDown(); }, {passive: false});
             window.addEventListener('touchend', handleUp);
             
             window.addEventListener('resize', onWindowResize, false);
@@ -103,14 +107,14 @@
                 const isBlack = i > 5 && Math.random() < 0.25 && i < 95;
                 const color = isBlack ? 0x222222 : (i % 2 === 0 ? 0xffbe76 : 0xf0932b);
                 
-                const segments = 8; // Görseldeki gibi ayrık ve büyük parçalar
+                const segments = 10; 
                 const angleStep = (Math.PI * 2) / segments;
 
                 for(let j = 0; j < segments; j++) {
                     const shape = new THREE.Shape();
-                    // 0.2 payı görseldeki gibi blokların birleşmemesini sağlar
-                    shape.absarc(0, 0, 8.5, j * angleStep + 0.2, (j + 1) * angleStep - 0.2, false);
-                    shape.absarc(0, 0, 5.0, (j + 1) * angleStep - 0.2, j * angleStep + 0.2, true);
+                    // Boşluksuz bütün daire (0.01 minimal teknik boşluk, görselde birleşik durur)
+                    shape.absarc(0, 0, 8.5, j * angleStep, (j + 1) * angleStep, false);
+                    shape.absarc(0, 0, 5.0, (j + 1) * angleStep, j * angleStep, true);
 
                     const geometry = new THREE.ExtrudeGeometry(shape, { depth: RING_DEPTH, bevelEnabled: false });
                     const material = new THREE.MeshPhongMaterial({ color: color });
@@ -199,7 +203,7 @@
                 mainPivot.remove(p);
                 p.position.copy(worldPos);
                 const angle = p.userData.angle + currentRotation;
-                const force = 1.2 + Math.random();
+                const force = 1.3 + Math.random();
                 p.userData.vel = new THREE.Vector3(Math.cos(angle) * force, 0.8, -Math.sin(angle) * force);
                 p.userData.rotVel = (Math.random() - 0.5) * 0.3;
                 scene.add(p);

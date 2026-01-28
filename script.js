@@ -1,206 +1,310 @@
 /**
- * 3D STACK BALL ENGINE - VIDEO BIREBIR GAME FIX
+ * 3D STACK BALL ENGINE - HELIX VERSIYONU (MEVCUT OYUN SİLİNDİ, YENİ HELIX YAPISI)
  */
-
 const tg = window.Telegram.WebApp;
 tg.expand();
-
+// GLOBAL STATE (Cüzdan, Görevler ve Dostlar alanına dokunulmadı)
 let state = {
     bal: parseInt(localStorage.getItem('f_bal')) || 0,
     lvl: 1,
     score: 0,
     friends: JSON.parse(localStorage.getItem('f_friends')) || [],
-    tasks: JSON.parse(localStorage.getItem('f_done_tasks')) || []
+    tasks: JSON.parse(localStorage.getItem('f_done_tasks')) || [],
+    lastTime: performance.now()
 };
-
-let scene, camera, renderer, ball, pole;
-let layers = [], fragments = [];
-
-let isDown = false;
-let gameActive = false;
-let sectionActive = true;
-
-// fizik (videoya yakin)
-let velocity = 0;
-const gravity = 0.015;
-const bounceForce = 0.35;
-const crushForce = 0.9;
-const gap = 2.4;
-const startY = 10;
-
+const BOT_NAME = "FlashyGameBot";
+const REF_LINK = `https://t.me/${BOT_NAME}?start=${tg.initDataUnsafe.user?.id || '123'}`;
+// 3D OYUN DEĞİŞKENLERİ (YENİ HELIX İÇİN)
+let scene, camera, renderer, ball, layers = [], fragments = [];
+let isDown = false, gameActive = false, sectionActive = true;
+// Fizik Ayarları (Helix için optimize)
+let ballVel = 0;
+const gravity = 0.008;
+const crushSpeed = 0.3;
+const layerGap = 3;
+const startY = 15;
+const radius = 4; // Helix yarıçapı
+const segments = 8; // Platform segment sayısı
+// Renk Paletleri (Arka plan ve platform renkleri)
 const palettes = [
-    ['#ff9a9e', '#fad0c4'],
-    ['#a18cd1', '#fbc2eb'],
-    ['#84fab0', '#8fd3f4'],
-    ['#fccb90', '#d57eeb']
+    { bg: ['#ff9a9e', '#fecfef'], plate: 0x4facfe, black: 0x222222 },
+    { bg: ['#84fab0', '#8fd3f4'], plate: 0xfa709a, black: 0x222222 },
+    { bg: ['#a1c4fd', '#c2e9fb'], plate: 0xf6d365, black: 0x222222 },
+    { bg: ['#f093fb', '#f5576c'], plate: 0x5eeff5, black: 0x222222 }
 ];
-
 window.onload = () => {
+    initUser();
+    updateUI();
     init3D();
+    renderTasks();
+    renderFriends();
 };
-
-function init3D() {
-    const cont = document.getElementById('canvas-container');
-
-    scene = new THREE.Scene();
-
-    camera = new THREE.PerspectiveCamera(
-        45,
-        cont.clientWidth / cont.clientHeight,
-        0.1,
-        1000
-    );
-    camera.position.set(0, 14, 18);
-    camera.lookAt(0, 4, 0);
-
-    renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-    renderer.setSize(cont.clientWidth, cont.clientHeight);
-    cont.appendChild(renderer.domElement);
-
-    scene.add(new THREE.AmbientLight(0xffffff, 0.9));
-    const dir = new THREE.DirectionalLight(0xffffff, 0.6);
-    dir.position.set(5, 10, 5);
-    scene.add(dir);
-
-    pole = new THREE.Mesh(
-        new THREE.CylinderGeometry(1.7, 1.7, 200, 32),
-        new THREE.MeshPhongMaterial({ color: 0xffffff })
-    );
-    scene.add(pole);
-
-    ball = new THREE.Mesh(
-        new THREE.SphereGeometry(0.6, 32, 32),
-        new THREE.MeshPhongMaterial({ color: 0xffffff })
-    );
-    scene.add(ball);
-
-    buildLevel();
-    animate();
-}
-
-function buildLevel() {
-    layers.forEach(l => scene.remove(l));
-    layers = [];
-
-    const bg = palettes[(state.lvl - 1) % palettes.length];
-    document.getElementById('page-game').style.background =
-        `linear-gradient(to bottom, ${bg[0]}, ${bg[1]})`;
-
-    ball.position.set(0, startY, 2.8);
-    velocity = 0;
-
-    const total = 28 + state.lvl * 2;
-
-    for (let i = 0; i < total; i++) {
-        const fatal = i > 4 && Math.random() < 0.22 && i < total - 2;
-        const block = new THREE.Mesh(
-            new THREE.BoxGeometry(7, 0.6, 7),
-            new THREE.MeshPhongMaterial({
-                color: fatal ? 0x000000 : new THREE.Color(bg[1])
-            })
-        );
-        block.position.y = startY - i * gap;
-        block.userData.fatal = fatal;
-        scene.add(block);
-        layers.push(block);
+function initUser() {
+    const user = tg.initDataUnsafe.user;
+    if (user) {
+        document.getElementById('u-name').innerText = user.first_name;
+        if (user.photo_url) document.getElementById('u-pic').src = user.photo_url;
     }
 }
-
+function updateUI() {
+    const b = state.bal.toLocaleString();
+    document.getElementById('global-bal').innerText = b;
+    document.getElementById('wallet-bal').innerText = b;
+    document.getElementById('cur-lvl').innerText = state.lvl;
+}
+// ---------------- YENİ HELIX OYUNU (MEVCUT SİLİNDİ) ----------------
+function init3D() {
+    const container = document.getElementById('canvas-container');
+    scene = new THREE.Scene();
+    // Kamera: Helix için dinamik takip
+    camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 1000);
+    camera.position.set(0, 5, 15);
+    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    container.appendChild(renderer.domElement);
+    // Işıklar
+    const ambient = new THREE.AmbientLight(0xffffff, 0.6);
+    const direct = new THREE.DirectionalLight(0xffffff, 0.8);
+    direct.position.set(10, 10, 5);
+    scene.add(ambient, direct);
+    createLevel();
+    animate();
+}
+function createLevel() {
+    // Temizle
+    layers.forEach(l => scene.remove(l));
+    layers = [];
+    const p = palettes[(state.lvl - 1) % palettes.length];
+    document.getElementById('page-game').style.background = `linear-gradient(to bottom, ${p.bg[0]}, ${p.bg[1]})`;
+    // Top (beyaz küre)
+    if (!ball) {
+        ball = new THREE.Mesh(
+            new THREE.SphereGeometry(0.5, 32, 32),
+            new THREE.MeshPhongMaterial({ color: 0xffffff })
+        );
+        scene.add(ball);
+    }
+    ball.position.set(0, startY, 0);
+    ballVel = 0;
+    // Helix Platformlar (Dönen, segmentli, gap'li)
+    const count = 25 + (state.lvl * 3); // Level'e göre artan katman
+    for (let i = 0; i < count; i++) {
+        const layerGroup = new THREE.Group();
+        const isBlack = i > 3 && Math.random() < 0.15 && i < count - 3; // Rastgele siyah (fatal)
+        const color = isBlack ? p.black : p.plate;
+        const heightOffset = startY - (i * layerGap);
+        // Segmentler (8 adet, her 2. eksik için gap simüle et)
+        for (let j = 0; j < segments; j++) {
+            if (j % 2 === 0) { // Gap: Tek sayıları atla (dönme için boşluk)
+                const segmentGeometry = new THREE.CylinderGeometry(0.4, 0.4, 0.8, 8);
+                const segmentMaterial = new THREE.MeshPhongMaterial({ color });
+                const segment = new THREE.Mesh(segmentGeometry, segmentMaterial);
+                // Helix pozisyon: Dairesel yerleştir
+                const angle = (j / segments) * Math.PI * 2;
+                segment.position.x = Math.cos(angle) * radius;
+                segment.position.z = Math.sin(angle) * radius;
+                segment.position.y = heightOffset;
+                // Helix twist: Her katman biraz döndür
+                segment.rotation.y = angle + (i * 0.2); // Dönme offset
+                layerGroup.add(segment);
+            }
+        }
+        layerGroup.userData = { fatal: isBlack, index: i, y: heightOffset };
+        scene.add(layerGroup);
+        layers.push(layerGroup);
+    }
+}
 function animate() {
     requestAnimationFrame(animate);
     if (!sectionActive) return;
-
-    // parçalar
-    fragments.forEach((f, i) => {
+    // Fragment animasyonları (kırık parçalar düşsün)
+    for (let i = fragments.length - 1; i >= 0; i--) {
+        const f = fragments[i];
         f.position.add(f.userData.vel);
-        f.userData.vel.y -= 0.05;
-        f.rotation.x += 0.1;
-        f.rotation.z += 0.1;
+        f.userData.vel.y -= 0.015;
+        f.rotation.x += 0.05;
+        f.rotation.z += 0.05;
         if (f.position.y < -30) {
             scene.remove(f);
             fragments.splice(i, 1);
         }
-    });
-
-    if (gameActive) {
-        if (isDown) {
-            velocity = crushForce;
-        } else {
-            velocity -= gravity;
-        }
-
-        ball.position.y -= velocity;
-
-        layers.forEach((l, i) => {
-            if (
-                Math.abs(ball.position.y - l.position.y) < 0.6 &&
-                velocity > 0
-            ) {
-                if (l.userData.fatal) {
-                    gameOver();
-                } else {
-                    breakLayer(l, i);
-                    velocity = -bounceForce;
-                }
-            }
-        });
-
-        if (!layers.length) levelWin();
     }
-
+    if (gameActive) {
+        // Helix Dönme (Tüm katmanlar yavaş dön)
+        layers.forEach((layer, i) => {
+            layer.rotation.y += 0.01 * (i % 2 ? 1 : -1); // Alternatif yön
+        });
+        // Top Fizik
+        if (isDown) {
+            ballVel = -crushSpeed; // Basılı: Hızlı düş
+            ball.rotation.x += 0.1; // Dönme efekti
+        } else {
+            ballVel += gravity; // Normal yerçekimi
+        }
+        ball.position.y += ballVel; // Düşme
+        // Kamera Takip (Topu izle)
+        camera.position.y = ball.position.y + 8;
+        camera.lookAt(ball.position.x, ball.position.y, ball.position.z + 5);
+        // Çarpışma Kontrol
+        checkCollision();
+        // Kazanma: Tüm layer'lar kırılınca
+        if (layers.length === 0) winLevel();
+        // Ölüm: Aşağı düşerse
+        if (ball.position.y < -50) die();
+    }
     renderer.render(scene, camera);
 }
-
-function breakLayer(layer, index) {
-    scene.remove(layer);
-    layers.splice(index, 1);
-
-    const frag = layer.clone();
-    frag.userData.vel = new THREE.Vector3(
-        (Math.random() - 0.5) * 0.5,
-        -0.6,
-        (Math.random() - 0.5) * 0.5
-    );
-    fragments.push(frag);
-    scene.add(frag);
+function checkCollision() {
+    const ballY = ball.position.y - 0.5; // Top alt
+    for (let i = 0; i < layers.length; i++) {
+        const layer = layers[i];
+        if (Math.abs(ballY - layer.userData.y) < 0.6) {
+            // Segment çarpışma (basit distance check)
+            const dist = Math.sqrt(
+                Math.pow(ball.position.x - layer.position.x, 2) +
+                Math.pow(ball.position.z - layer.position.z, 2)
+            );
+            if (dist < radius + 0.5) { // Yakınsa çarp
+                if (layer.userData.fatal) {
+                    die();
+                    return;
+                }
+                // Kır: Tüm segmentleri fragment yap
+                explodeLayer(layer);
+                state.score += 10; // Skor artır
+                document.getElementById('cur-score').innerText = state.score;
+                ballVel = -0.1; // Hafif sekme
+                return;
+            }
+        }
+    }
 }
-
+function explodeLayer(layer) {
+    // Segmentleri tek tek düşür (helix efekti)
+    layer.children.forEach(segment => {
+        segment.userData.vel = new THREE.Vector3(
+            (Math.random() - 0.5) * 0.3,
+            -0.25,
+            (Math.random() - 0.5) * 0.3
+        );
+        fragments.push(segment);
+        scene.remove(segment);
+    });
+    scene.remove(layer);
+    const idx = layers.indexOf(layer);
+    if (idx > -1) layers.splice(idx, 1);
+}
 function startGame() {
     document.getElementById('game-start-ui').style.display = 'none';
     gameActive = true;
+    state.score = 0;
+    document.getElementById('cur-score').innerText = 0;
 }
-
-function gameOver() {
+function die() {
     gameActive = false;
     isDown = false;
-    document.getElementById('game-over').style.display = 'flex';
+    document.getElementById('pop-reward').innerText = "Skor: " + state.score;
+    document.getElementById('game-over').style.display = "flex";
 }
-
-function levelWin() {
+function winLevel() {
     gameActive = false;
+    isDown = false;
     spawnConfetti();
     setTimeout(() => {
         state.lvl++;
-        buildLevel();
-        document.getElementById('game-start-ui').style.display = 'flex';
-    }, 1800);
+        state.bal += 50;
+        localStorage.setItem('f_bal', state.bal);
+        updateUI();
+        resetGame();
+    }, 2000);
 }
-
+function resetGame() {
+    document.getElementById('game-over').style.display = "none";
+    document.getElementById('game-start-ui').style.display = "flex";
+    gameActive = false;
+    ball.position.y = startY;
+    ballVel = 0;
+    createLevel();
+}
 function spawnConfetti() {
-    for (let i = 0; i < 25; i++) {
+    for(let i=0; i<30; i++) {
         const c = document.createElement('div');
         c.className = 'confetti';
-        c.style.left = Math.random() * 100 + 'vw';
-        c.style.background = ['#ff0', '#0ff', '#f0f'][Math.floor(Math.random() * 3)];
+        c.style.left = Math.random() * 100 + "vw";
+        c.style.top = "-10px";
+        c.style.backgroundColor = ["#ff0","#f0f","#0ff","#0f0"][Math.floor(Math.random()*4)];
         document.getElementById('page-game').appendChild(c);
-        c.animate(
-            [{ transform: 'translateY(0)' }, { transform: 'translateY(100vh)' }],
-            { duration: 2000 }
-        ).onfinish = () => c.remove();
+       
+        const anime = c.animate([
+            { transform: 'translateY(0) rotate(0)', opacity: 1 },
+            { transform: `translateY(100vh) rotate(${Math.random()*360}deg)`, opacity: 0 }
+        ], { duration: 2000, easing: 'ease-out' });
+       
+        anime.onfinish = () => c.remove();
     }
 }
-
-// input sadece canvas
-const canvas = document.getElementById('canvas-container');
-canvas.addEventListener('pointerdown', () => gameActive && (isDown = true));
-window.addEventListener('pointerup', () => (isDown = false));
+// ---------------- DEĞİŞTİRİLMEYEN CÜZDAN/GÖREV/DOSTLAR ----------------
+function addBal(amt, toast = true) {
+    state.bal += amt;
+    localStorage.setItem('f_bal', state.bal);
+    updateUI();
+    if(toast) {
+        const t = document.getElementById('toast');
+        t.style.top = "20px";
+        setTimeout(() => t.style.top = "-100px", 3000);
+    }
+}
+function claimTask(id, reward) {
+    state.tasks.push(id);
+    localStorage.setItem('f_done_tasks', JSON.stringify(state.tasks));
+    addBal(reward);
+    renderTasks();
+}
+function renderTasks() {
+    const cont = document.getElementById('tasks-list');
+    if(!cont) return;
+    cont.innerHTML = '';
+    const TASK_DATA = [
+        { id: 1, txt: "Kanalı Takip Et", reward: 100, link: "https://t.me/AirdropNoktasiDuyuru" },
+        { id: 2, txt: "1 Arkadaş Davet Et", reward: 60, req: 1 },
+        { id: 3, txt: "5 Arkadaş Davet Et", reward: 300, req: 5 }
+    ];
+    TASK_DATA.forEach(t => {
+        const done = state.tasks.includes(t.id);
+        const canClaim = t.req ? (state.friends.length >= t.req) : true;
+        const item = document.createElement('div');
+        item.className = 'list-item';
+        item.innerHTML = `
+            <div><b>${t.txt}</b><br><small style="color:var(--accent)">+${t.reward}</small></div>
+            ${done ? '<span>Tamamlandı</span>' : `<button class="btn btn-accent" onclick="claimTask(${t.id}, ${t.reward})">Git</button>`}
+        `;
+        cont.appendChild(item);
+    });
+}
+function renderFriends() {
+    const cont = document.getElementById('friends-list');
+    if(!cont) return;
+    document.getElementById('friend-count').innerText = `Dostların (${state.friends.length})`;
+    cont.innerHTML = state.friends.length ? '' : '<p style="text-align:center; color:var(--gray);">Henüz kimse yok.</p>';
+}
+function copyRef() { tg.showAlert("Link kopyalandı!"); }
+function shareRef() { tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(REF_LINK)}`); }
+function nav(id, el) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-' + id).classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+    if(el) el.classList.add('active');
+    sectionActive = (id === 'game');
+}
+// KONTROLLER (Basılı tutunca hızlı düşme - helix için)
+const canvasCont = document.getElementById('canvas-container');
+canvasCont.addEventListener('mousedown', () => { if(gameActive) isDown = true; });
+window.addEventListener('mouseup', () => isDown = false);
+canvasCont.addEventListener('touchstart', (e) => { if(gameActive) isDown = true; e.preventDefault(); }, {passive: false});
+window.addEventListener('touchend', () => isDown = false);
+window.addEventListener('resize', () => {
+    camera.aspect = canvasCont.clientWidth / canvasCont.clientHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(canvasCont.clientWidth, canvasCont.clientHeight);
+});

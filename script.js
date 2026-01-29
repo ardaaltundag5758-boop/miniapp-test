@@ -1,11 +1,13 @@
 const tg = window.Telegram.WebApp;
 tg.expand();
 
-// GLOBAL STATE - KORUNDU (Sadece oyun değişkenleri çıkarıldı)
 let state = {
     bal: parseInt(localStorage.getItem('f_bal')) || 0,
     friends: JSON.parse(localStorage.getItem('f_friends')) || [],
-    tasks: JSON.parse(localStorage.getItem('f_done_tasks')) || []
+    tasks: JSON.parse(localStorage.getItem('f_done_tasks')) || [],
+    farmStartTime: parseInt(localStorage.getItem('f_start')) || Date.now(),
+    hourlyRate: 9,
+    claimDuration: 3600
 };
 
 const BOT_NAME = "FlashyGameBot";
@@ -16,6 +18,7 @@ window.onload = () => {
     updateUI();
     renderTasks();
     renderFriends();
+    setInterval(updateFarm, 1000);
 };
 
 function initUser() {
@@ -28,63 +31,70 @@ function initUser() {
 
 function updateUI() {
     const b = state.bal.toLocaleString();
-    document.getElementById('global-bal').innerText = b;
-    document.getElementById('wallet-bal').innerText = b;
+    const gBal = document.getElementById('global-bal');
+    const wBal = document.getElementById('wallet-bal');
+    if(gBal) gBal.innerText = b;
+    if(wBal) wBal.innerText = b;
 }
 
-function addBal(amt, toast = true) {
-    state.bal += amt;
-    localStorage.setItem('f_bal', state.bal);
-    updateUI();
-    if(toast) {
-        const t = document.getElementById('toast');
-        t.style.top = "20px";
-        setTimeout(() => t.style.top = "-100px", 3000);
+function nav(id, el) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    const target = document.getElementById('page-' + id);
+    if (target) target.classList.add('active');
+
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+    if(el) el.classList.add('active');
+}
+
+function updateFarm() {
+    const now = Date.now();
+    const elapsed = Math.floor((now - state.farmStartTime) / 1000);
+    const remaining = Math.max(0, state.claimDuration - (elapsed % state.claimDuration));
+    
+    const perSecond = state.hourlyRate / 3600;
+    const currentMined = (elapsed % state.claimDuration) * perSecond;
+    
+    const farmAmtEl = document.getElementById('farm-amount');
+    const farmProgEl = document.getElementById('farm-progress');
+    const timerEl = document.getElementById('claim-timer');
+    const btnEl = document.getElementById('btn-claim');
+
+    if(farmAmtEl) farmAmtEl.innerText = currentMined.toFixed(5);
+    if(farmProgEl) farmProgEl.style.width = ((state.claimDuration - remaining) / state.claimDuration * 100) + "%";
+
+    if (elapsed >= state.claimDuration) {
+        if(timerEl) timerEl.innerText = "Claim Ready!";
+        if(btnEl) {
+            btnEl.disabled = false;
+            btnEl.style.opacity = "1";
+            btnEl.innerText = "CLAIM NOW";
+        }
+    } else {
+        const mins = Math.floor(remaining / 60);
+        const secs = remaining % 60;
+        if(timerEl) timerEl.innerText = `Next Claim in ${mins}m ${secs}s`;
     }
 }
 
-function claimTask(id, reward) {
-    if (state.tasks.includes(id)) return;
-    state.tasks.push(id);
-    localStorage.setItem('f_done_tasks', JSON.stringify(state.tasks));
-    addBal(reward);
-    renderTasks();
+function processClaim() {
+    addBal(state.hourlyRate);
+    state.farmStartTime = Date.now();
+    localStorage.setItem('f_start', state.farmStartTime);
+}
+
+function addBal(amt) {
+    state.bal += amt;
+    localStorage.setItem('f_bal', state.bal);
+    updateUI();
 }
 
 function renderTasks() {
     const cont = document.getElementById('tasks-list');
     if(!cont) return;
-    cont.innerHTML = '';
-    const TASK_DATA = [
-        { id: 1, txt: "Kanalı Takip Et", reward: 100, link: "https://t.me/AirdropNoktasiDuyuru" },
-        { id: 2, txt: "1 Arkadaş Davet Et", reward: 60, req: 1 },
-        { id: 3, txt: "5 Arkadaş Davet Et", reward: 300, req: 5 }
-    ];
-    TASK_DATA.forEach(t => {
-        const done = state.tasks.includes(t.id);
-        const item = document.createElement('div');
-        item.className = 'list-item';
-        item.innerHTML = `
-            <div><b>${t.txt}</b><br><small style="color:var(--accent)">+${t.reward}</small></div>
-            ${done ? '<span>Tamamlandı</span>' : `<button class="btn btn-accent" onclick="claimTask(${t.id}, ${t.reward})">Git</button>`}
-        `;
-        cont.appendChild(item);
-    });
+    cont.innerHTML = '<div class="list-item"><b>Kanalı Takip Et</b><br><small>+100 OXN</small></div>';
 }
 
 function renderFriends() {
     const cont = document.getElementById('friends-list');
-    if(!cont) return;
-    document.getElementById('friend-count').innerText = `Dostların (${state.friends.length})`;
-    cont.innerHTML = state.friends.length ? '' : '<p style="text-align:center; color:var(--gray);">Henüz kimse yok.</p>';
-}
-
-function copyRef() { tg.showAlert("Link kopyalandı!"); }
-function shareRef() { tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(REF_LINK)}`); }
-
-function nav(id, el) {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.getElementById('page-' + id).classList.add('active');
-    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-    if(el) el.classList.add('active');
+    if(cont) cont.innerHTML = '<p style="text-align:center;color:gray;">Henüz kimse yok.</p>';
 }

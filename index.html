@@ -9,11 +9,6 @@
       overflow: hidden;
       background: linear-gradient(to top, #87CEEB, #ffffff);
     }
-    canvas {
-      display: block;
-      margin: auto;
-      background: transparent;
-    }
     #score {
       position: absolute;
       top: 20px;
@@ -22,44 +17,48 @@
       font-family: Arial, sans-serif;
       color: #333;
     }
+    canvas {
+      display: block;
+      margin: auto;
+    }
   </style>
 </head>
 <body>
   <div id="score">Skor: 0</div>
   <canvas id="gameCanvas" width="400" height="600"></canvas>
 
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script>
-    const tg = window.Telegram.WebApp;
-    tg.ready();
-    tg.expand();
-
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
 
-    const unicornImg = new Image();
-    unicornImg.src = "https://images.unsplashcdn.com/photo-1700000000000-unicorn.png"; // Buraya senin sprite URL'in gelecek
+    // Karakter
+    let player = { x: 200, y: 500, width: 40, height: 40, dy: 0 };
+    let gravity = 0.3;
+    let jumpPower = -8;
 
-    let player = { x: 180, y: 500, width: 40, height: 40, dy: 0 };
-    let gravity = 0.5;
-    let jumpPower = -10;
+    // Platformlar
     let platforms = [];
     let score = 0;
 
-    function createPlatform() {
+    function createPlatform(y) {
       const width = 80;
       const height = 10;
       const x = Math.random() * (canvas.width - width);
-      const y = -20;
       platforms.push({ x, y, width, height });
     }
 
+    // Başlangıç platformları
+    for (let i = 0; i < 6; i++) {
+      createPlatform(100 * i);
+    }
+
     function drawPlayer() {
-      ctx.drawImage(unicornImg, player.x, player.y, player.width, player.height);
+      ctx.fillStyle = "pink";
+      ctx.fillRect(player.x, player.y, player.width, player.height);
     }
 
     function drawPlatforms() {
-      ctx.fillStyle = "#8B4513";
+      ctx.fillStyle = "brown";
       platforms.forEach(p => {
         ctx.fillRect(p.x, p.y, p.width, p.height);
       });
@@ -68,16 +67,12 @@
     function update() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+      // Fizik
       player.dy += gravity;
       player.y += player.dy;
 
-      if (player.y + player.height > canvas.height) {
-        alert("Oyun Bitti! Skor: " + score);
-        document.location.reload();
-      }
-
+      // Platform çarpışması
       platforms.forEach(p => {
-        p.y += 2;
         if (
           player.x < p.x + p.width &&
           player.x + player.width > p.x &&
@@ -91,9 +86,24 @@
         }
       });
 
-      platforms = platforms.filter(p => p.y < canvas.height);
+      // Kamera efekti (yukarı çıkış)
+      if (player.y < 300) {
+        const diff = 300 - player.y;
+        player.y = 300;
+        platforms.forEach(p => {
+          p.y += diff;
+          if (p.y > canvas.height) {
+            platforms.splice(platforms.indexOf(p), 1);
+            createPlatform(0);
+          }
+        });
+      }
 
-      if (Math.random() < 0.02) createPlatform();
+      // Oyun bitti
+      if (player.y > canvas.height) {
+        alert("Oyun Bitti! Skor: " + score);
+        document.location.reload();
+      }
 
       drawPlayer();
       drawPlatforms();
@@ -101,15 +111,18 @@
       requestAnimationFrame(update);
     }
 
-    canvas.addEventListener("click", () => {
-      if (player.dy === 0) {
-        player.dy = jumpPower;
-      }
+    // Kontroller
+    document.addEventListener("keydown", e => {
+      if (e.key === "ArrowLeft") player.x -= 20;
+      if (e.key === "ArrowRight") player.x += 20;
     });
 
-    unicornImg.onload = () => {
-      update();
-    };
+    canvas.addEventListener("click", e => {
+      if (e.clientX < canvas.width / 2) player.x -= 20;
+      else player.x += 20;
+    });
+
+    update();
   </script>
 </body>
 </html>

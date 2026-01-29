@@ -1,78 +1,97 @@
-<div id="page-game" class="page active">
-    <div class="farm-container">
-        <div style="text-align: center; margin-bottom: 20px;">
-            <div style="color: var(--accent); font-size: 0.9rem; font-weight: bold;">
-                <i class="fas fa-crown"></i> Starter
-            </div>
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Flashy App</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --bg: #000000; --card: #121212; --accent: #fcd535; --text: #ffffff; --gray: #888888; --blue: #007aff; }
+        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; outline: none; }
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; overflow: hidden; height: 100vh; }
+        
+        #toast { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #000; padding: 12px 25px; border-radius: 30px; font-weight: bold; z-index: 10000; transition: top 0.5s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; position: absolute; top: 0; width: 100%; z-index: 1000; }
+        .user-pic { width: 35px; height: 35px; border-radius: 50%; border: 1.5px solid var(--accent); }
+        .balance-box { background: rgba(18, 18, 18, 0.8); padding: 6px 15px; border-radius: 20px; border: 1px solid var(--accent); font-weight: bold; display: flex; align-items: center; gap: 8px; backdrop-filter: blur(5px); }
+
+        .container { height: 100vh; padding-top: 70px; padding-bottom: 80px; overflow-y: auto; position: relative; z-index: 1; }
+        .page { display: none; padding: 0 20px; height: 100%; }
+        .page.active { display: block; }
+
+        .card { background: var(--card); border: 1px solid #222; border-radius: 18px; padding: 15px; margin-bottom: 15px; }
+        .list-item { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; background: #1a1a1a; padding: 12px; border-radius: 15px; }
+        .btn { border: none; padding: 10px 20px; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-accent { background: var(--accent); color: #000; }
+        .btn-blue { background: var(--blue); color: #fff; width: 100%; padding: 15px; margin-top: 10px; }
+
+        .nav { position: fixed; bottom: 0; width: 100%; background: #0a0a0a; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #222; z-index: 1000; }
+        .nav-item { color: var(--gray); font-size: 0.7rem; display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; }
+        .nav-item.active { color: var(--accent); }
+        .nav-item i { font-size: 1.2rem; }
+    </style>
+</head>
+<body>
+
+    <div id="toast">Başarıyla eklendi</div>
+
+    <div class="header">
+        <div class="user-box">
+            <img id="u-pic" class="user-pic" src="https://cdn-icons-png.flaticon.com/512/149/149071.png">
+            <span id="u-name" style="font-weight: 600;">Misafir</span>
         </div>
-
-        <div class="card farm-card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <span style="font-size: 0.9rem; color: var(--gray);">
-                    <i class="fas fa-coins" style="color: var(--accent);"></i> Farming Status
-                </span>
-                <span style="color: #4cd137; font-size: 0.8rem; font-weight: bold;">
-                    <span style="display: inline-block; width: 8px; height: 8px; background: #4cd137; border-radius: 50%; margin-right: 5px;"></span> Active
-                </span>
-            </div>
-
-            <div style="font-size: 2.5rem; font-weight: 900; margin-bottom: 20px;">
-                <span id="farm-amount">0.00000</span> <small style="font-size: 1rem; color: var(--gray);">OXN</small>
-            </div>
-
-            <div class="farm-stats">
-                <div class="stat-row">
-                    <span><i class="fas fa-chart-line"></i> Hourly Rate</span>
-                    <span style="color: #ff4757;">9 OXN/hr</span>
-                </div>
-                <div class="stat-row">
-                    <span><i class="fas fa-clock"></i> Claim Period</span>
-                    <span>Every 1 hour</span>
-                </div>
-            </div>
-
-            <div class="claim-box">
-                <div class="progress-container">
-                    <div id="farm-progress" class="progress-bar"></div>
-                    <span id="claim-timer" class="timer-text">Next Claim in 60m 00s</span>
-                </div>
-                <button id="btn-claim" class="btn btn-blue" onclick="processClaim()" disabled style="background: #2f3542; opacity: 0.6;">
-                    <i class="fas fa-bolt"></i> Boost Farm
-                </button>
-            </div>
-        </div>
-
-        <div class="farm-grid">
-            <div class="grid-item">
-                <i class="fas fa-gift" style="color: var(--accent);"></i>
-                <span>Rewards</span>
-            </div>
-            <div class="grid-item">
-                <i class="fas fa-bolt" style="color: var(--blue);"></i>
-                <span>Earn</span>
-            </div>
-            <div class="grid-item">
-                <i class="fas fa-gamepad" style="color: #ff4757;"></i>
-                <span>Spin</span>
-            </div>
+        <div class="balance-box">
+            <i class="fas fa-coins"></i>
+            <span id="global-bal">0</span>
         </div>
     </div>
-</div>
 
-<style>
-    .farm-container { padding-top: 40px; }
-    .farm-card { background: #1a1a1a; border: 1px solid #333; padding: 25px !important; }
-    .farm-stats { border-top: 1px solid #333; padding-top: 15px; margin-bottom: 20px; }
-    .stat-row { display: flex; justify-content: space-between; color: var(--gray); font-size: 0.85rem; margin-bottom: 8px; }
-    
-    .progress-container { 
-        background: #000; height: 45px; border-radius: 12px; position: relative; 
-        overflow: hidden; margin-bottom: 10px; border: 1px solid #333;
-    }
-    .progress-bar { background: linear-gradient(90deg, #fcd535, #e67e22); width: 0%; height: 100%; transition: width 1s linear; }
-    .timer-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-weight: bold; font-size: 0.9rem; width: 100%; text-align: center; }
-    
-    .farm-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 20px; }
-    .grid-item { background: var(--card); border-radius: 15px; padding: 15px; text-align: center; display: flex; flex-direction: column; gap: 8px; font-size: 0.8rem; border: 1px solid #222; }
-    .grid-item i { font-size: 1.5rem; }
-</style>
+    <div class="container">
+        <div id="page-game" class="page active">
+            <div style="text-align:center; padding-top:100px;">
+                <h2 style="color:var(--gray)">Oyun Alanı</h2>
+                <p>Yeni içerik için hazır...</p>
+            </div>
+        </div>
+
+        <div id="page-wallet" class="page">
+            <div style="text-align:center; padding:50px 0;">
+                <i class="fas fa-wallet" style="font-size:4rem; color:var(--accent); margin-bottom:20px;"></i>
+                <p style="color:var(--gray)">Toplam Bakiyeniz</p>
+                <h1 style="font-size:3.5rem;" id="wallet-bal">0</h1>
+                <button class="btn btn-blue" style="opacity:0.5">Çekim Yap (Yakında)</button>
+            </div>
+        </div>
+
+        <div id="page-tasks" class="page">
+            <h2 style="margin: 20px 0;">Görevler</h2>
+            <div id="tasks-list"></div>
+        </div>
+
+        <div id="page-friends" class="page">
+            <h2 style="margin: 20px 0;">Dostlar</h2>
+            <div class="card" style="text-align:center;">
+                <p style="color:var(--gray)">Arkadaşlarını davet et, her biri için kazanç sağla!</p>
+                <h3 style="color:var(--accent)">+30 Flashy</h3>
+                <div style="display:flex; gap:10px; margin-top:15px;">
+                    <button class="btn btn-accent" onclick="copyRef()" style="flex:1">Kopyala</button>
+                    <button class="btn btn-blue" onclick="shareRef()" style="flex:2">Arkadaşlarına Gönder</button>
+                </div>
+            </div>
+            <h3 id="friend-count">Dostların (0)</h3>
+            <div id="friends-list"></div>
+        </div>
+    </div>
+
+    <div class="nav">
+        <div class="nav-item active" onclick="nav('game', this)"><i class="fas fa-play"></i>OYUN</div>
+        <div class="nav-item" onclick="nav('tasks', this)"><i class="fas fa-tasks"></i>GÖREVLER</div>
+        <div class="nav-item" onclick="nav('friends', this)"><i class="fas fa-users"></i>DOSTLAR</div>
+        <div class="nav-item" onclick="nav('wallet', this)"><i class="fas fa-wallet"></i>CÜZDAN</div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <title>Uni Jump - Joystick Edition</title>
+    <title>Uni Jump - Free Joystick</title>
     <style>
         body {
             margin: 0; padding: 0;
             display: flex; justify-content: center; align-items: center;
-            height: 100vh; background-color: #121212;
+            height: 100vh; background-color: #0f0f0f;
             font-family: 'Segoe UI', Arial, sans-serif; overflow: hidden; touch-action: none;
         }
         #game-container {
@@ -24,18 +24,19 @@
             text-shadow: 2px 2px 4px rgba(0,0,0,0.5); pointer-events: none;
             z-index: 5;
         }
-        /* JOYSTICK TASARIMI */
+        /* JOYSTICK ALANI */
         #joystick-wrapper {
-            position: absolute; bottom: 30px; left: 50%;
-            transform: translateX(-50%); width: 100px; height: 100px;
-            background: rgba(255, 255, 255, 0.2); border-radius: 50%;
+            position: absolute; bottom: 40px; left: 50%;
+            transform: translateX(-50%); width: 120px; height: 120px;
+            background: rgba(255, 255, 255, 0.15); border-radius: 50%;
             display: flex; justify-content: center; align-items: center;
-            z-index: 20; border: 2px solid rgba(255, 255, 255, 0.3);
+            z-index: 20; border: 2px solid rgba(255, 255, 255, 0.2);
         }
         #joystick-knob {
-            width: 50px; height: 50px; background: #fff;
-            border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            cursor: pointer; touch-action: none;
+            width: 50px; height: 50px; background: #00e676;
+            border-radius: 50%; box-shadow: 0 0 15px rgba(0,230,118,0.5);
+            cursor: pointer; touch-action: none; position: absolute;
+            transition: background 0.2s;
         }
         #start-screen {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -62,8 +63,8 @@
 
     <div id="start-screen">
         <h1 style="font-size: 45px; margin-bottom: 10px; color: #00e676;">UNI JUMP</h1>
-        <p>Joystick ile karakteri yönet!</p>
-        <button onclick="startGame()">OYNA</button>
+        <p>Joystick'i her yöne kaydır!</p>
+        <button onclick="startGame()">BAŞLA</button>
     </div>
 </div>
 
@@ -80,7 +81,7 @@ canvas.height = 600;
 
 let player, platforms, gravity, jumpForce, score, gameActive;
 let joystickActive = false;
-let joystickX = 0;
+let joystickX = 0; // Karakter sadece bunu kullanacak
 
 class Player {
     constructor() {
@@ -107,11 +108,10 @@ class Player {
         this.vy += gravity;
         this.y += this.vy;
         
-        // Joystick hızını uygula
-        this.vx = joystickX * 7; 
+        // Sadece joystick'in sağ-sol verisini kullanıyoruz
+        this.vx = joystickX * 8; 
         this.x += this.vx;
 
-        // Duvar Engelleri
         if (this.x < 0) this.x = 0;
         if (this.x + this.width > canvas.width) this.x = canvas.width - this.width;
     }
@@ -189,25 +189,39 @@ function animate() {
     requestAnimationFrame(animate);
 }
 
-// --- JOYSTICK MANTIĞI ---
+// --- SERBEST JOYSTICK MANTIĞI ---
 function handleJoystick(e) {
     if (!joystickActive) return;
+    
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    
     const rect = wrapper.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    
     let deltaX = clientX - centerX;
+    let deltaY = clientY - centerY;
     
-    // Sınırlandırma (max 40px kayma)
-    const maxDist = 40;
-    deltaX = Math.max(-maxDist, Math.min(maxDist, deltaX));
+    // Joystick topunun halka dışına çıkmaması için sınır (r = 50px)
+    const maxDist = 50;
+    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
     
-    knob.style.transform = `translateX(${deltaX}px)`;
-    joystickX = deltaX / maxDist; // -1 ile 1 arasında değer üretir
+    if (distance > maxDist) {
+        deltaX = (deltaX / distance) * maxDist;
+        deltaY = (deltaY / distance) * maxDist;
+    }
+    
+    // Görsel olarak her yöne hareket ettir
+    knob.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+    
+    // Karakter için sadece X (sağ-sol) oranını al (-1 ile 1 arası)
+    joystickX = deltaX / maxDist; 
 }
 
 function stopJoystick() {
     joystickActive = false;
-    knob.style.transform = `translateX(0px)`;
+    knob.style.transform = `translate(0px, 0px)`;
     joystickX = 0;
 }
 

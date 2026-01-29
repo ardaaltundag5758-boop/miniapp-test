@@ -2,41 +2,43 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <title>Uni Jump - Free Joystick</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, viewport-fit=cover">
+    <title>Uni Jump - Full Screen</title>
     <style>
         body {
             margin: 0; padding: 0;
             display: flex; justify-content: center; align-items: center;
-            height: 100vh; background-color: #0f0f0f;
-            font-family: 'Segoe UI', Arial, sans-serif; overflow: hidden; touch-action: none;
+            height: 100vh; width: 100vw;
+            background-color: #000;
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            overflow: hidden; touch-action: none;
         }
         #game-container {
-            position: relative; width: 100%; max-width: 400px; height: 600px;
+            position: relative; 
+            width: 100%; 
+            height: 100%;
             background: linear-gradient(to bottom, #1e3c72 0%, #2a5298 100%);
-            border: 4px solid #fff; border-radius: 12px; overflow: hidden;
-            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+            overflow: hidden;
         }
         canvas { display: block; }
         #ui {
-            position: absolute; top: 15px; left: 15px;
+            position: absolute; top: 20px; left: 20px;
             color: white; font-size: 24px; font-weight: bold;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.5); pointer-events: none;
             z-index: 5;
         }
         /* JOYSTICK ALANI */
         #joystick-wrapper {
-            position: absolute; bottom: 40px; left: 50%;
+            position: absolute; bottom: 60px; left: 50%;
             transform: translateX(-50%); width: 120px; height: 120px;
-            background: rgba(255, 255, 255, 0.15); border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1); border-radius: 50%;
             display: flex; justify-content: center; align-items: center;
-            z-index: 20; border: 2px solid rgba(255, 255, 255, 0.2);
+            z-index: 20; border: 2px solid rgba(255, 255, 255, 0.15);
         }
         #joystick-knob {
-            width: 50px; height: 50px; background: #00e676;
-            border-radius: 50%; box-shadow: 0 0 15px rgba(0,230,118,0.5);
+            width: 55px; height: 55px; background: #00e676;
+            border-radius: 50%; box-shadow: 0 0 20px rgba(0,230,118,0.6);
             cursor: pointer; touch-action: none; position: absolute;
-            transition: background 0.2s;
         }
         #start-screen {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -45,8 +47,8 @@
             color: white; text-align: center; z-index: 30;
         }
         button {
-            padding: 15px 45px; font-size: 22px; background: #00e676;
-            color: black; border: none; border-radius: 30px;
+            padding: 15px 50px; font-size: 24px; background: #00e676;
+            color: black; border: none; border-radius: 40px;
             cursor: pointer; margin-top: 25px; font-weight: bold;
         }
     </style>
@@ -62,8 +64,8 @@
     </div>
 
     <div id="start-screen">
-        <h1 style="font-size: 45px; margin-bottom: 10px; color: #00e676;">UNI JUMP</h1>
-        <p>Joystick'i her yöne kaydır!</p>
+        <h1 style="font-size: 50px; margin-bottom: 10px; color: #00e676;">UNI JUMP</h1>
+        <p>En yükseğe tırman!</p>
         <button onclick="startGame()">BAŞLA</button>
     </div>
 </div>
@@ -76,56 +78,62 @@ const startScreen = document.getElementById('start-screen');
 const knob = document.getElementById('joystick-knob');
 const wrapper = document.getElementById('joystick-wrapper');
 
-canvas.width = 400;
-canvas.height = 600;
+// Tam Ekran Ayarı
+function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
 
 let player, platforms, gravity, jumpForce, score, gameActive;
 let joystickActive = false;
-let joystickX = 0; // Karakter sadece bunu kullanacak
+let joystickX = 0;
 
 class Player {
     constructor() {
-        this.width = 36;
-        this.height = 36;
+        this.width = 40;
+        this.height = 40;
         this.reset();
     }
     reset() {
         this.x = canvas.width / 2 - this.width / 2;
-        this.y = canvas.height - 100;
+        this.y = canvas.height - 120;
         this.vx = 0;
         this.vy = 0;
     }
     draw() {
         ctx.fillStyle = '#00e676';
         ctx.beginPath();
-        ctx.roundRect(this.x, this.y, this.width, this.height, 8);
+        ctx.roundRect(this.x, this.y, this.width, this.height, 10);
         ctx.fill();
+        // Yüz detayı
         ctx.fillStyle = '#000';
-        ctx.fillRect(this.x + 8, this.y + 10, 5, 5);
-        ctx.fillRect(this.x + 23, this.y + 10, 5, 5);
+        ctx.fillRect(this.x + 10, this.y + 12, 5, 5);
+        ctx.fillRect(this.x + 25, this.y + 12, 5, 5);
+        ctx.fillRect(this.x + 15, this.y + 28, 10, 2);
     }
     update() {
         this.vy += gravity;
         this.y += this.vy;
-        
-        // Sadece joystick'in sağ-sol verisini kullanıyoruz
-        this.vx = joystickX * 8; 
+        this.vx = joystickX * 9; // Hız bir tık artırıldı
         this.x += this.vx;
 
+        // Duvarlar
         if (this.x < 0) this.x = 0;
         if (this.x + this.width > canvas.width) this.x = canvas.width - this.width;
     }
 }
 
 class Platform {
-    constructor(x, y, width = 80, isGround = false) {
+    constructor(x, y, width = 85, isGround = false) {
         this.x = x; this.y = y; this.width = width;
-        this.height = 14; this.isGround = isGround;
+        this.height = 16; this.isGround = isGround;
     }
     draw() {
         ctx.fillStyle = this.isGround ? '#795548' : '#fff';
         ctx.beginPath();
-        ctx.roundRect(this.x, this.y, this.width, this.height, 5);
+        ctx.roundRect(this.x, this.y, this.width, this.height, 6);
         ctx.fill();
     }
 }
@@ -133,14 +141,21 @@ class Platform {
 function init() {
     player = new Player();
     platforms = [];
-    gravity = 0.35;
-    jumpForce = -12;
+    gravity = 0.38;
+    jumpForce = -13;
     score = 0;
     gameActive = true;
     ui.innerText = `Skor: 0`;
-    platforms.push(new Platform(0, canvas.height - 20, canvas.width, true));
-    for (let i = 1; i < 7; i++) {
-        platforms.push(new Platform(Math.random() * (canvas.width - 80), (canvas.height - 20) - (i * 105)));
+    
+    // Alt Zemin
+    platforms.push(new Platform(0, canvas.height - 30, canvas.width, true));
+    
+    // İlk platformlar
+    for (let i = 1; i < 8; i++) {
+        platforms.push(new Platform(
+            Math.random() * (canvas.width - 85), 
+            (canvas.height - 30) - (i * 110)
+        ));
     }
 }
 
@@ -154,8 +169,9 @@ function animate() {
     if (!gameActive) return;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    if (player.y < canvas.height / 2.5) {
-        let moveUp = canvas.height / 2.5 - player.y;
+    // Kamera
+    if (player.y < canvas.height / 3) {
+        let moveUp = canvas.height / 3 - player.y;
         player.y += moveUp;
         score += Math.floor(moveUp);
         ui.innerText = `Skor: ${score}`;
@@ -163,7 +179,7 @@ function animate() {
             p.y += moveUp;
             if (p.y > canvas.height) {
                 p.y = 0; p.x = Math.random() * (canvas.width - p.width);
-                p.isGround = false; p.width = 80;
+                p.isGround = false; p.width = 85;
             }
         });
     }
@@ -173,7 +189,7 @@ function animate() {
         if (player.vy > 0 && 
             player.x + player.width * 0.2 < p.x + p.width && 
             player.x + player.width * 0.8 > p.x &&
-            player.y + player.height > p.y && player.y + player.height < p.y + p.height + 15) {
+            player.y + player.height > p.y && player.y + player.height < p.y + p.height + 20) {
             player.vy = jumpForce;
         }
     });
@@ -184,26 +200,22 @@ function animate() {
     if (player.y > canvas.height) {
         gameActive = false;
         startScreen.style.display = 'flex';
-        startScreen.innerHTML = `<h1>OYUN BİTTİ</h1><p>Skor: ${score}</p><button onclick="startGame()">TEKRAR</button>`;
+        startScreen.innerHTML = `<h1>OYUN BİTTİ</h1><p style="font-size:24px">Skor: ${score}</p><button onclick="startGame()">TEKRAR DENE</button>`;
     }
     requestAnimationFrame(animate);
 }
 
-// --- SERBEST JOYSTICK MANTIĞI ---
+// JOYSTICK MANTIĞI
 function handleJoystick(e) {
     if (!joystickActive) return;
-    
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
     const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-    
     const rect = wrapper.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
     
     let deltaX = clientX - centerX;
     let deltaY = clientY - centerY;
-    
-    // Joystick topunun halka dışına çıkmaması için sınır (r = 50px)
     const maxDist = 50;
     const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
     
@@ -212,10 +224,7 @@ function handleJoystick(e) {
         deltaY = (deltaY / distance) * maxDist;
     }
     
-    // Görsel olarak her yöne hareket ettir
     knob.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
-    
-    // Karakter için sadece X (sağ-sol) oranını al (-1 ile 1 arası)
     joystickX = deltaX / maxDist; 
 }
 
@@ -228,7 +237,7 @@ function stopJoystick() {
 knob.addEventListener('mousedown', () => joystickActive = true);
 knob.addEventListener('touchstart', (e) => { joystickActive = true; e.preventDefault(); });
 window.addEventListener('mousemove', handleJoystick);
-window.addEventListener('touchmove', handleJoystick);
+window.addEventListener('touchmove', handleJoystick, { passive: false });
 window.addEventListener('mouseup', stopJoystick);
 window.addEventListener('touchend', stopJoystick);
 

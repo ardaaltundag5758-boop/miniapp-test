@@ -1,337 +1,115 @@
-<!DOCTYPE HTML>
+<!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <title>Doodle Jump - Ice Edition</title>
-    <style>
-        /* CSS KODLARI */
-        @import url(https://fonts.googleapis.com/css?family=Gloria+Hallelujah);
-
-        * { box-sizing: border-box; }
-
-        body {
-            margin: 0; padding: 0;
-            font-family: 'Gloria Hallelujah', cursive;
-            background-color: #f0f0f0;
-            display: flex; justify-content: center; align-items: center;
-            height: 100vh;
-        }
-
-        .container {
-            height: 552px;
-            width: 422px;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 0 20px rgba(0,0,0,0.2);
-        }
-
-        canvas {
-            height: 552px;
-            width: 422px;
-            display: block;
-            background: url(https://i.imgur.com/Y0BMP.png) top left;
-        }
-
-        #scoreBoard {
-            width: 420px;
-            height: 50px;
-            background: rgba(182, 200, 220, 0.7);
-            position: absolute;
-            top: -3px;
-            left: 0;
-            z-index: 1;    
-            border-image: url(https://i.imgur.com/5BBsR.png) 100 5 round;
-        }
-
-        #scoreBoard p {
-            font-size: 20px;
-            padding: 0;
-            line-height: 47px;
-            margin: 0px 0 0 5px;
-        }
-
-        img { display: none; }
-
-        #mainMenu, #gameOverMenu {
-            height: 100%;
-            width: 100%;
-            text-align: center;
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: 10;
-            background: rgba(255, 255, 255, 0.3);
-            backdrop-filter: blur(2px);
-        }
-
-        #gameOverMenu { visibility: hidden; }
-
-        h2, h3, h1 { font-weight: normal; }
-        h1 {
-            font-size: 60px; 
-            color: #5a5816; 
-            transform: rotate(-10deg);
-            margin: 50px 0 20px;
-        }
-
-        h3 { text-align: right; margin: -10px 20px 20px 0; color: #5e96be; }
-        h3 a { color: #5a5816; text-decoration: none; }
-
-        .button {
-            width: 105px;
-            height: 31px;
-            background: url(https://i.imgur.com/2WEhF.png) 0 0 no-repeat;
-            display: block;
-            color: #000;
-            font-size: 14px;
-            line-height: 31px;
-            text-decoration: none;
-            position: absolute;
-            left: 50%;
-            bottom: 100px;
-            margin-left: -53px;
-            font-weight: bold;
-        }
-
-        .button.tweet { bottom: 150px; background-position: 0 -90px; }
-        .button.fb { bottom: 200px; background-position: 0 -60px; }
-
-        .info { position: absolute; right: 20px; bottom: 10px; margin: 0; color: green; font-size: 12px; }
-
-        .info .key {
-            width: 16px;
-            height: 16px;
-            background: url(https://i.imgur.com/2WEhF.png) no-repeat;
-            text-indent: -9999px;
-            display: inline-block;
-            vertical-align: middle;
-        }
-
-        .info .key.left { background-position: -92px -621px; }
-        .info .key.right { background-position: -92px -641px; }
-    </style>
+  <meta charset="UTF-8">
+  <title>Unicorn Jump</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: linear-gradient(to top, #87CEEB, #ffffff);
+    }
+    canvas {
+      display: block;
+      margin: auto;
+      background: transparent;
+    }
+    #score {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 24px;
+      font-family: Arial, sans-serif;
+      color: #333;
+    }
+  </style>
 </head>
 <body>
+  <div id="score">Skor: 0</div>
+  <canvas id="gameCanvas" width="400" height="600"></canvas>
 
-    <div class="container">
-        <canvas id="canvas">Tarayıcınız HTML5 desteklemiyor!</canvas>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script>
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand();
 
-        <div id="mainMenu">
-            <h1>doodle jump</h1>
-            <h3>using HTML5</h3>
-            <p class="info">
-                <span class="key left">←</span>
-                <span class="key right">→</span> tuşları ile hareket et, Boşluk ile başla...
-            </p>
-            <a class="button" href="javascript:void(0)" onclick="init()">Oyna</a>
-        </div>
-        
-        <div id="gameOverMenu">
-            <h1>oyun bitti!</h1>
-            <h3 id="go_score" style="text-align:center; margin: 0 auto 20px;">0 puan topladın</h3>
-            <a class="button" href="javascript:void(0)" onclick="reset()">Tekrar</a>
-        </div>
-        
-        <img id="sprite" src="https://i.imgur.com/2WEhF.png"/>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
 
-        <div id="scoreBoard">
-            <p id="score">0</p>
-        </div>
-    </div>
+    const unicornImg = new Image();
+    unicornImg.src = "https://images.unsplashcdn.com/photo-1700000000000-unicorn.png"; // Buraya senin sprite URL'in gelecek
 
-<script>
-    /* JAVASCRIPT KODLARI */
-    window.requestAnimFrame = (function() {
-        return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame ||
-        function(callback) { window.setTimeout(callback, 1000 / 60); };
-    })();
+    let player = { x: 180, y: 500, width: 40, height: 40, dy: 0 };
+    let gravity = 0.5;
+    let jumpPower = -10;
+    let platforms = [];
+    let score = 0;
 
-    var canvas = document.getElementById('canvas'), ctx = canvas.getContext('2d');
-    var width = 422, height = 552;
-    canvas.width = width; canvas.height = height;
-
-    var platforms = [], image = document.getElementById("sprite"), player, platformCount = 10,
-        position = 0, gravity = 0.2, animloop, flag = 0, menuloop, broken = 0, dir, score = 0, firstRun = true;
-
-    var Base = function() {
-        this.height = 5; this.width = width;
-        this.cx = 0; this.cy = 614; this.cwidth = 100; this.cheight = 5;
-        this.x = 0; this.y = height - this.height;
-        this.draw = function() {
-            try { ctx.drawImage(image, this.cx, this.cy, this.cwidth, this.cheight, this.x, this.y, this.width, this.height); } catch (e) {}
-        };
-    };
-
-    var base = new Base();
-
-    var Player = function() {
-        this.vy = 11; this.vx = 0;
-        this.isMovingLeft = false; this.isMovingRight = false; this.isDead = false;
-        this.width = 55; this.height = 40;
-        this.cx = 0; this.cy = 0; this.cwidth = 110; this.cheight = 80;
-        this.dir = "left";
-        this.x = width / 2 - this.width / 2; this.y = height;
-
-        this.draw = function() {
-            try {
-                if (this.dir == "right") this.cy = 121;
-                else if (this.dir == "left") this.cy = 201;
-                else if (this.dir == "right_land") this.cy = 289;
-                else if (this.dir == "left_land") this.cy = 371;
-                ctx.drawImage(image, this.cx, this.cy, this.cwidth, this.cheight, this.x, this.y, this.width, this.height);
-            } catch (e) {}
-        };
-        this.jump = function() { this.vy = -8; };
-        this.jumpHigh = function() { this.vy = -16; };
-    };
-
-    player = new Player();
-
-    function Platform() {
-        this.width = 85; this.height = 24;
-        this.x = Math.random() * (width - this.width);
-        this.y = position;
-        position += (height / platformCount);
-        this.flag = 0; this.state = 0;
-
-        this.draw = function() {
-            if (this.state === 1) return;
-
-            // Karlı ve Buzlu Platform Çizimi
-            let grad = ctx.createLinearGradient(this.x, this.y, this.x, this.y + this.height);
-            grad.addColorStop(0, '#e3f2fd'); grad.addColorStop(0.4, '#81d4fa'); grad.addColorStop(1, '#0288d1');
-
-            ctx.fillStyle = grad;
-            ctx.beginPath();
-            ctx.roundRect(this.x, this.y, this.width, this.height, 16);
-            ctx.fill();
-
-            // Beyaz Kar Tabakası
-            ctx.fillStyle = '#ffffff';
-            ctx.beginPath();
-            ctx.roundRect(this.x + 4, this.y - 2, this.width - 8, 12, 8);
-            ctx.fill();
-
-            // Buz Sarkıtları
-            ctx.fillStyle = '#e3f2fd';
-            const pos = [0.18, 0.38, 0.62, 0.82];
-            const lens = [18, 22, 16, 20];
-            for (let i = 0; i < 4; i++) {
-                let px = this.x + this.width * pos[i];
-                let py = this.y + this.height;
-                ctx.beginPath();
-                ctx.moveTo(px - 6, py); ctx.lineTo(px, py + lens[i]); ctx.lineTo(px + 6, py);
-                ctx.closePath(); ctx.fill();
-            }
-        };
-
-        this.types = [1];
-        if (score >= 100) this.types = [1, 2];
-        this.type = this.types[Math.floor(Math.random() * this.types.length)];
-        this.vx = 1;
+    function createPlatform() {
+      const width = 80;
+      const height = 10;
+      const x = Math.random() * (canvas.width - width);
+      const y = -20;
+      platforms.push({ x, y, width, height });
     }
 
-    for (var i = 0; i < platformCount; i++) platforms.push(new Platform());
+    function drawPlayer() {
+      ctx.drawImage(unicornImg, player.x, player.y, player.width, player.height);
+    }
 
-    var Spring = function() {
-        this.width = 26; this.height = 30;
-        this.state = 0;
-        this.draw = function(x, y) {
-            this.x = x; this.y = y;
-            let cy = this.state === 0 ? 445 : 501;
-            try { ctx.drawImage(image, 0, cy, 45, 53, this.x, this.y, this.width, this.height); } catch(e){}
-        };
-    };
-    var spring = new Spring();
+    function drawPlatforms() {
+      ctx.fillStyle = "#8B4513";
+      platforms.forEach(p => {
+        ctx.fillRect(p.x, p.y, p.width, p.height);
+      });
+    }
 
-    function init() {
-        firstRun = false;
-        function paintCanvas() { ctx.clearRect(0, 0, width, height); }
+    function update() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        function playerCalc() {
-            if (dir == "left") { player.dir = "left"; if (player.vy < -7 && player.vy > -15) player.dir = "left_land"; }
-            else if (dir == "right") { player.dir = "right"; if (player.vy < -7 && player.vy > -15) player.dir = "right_land"; }
+      player.dy += gravity;
+      player.y += player.dy;
 
-            if (player.isMovingLeft) { player.x += player.vx; player.vx -= 0.15; }
-            else { player.x += player.vx; if (player.vx < 0) player.vx += 0.1; }
+      if (player.y + player.height > canvas.height) {
+        alert("Oyun Bitti! Skor: " + score);
+        document.location.reload();
+      }
 
-            if (player.isMovingRight) { player.x += player.vx; player.vx += 0.15; }
-            else { player.x += player.vx; if (player.vx > 0) player.vx -= 0.1; }
-
-            if(player.vx > 8) player.vx = 8; else if(player.vx < -8) player.vx = -8;
-            if ((player.y + player.height) > base.y && base.y < height) player.jump();
-            if (base.y > height && (player.y + player.height) > height && player.isDead != "lol") player.isDead = true;
-            if (player.x > width) player.x = 0 - player.width; else if (player.x < 0 - player.width) player.x = width;
-
-            if (player.y >= (height / 2) - (player.height / 2)) {
-                player.y += player.vy; player.vy += gravity;
-            } else {
-                platforms.forEach(function(p, i) {
-                    if (player.vy < 0) p.y -= player.vy;
-                    if (p.y > height) { platforms[i] = new Platform(); platforms[i].y = p.y - height; }
-                });
-                base.y -= player.vy; player.vy += gravity;
-                if (player.vy >= 0) { player.y += player.vy; player.vy += gravity; }
-                score++;
-            }
-            collides();
-            if (player.isDead === true) gameOver();
+      platforms.forEach(p => {
+        p.y += 2;
+        if (
+          player.x < p.x + p.width &&
+          player.x + player.width > p.x &&
+          player.y + player.height > p.y &&
+          player.y + player.height < p.y + p.height + 10 &&
+          player.dy > 0
+        ) {
+          player.dy = jumpPower;
+          score++;
+          document.getElementById("score").textContent = "Skor: " + score;
         }
+      });
 
-        function collides() {
-            platforms.forEach(function(p) {
-                if (player.vy > 0 && p.state === 0 && (player.x + 15 < p.x + p.width) && (player.x + player.width - 15 > p.x) && (player.y + player.height > p.y) && (player.y + player.height < p.y + 12)) {
-                    player.jump();
-                }
-            });
-        }
+      platforms = platforms.filter(p => p.y < canvas.height);
 
-        function update() {
-            paintCanvas();
-            platforms.forEach(function(p) { if(p.type == 2){ if(p.x < 0 || p.x + p.width > width) p.vx *= -1; p.x += p.vx; } p.draw(); });
-            playerCalc();
-            player.draw();
-            base.draw();
-            document.getElementById("score").innerHTML = score;
-        }
+      if (Math.random() < 0.02) createPlatform();
 
-        animloop = function() { if(gameActive) { update(); requestAnimFrame(animloop); } };
-        var gameActive = true;
-        animloop();
-        document.getElementById("mainMenu").style.zIndex = -1;
+      drawPlayer();
+      drawPlatforms();
+
+      requestAnimationFrame(update);
     }
 
-    function reset() {
-        location.reload();
-    }
+    canvas.addEventListener("click", () => {
+      if (player.dy === 0) {
+        player.dy = jumpPower;
+      }
+    });
 
-    function gameOver() {
-        var menu = document.getElementById("gameOverMenu");
-        menu.style.zIndex = 20; menu.style.visibility = "visible";
-        document.getElementById("go_score").innerHTML = "Puanın: " + score;
-        player.isDead = "lol";
-    }
-
-    document.onkeydown = function(e) {
-        if (e.keyCode == 37) { dir = "left"; player.isMovingLeft = true; }
-        else if (e.keyCode == 39) { dir = "right"; player.isMovingRight = true; }
-        if (e.keyCode == 32) { if(firstRun) init(); else reset(); }
+    unicornImg.onload = () => {
+      update();
     };
-    document.onkeyup = function(e) {
-        if (e.keyCode == 37) player.isMovingLeft = false;
-        else if (e.keyCode == 39) player.isMovingRight = false;
-    };
-
-    // Açılış Ekranı Döngüsü
-    function menuUpdate() {
-        ctx.clearRect(0, 0, width, height);
-        if (player.y + player.height > 500) player.jump();
-        player.y += player.vy; player.vy += gravity;
-        player.draw();
-        base.draw();
-        if(firstRun) requestAnimFrame(menuUpdate);
-    }
-    menuUpdate();
-</script>
+  </script>
 </body>
 </html>

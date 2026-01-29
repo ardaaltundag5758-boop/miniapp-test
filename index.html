@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, viewport-fit=cover">
-    <title>Uni Jump - Moving Platforms</title>
+    <title>Uni Jump - Balanced Edition</title>
     <style>
         body {
             margin: 0; padding: 0;
@@ -17,11 +17,14 @@
             position: relative; 
             width: 100%; max-width: 450px; 
             height: 100%; max-height: 850px;
-            background: linear-gradient(to bottom, #1e3c72 0%, #2a5298 100%);
+            /* Arka plan buraya eklendi */
+            background-image: url('Gemini_Generated_Image_rkng00rkng00rkng.jpg');
+            background-size: cover;
+            background-position: center;
             box-shadow: 0 0 50px rgba(0,0,0,0.8);
             overflow: hidden; border-radius: 10px;
         }
-        canvas { display: block; width: 100%; height: 100%; }
+        canvas { display: block; width: 100%; height: 100%; background: transparent; }
         #ui {
             position: absolute; top: 40px; left: 20px;
             color: white; font-size: 26px; font-weight: bold;
@@ -41,7 +44,7 @@
         }
         #start-screen {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); display: flex;
+            background: rgba(0,0,0,0.7); display: flex;
             flex-direction: column; justify-content: center; align-items: center;
             color: white; text-align: center; z-index: 100;
         }
@@ -65,7 +68,7 @@
 
     <div id="start-screen">
         <h1 style="font-size: 48px; margin-bottom: 5px; color: #00e676;">UNI JUMP</h1>
-        <p style="opacity: 0.8;">Hareketli platformlara dikkat!</p>
+        <p style="opacity: 0.8;">Harekete odaklan!</p>
         <button id="startBtn">BAŞLA</button>
     </div>
 </div>
@@ -79,6 +82,10 @@ const startScreen = document.getElementById('start-screen');
 const startBtn = document.getElementById('startBtn');
 const knob = document.getElementById('joystick-knob');
 const wrapper = document.getElementById('joystick-wrapper');
+
+// Görseli JS tarafında tanımlıyoruz (opsiyonel ama sağlıklı olması için)
+const bgImage = new Image();
+bgImage.src = 'Gemini_Generated_Image_rkng00rkng00rkng.jpg';
 
 function resizeCanvas() {
     canvas.width = container.clientWidth;
@@ -127,23 +134,19 @@ class Platform {
         this.width = width;
         this.height = 16;
         this.isGround = isGround;
-        
-        // HAREKETLİ PLATFORM AYARLARI
-        // Zemin değilse %30 ihtimalle hareketli olsun
-        this.isMoving = !isGround && Math.random() < 0.3;
+        this.isMoving = !isGround && Math.random() < 0.1; 
         this.speed = (Math.random() < 0.5 ? 1 : -1) * (2 + Math.random() * 2);
     }
 
     draw() {
         if (this.isMoving) {
             this.x += this.speed;
-            // Duvar çarpışma kontrolü
             if (this.x <= 0 || this.x + this.width >= canvas.width) {
                 this.speed *= -1;
             }
-            ctx.fillStyle = '#e040fb'; // Hareketli platform rengi (Mor)
+            ctx.fillStyle = '#e040fb';
         } else {
-            ctx.fillStyle = this.isGround ? '#795548' : '#fff'; // Sabit platform (Beyaz/Kahve)
+            ctx.fillStyle = this.isGround ? '#795548' : '#fff';
         }
         
         ctx.beginPath();
@@ -160,10 +163,8 @@ function init() {
     score = 0;
     ui.innerText = `Skor: 0`;
     
-    // İlk zemin
     platforms.push(new Platform(0, canvas.height - 30, canvas.width, true));
     
-    // İlk platform seti
     for (let i = 1; i < 8; i++) {
         platforms.push(new Platform(
             Math.random() * (canvas.width - 85), 
@@ -199,8 +200,7 @@ function animate() {
                 p.x = Math.random() * (canvas.width - 85);
                 p.isGround = false; 
                 p.width = 85;
-                // Yeni platform %30 şansla yine hareketli olabilir
-                p.isMoving = Math.random() < 0.3;
+                p.isMoving = Math.random() < 0.1;
                 p.speed = (Math.random() < 0.5 ? 1 : -1) * (2 + Math.random() * 2);
             }
         });
@@ -208,7 +208,6 @@ function animate() {
 
     platforms.forEach(p => {
         p.draw();
-        // Gelişmiş Çarpışma
         if (player.vy > 0 && player.x + player.width*0.2 < p.x + p.width && player.x + player.width*0.8 > p.x) {
             if (player.y + player.height > p.y && player.y + player.height < p.y + p.height + player.vy + 2) {
                 player.y = p.y - player.height;
@@ -232,7 +231,6 @@ function animate() {
     }
 }
 
-// JOYSTICK KODLARI...
 function startJoystick(e) {
     if (!gameActive) return;
     joystickActive = true;

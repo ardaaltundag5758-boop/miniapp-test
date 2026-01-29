@@ -1,24 +1,26 @@
 const tg = window.Telegram.WebApp;
 tg.expand();
 
-let state = {
-    bal: parseInt(localStorage.getItem('f_bal')) || 0,
-    friends: JSON.parse(localStorage.getItem('f_friends')) || [],
-    tasks: JSON.parse(localStorage.getItem('f_done_tasks')) || [],
-    farmStartTime: parseInt(localStorage.getItem('f_start')) || Date.now(),
-    hourlyRate: 9,
-    claimDuration: 3600
+// GLOBAL STATE
+let state = { 
+    bal: parseInt(localStorage.getItem('f_bal')) || 0, 
+    friends: JSON.parse(localStorage.getItem('f_friends')) || [], 
+    tasks: JSON.parse(localStorage.getItem('f_done_tasks')) || [], 
+    farmStartTime: parseInt(localStorage.getItem('f_start')) || Date.now(), 
+    hourlyRate: 9, 
+    claimDuration: 3600 
 };
 
 const BOT_NAME = "FlashyGameBot";
 const REF_LINK = `https://t.me/${BOT_NAME}?start=${tg.initDataUnsafe.user?.id || '123'}`;
 
-window.onload = () => {
-    initUser();
-    updateUI();
-    renderTasks();
-    renderFriends();
-    setInterval(updateFarm, 1000);
+// Başlangıç fonksiyonları
+window.onload = () => { 
+    initUser(); 
+    updateUI(); 
+    renderTasks(); 
+    renderFriends(); 
+    setInterval(updateFarm, 1000); 
 };
 
 function initUser() {

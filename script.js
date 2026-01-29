@@ -30,6 +30,7 @@ function updateFarm() {
     const btn = document.getElementById('btn-claim');
     const timer = document.getElementById('claim-timer');
     const amount = document.getElementById('farm-amount');
+    const progress = document.getElementById('farm-progress');
     const dot = document.getElementById('status-dot');
     const statusText = document.getElementById('status-text');
 
@@ -43,14 +44,19 @@ function updateFarm() {
     const elapsed = Math.floor((Date.now() - state.farmStartTime) / 1000);
     const remaining = Math.max(0, state.claimDuration - elapsed);
     const mined = Math.min(state.hourlyRate * 12, (elapsed * (state.hourlyRate / 3600)));
-
+    
     amount.innerText = mined.toFixed(5);
+    
+    // Progress Bar (12 saate göre)
+    const percent = Math.min(100, (elapsed / state.claimDuration) * 100);
+    progress.style.width = percent + "%";
 
     if (elapsed >= state.claimDuration) {
-        timer.innerText = "Ready!";
+        timer.innerText = "Claim Ready!";
         btn.innerText = "CLAIM REWARDS";
         btn.disabled = false;
-        dot.style.backgroundColor = "#4cd137";
+        dot.style.background = "#4cd137";
+        dot.style.boxShadow = "0 0 8px #4cd137";
         statusText.innerText = "Claim Ready";
     } else {
         const h = Math.floor(remaining / 3600);
@@ -59,13 +65,16 @@ function updateFarm() {
         timer.innerText = `${h}h ${m}m ${s}s`;
         btn.innerText = "FARMING...";
         btn.disabled = true;
-        dot.style.backgroundColor = "#ff2d55"; // Farming sırasında kırmızı-pembe nokta
-        statusText.innerText = "Farming";
+        dot.style.background = "#ff2d55"; // Çalışırken pembe-kırmızı dot
+        dot.style.boxShadow = "0 0 8px #ff2d55";
+        statusText.innerText = "Active";
     }
 }
 
 function processClaim() {
-    if (state.farmStartTime === 0 || (Math.floor((Date.now() - state.farmStartTime) / 1000) >= state.claimDuration)) {
+    const elapsed = Math.floor((Date.now() - state.farmStartTime) / 1000);
+    
+    if (state.farmStartTime === 0 || elapsed >= state.claimDuration) {
         if (state.farmStartTime !== 0) {
             state.bal += (state.hourlyRate * 12);
             localStorage.setItem('f_bal', state.bal);
@@ -75,11 +84,4 @@ function processClaim() {
         updateUI();
         tg.HapticFeedback.notificationOccurred('success');
     }
-}
-
-function nav(id, el) {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.getElementById('page-' + id).classList.add('active');
-    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-    el.classList.add('active');
 }

@@ -1,149 +1,118 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Flashy App</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        :root { 
-            --bg: #050505; 
-            --card: #121212; 
-            --accent: #ff2d55; /* Modern Pembe-Kırmızı */
-            --text: #ffffff; 
-            --gray: #666666; 
-            --dark-gray: #1a1a1a;
-        }
+<style>
+    /* Modern Minimal Tema */
+    :root { 
+        --bg: #000000; 
+        --card: #111111; 
+        --accent: #ff2d55; 
+        --accent-gradient: linear-gradient(135deg, #ff2d55 0%, #d31027 100%);
+        --text: #ffffff; 
+        --gray: #666666; 
+    }
 
-        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; outline: none; margin: 0; padding: 0; }
-        body { font-family: 'Segoe UI', Roboto, Helvetica, sans-serif; background: var(--bg); color: var(--text); overflow: hidden; height: 100vh; }
-        
-        /* Header & User Info */
-        .user-header { display: flex; flex-direction: column; align-items: center; padding-top: 30px; gap: 8px; }
-        .avatar-circle { width: 65px; height: 65px; border-radius: 50%; border: 2px solid var(--dark-gray); padding: 3px; background: var(--bg); }
-        .username-text { font-size: 0.9rem; font-weight: 500; color: var(--gray); }
+    body { background-color: var(--bg); color: var(--text); font-family: 'Inter', -apple-system, sans-serif; }
 
-        /* Balance & Level */
-        .main-balance-container { text-align: center; margin: 35px 0; }
-        .total-balance { font-size: 3.5rem; font-weight: 800; letter-spacing: -1.5px; }
-        .coin-name { font-size: 1.4rem; color: var(--accent); margin-left: 5px; }
-        .level-tag { display: inline-flex; align-items: center; gap: 6px; background: var(--dark-gray); padding: 6px 16px; border-radius: 20px; font-size: 0.75rem; color: #888; margin-top: 8px; }
-        .crown-icon { color: #fcd535; font-size: 0.8rem; }
+    /* Kullanıcı Alanı */
+    .user-header { display: flex; flex-direction: column; align-items: center; margin-top: 25px; gap: 8px; }
+    .avatar-circle { width: 55px; height: 55px; border-radius: 50%; border: 1.5px solid #222; padding: 3px; }
+    .username-text { font-size: 0.85rem; color: var(--gray); font-weight: 500; }
 
-        /* Farming Status Card */
-        .status-card { background: var(--card); border: 1px solid #1f1f1f; border-radius: 28px; padding: 22px; margin: 0 20px; position: relative; }
-        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .card-title { color: var(--gray); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
-        .status-indicator { display: flex; align-items: center; gap: 6px; }
-        .status-dot { width: 8px; height: 8px; background-color: #4cd137; border-radius: 50%; box-shadow: 0 0 10px #4cd137; }
-        .status-label { font-size: 0.75rem; color: #4cd137; font-weight: 600; }
+    /* Bakiye Alanı */
+    .balance-container { text-align: center; margin: 40px 0; }
+    .total-balance { font-size: 3.5rem; font-weight: 800; letter-spacing: -1.5px; }
+    .unit-text { font-size: 1.2rem; color: var(--gray); font-weight: 400; margin-left: 5px; }
+    .level-tag { display: inline-flex; align-items: center; gap: 6px; background: #1a1a1a; padding: 5px 12px; border-radius: 20px; font-size: 0.7rem; color: #888; margin-top: 10px; }
+    .crown-icon { color: #fcd535; font-size: 0.75rem; }
 
-        .mined-amount { font-size: 2.4rem; font-weight: 700; margin-bottom: 15px; }
-        .mined-amount span { font-size: 1rem; color: #444; }
+    /* Farming Status Kartı */
+    .farming-card { background: var(--card); border-radius: 28px; padding: 22px; margin: 0 20px; border: 1px solid #1f1f1f; }
+    .card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+    .card-label { color: #444; font-size: 0.75rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
+    .status-badge { display: flex; align-items: center; gap: 6px; }
+    .dot { width: 7px; height: 7px; background: #4cd137; border-radius: 50%; box-shadow: 0 0 8px #4cd137; }
+    .status-txt { font-size: 0.75rem; color: #4cd137; font-weight: 600; }
 
-        .stats-grid { border-top: 1px solid #1f1f1f; padding-top: 15px; display: flex; flex-direction: column; gap: 10px; }
-        .stat-line { display: flex; justify-content: space-between; font-size: 0.85rem; }
-        .stat-line .label { color: #555; }
-        .stat-line .val { color: #eee; font-weight: 500; }
+    .amount-display { font-size: 2.5rem; font-weight: 700; margin-bottom: 20px; }
+    .amount-display .sub { font-size: 1rem; color: #333; }
 
-        /* Action Button */
-        .claim-button { 
-            width: calc(100% - 40px); margin: 25px 20px; padding: 18px; border-radius: 22px; border: none;
-            background: linear-gradient(135deg, #ff2d55 0%, #d31027 100%);
-            color: white; font-weight: 700; font-size: 1rem; letter-spacing: 1px;
-            box-shadow: 0 8px 20px rgba(255, 45, 85, 0.25); transition: 0.3s;
-        }
-        .claim-button:disabled { background: #222; color: #444; box-shadow: none; opacity: 0.6; }
+    .stat-row { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 10px; }
+    .stat-row .lbl { color: #444; }
+    .stat-row .val { color: #bbb; }
 
-        /* Footer Icons Grid */
-        .footer-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 0 20px; margin-bottom: 100px; }
-        .f-card { background: #0a0a0a; border: 1px solid #151515; border-radius: 22px; padding: 18px 5px; display: flex; flex-direction: column; align-items: center; gap: 10px; font-size: 0.75rem; color: #555; font-weight: 600; }
-        .gif-icon { width: 38px; height: 38px; }
+    /* Progress Bar */
+    .bar-bg { height: 10px; background: #000; border-radius: 10px; overflow: hidden; margin: 15px 0; border: 1px solid #1a1a1a; }
+    .bar-fill { width: 0%; height: 100%; background: var(--accent-gradient); transition: width 1s linear; }
 
-        /* Navigation & Container */
-        .container { height: 100vh; overflow-y: auto; padding-bottom: 90px; }
-        .page { display: none; }
-        .page.active { display: block; }
-        .nav { position: fixed; bottom: 0; width: 100%; background: #050505; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #111; z-index: 1000; }
-        .nav-item { color: #444; font-size: 0.65rem; display: flex; flex-direction: column; align-items: center; gap: 5px; }
-        .nav-item.active { color: var(--accent); }
-    </style>
-</head>
-<body>
+    /* Claim Button */
+    .claim-btn { 
+        width: calc(100% - 40px); margin: 25px 20px; padding: 18px; border-radius: 22px; border: none;
+        background: var(--accent-gradient); color: white; font-weight: 700; font-size: 1rem;
+        box-shadow: 0 10px 20px rgba(255, 45, 85, 0.2); 
+    }
+    .claim-btn:disabled { background: #1a1a1a; color: #444; box-shadow: none; opacity: 0.6; }
 
-    <div class="container">
-        <div id="page-farm" class="page active">
-            <div class="user-header">
-                <img id="u-pic" class="avatar-circle" src="https://cdn-icons-png.flaticon.com/512/149/149071.png">
-                <span id="u-name" class="username-text">Yükleniyor...</span>
-            </div>
+    /* Footer Visuals */
+    .footer-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 0 20px; }
+    .v-item { background: #080808; border-radius: 22px; padding: 18px 5px; display: flex; flex-direction: column; align-items: center; gap: 10px; border: 1px solid #111; }
+    .v-item span { font-size: 0.7rem; color: #444; font-weight: 600; }
+    .gif-img { width: 38px; height: 38px; }
+</style>
 
-            <div class="main-balance-container">
-                <h1 class="total-balance"><span id="global-bal">0</span> <span class="coin-name">$FLSY</span></h1>
-                <div class="level-tag">
-                    <span>Starter</span>
-                    <i class="fas fa-crown crown-icon"></i>
-                </div>
-            </div>
+<div id="page-farm" class="page active">
+    <div class="user-header">
+        <img id="u-pic" class="avatar-circle" src="https://cdn-icons-png.flaticon.com/512/149/149071.png">
+        <span id="u-name" class="username-text">Yükleniyor...</span>
+    </div>
 
-            <div class="status-card">
-                <div class="card-header">
-                    <span class="card-title">Farming Status</span>
-                    <div class="status-indicator">
-                        <span id="status-dot" class="status-dot"></span>
-                        <span id="status-text" class="status-label">Active</span>
-                    </div>
-                </div>
-                
-                <div class="mined-amount"><span id="farm-amount">0.00000</span> <span>$FLSY</span></div>
-                
-                <div class="stats-grid">
-                    <div class="stat-line">
-                        <span class="label">Hourly Rate</span>
-                        <span class="val">22 $FLSY / hr</span>
-                    </div>
-                    <div class="stat-line">
-                        <span class="label">Claim Period</span>
-                        <span class="val">Every 12 hour</span>
-                    </div>
-                    <div class="stat-line" style="margin-top:5px;">
-                        <span class="label" id="timer-label">Next Claim</span>
-                        <span class="val" id="claim-timer">--:--:--</span>
-                    </div>
-                </div>
-            </div>
+    <div class="balance-container">
+        <h1 class="total-balance"><span id="global-bal">0</span> <span class="unit-text">flsy</span></h1>
+        <div class="level-tag">
+            <span>Starter</span>
+            <i class="fas fa-crown crown-icon"></i>
+        </div>
+    </div>
 
-            <button id="btn-claim" class="claim-button" onclick="processClaim()">CLAIM REWARDS</button>
-
-            <div class="footer-cards">
-                <div class="f-card">
-                    <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJidW5hbm9pZnR6eXp6ZzR6ZzR6ZzR6ZzR6ZzR6ZzR6ZzR6ZzR6JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1z/LidwqEcE2tD3C809nX/giphy.gif" class="gif-icon">
-                    <span>Rewards</span>
-                </div>
-                <div class="f-card">
-                    <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJidW5hbm9pZnR6eXp6ZzR6ZzR6ZzR6ZzR6ZzR6ZzR6ZzR6JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1z/3o7TKVUn7iM8FMEU24/giphy.gif" class="gif-icon">
-                    <span>Earn</span>
-                </div>
-                <div class="f-card">
-                    <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJidW5hbm9pZnR6eXp6ZzR6ZzR6ZzR6ZzR6ZzR6ZzR6ZzR6JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1z/3o7TKMGpxPucV53WTe/giphy.gif" class="gif-icon">
-                    <span>Spin</span>
-                </div>
+    <div class="farming-card">
+        <div class="card-head">
+            <span class="card-label">Farming Status</span>
+            <div class="status-badge">
+                <span id="status-dot" class="dot"></span>
+                <span id="status-text" class="status-txt">Active</span>
             </div>
         </div>
 
-        <div id="page-tasks" class="page">...</div>
-        <div id="page-friends" class="page">...</div>
-        <div id="page-wallet" class="page">...</div>
+        <div class="amount-display">
+            <span id="farm-amount">0.00000</span> <span class="sub">flsy</span>
+        </div>
+
+        <div class="stat-row">
+            <span class="lbl">Hourly Rate</span>
+            <span class="val">22 flsy hr</span>
+        </div>
+        <div class="stat-row">
+            <span class="lbl">Claim Period</span>
+            <span class="val">Every 12 hours</span>
+        </div>
+
+        <div class="bar-bg">
+            <div id="farm-progress" class="bar-fill"></div>
+        </div>
+        <p id="claim-timer" style="text-align:center; font-size:0.8rem; color:#444;">--:--:--</p>
     </div>
 
-    <div class="nav">
-        <div class="nav-item active" onclick="nav('farm', this)"><i class="fas fa-seedling"></i>FARM</div>
-        <div class="nav-item" onclick="nav('tasks', this)"><i class="fas fa-tasks"></i>TASKS</div>
-        <div class="nav-item" onclick="nav('friends', this)"><i class="fas fa-users"></i>FRIENDS</div>
-        <div class="nav-item" onclick="nav('wallet', this)"><i class="fas fa-wallet"></i>WALLET</div>
-    </div>
+    <button id="btn-claim" class="claim-btn" onclick="processClaim()">CLAIM REWARDS</button>
 
-    <script src="script.js"></script>
-</body>
-</html>
+    <div class="footer-grid">
+        <div class="v-item">
+            <img src="https://i.imgur.com/G3P2JpT.gif" class="gif-img">
+            <span>Rewards</span>
+        </div>
+        <div class="v-item">
+            <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJidW5hbm9pZnR6eXp6ZzR6ZzR6ZzR6ZzR6ZzR6ZzR6ZzR6ZzR6JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1z/3o7TKVUn7iM8FMEU24/giphy.gif" class="gif-img">
+            <span>Earn</span>
+        </div>
+        <div class="v-item">
+            <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJidW5hbm9pZnR6eXp6ZzR6ZzR6ZzR6ZzR6ZzR6ZzR6ZzR6JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1z/3o7TKMGpxPucV53WTe/giphy.gif" class="gif-img">
+            <span>Spin</span>
+        </div>
+    </div>
+</div>

@@ -21,6 +21,13 @@
         .page { display: none; padding: 0 20px; height: 100%; }
         .page.active { display: block; }
 
+        /* Farm Sayfası Tasarımı (Görseldeki Gibi) */
+        .farm-card { background: #1a1a1a; border: 1px solid #333; padding: 25px; border-radius: 18px; margin-top: 20px; }
+        .stat-row { display: flex; justify-content: space-between; color: var(--gray); font-size: 0.85rem; margin-bottom: 8px; }
+        .progress-container { background: #000; height: 45px; border-radius: 12px; position: relative; overflow: hidden; margin-bottom: 10px; border: 1px solid #333; }
+        .progress-bar { background: linear-gradient(90deg, #fcd535, #e67e22); width: 0%; height: 100%; transition: width 1s linear; }
+        .timer-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-weight: bold; font-size: 0.9rem; width: 100%; text-align: center; }
+
         .card { background: var(--card); border: 1px solid #222; border-radius: 18px; padding: 15px; margin-bottom: 15px; }
         .list-item { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; background: #1a1a1a; padding: 12px; border-radius: 15px; }
         .btn { border: none; padding: 10px 20px; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.3s; }
@@ -40,7 +47,7 @@
     <div class="header">
         <div class="user-box">
             <img id="u-pic" class="user-pic" src="https://cdn-icons-png.flaticon.com/512/149/149071.png">
-            <span id="u-name" style="font-weight: 600;">Misafir</span>
+            <span id="u-name" style="font-weight: 600;">Yükleniyor...</span>
         </div>
         <div class="balance-box">
             <i class="fas fa-coins"></i>
@@ -49,10 +56,25 @@
     </div>
 
     <div class="container">
-        <div id="page-game" class="page active">
-            <div style="text-align:center; padding-top:100px;">
-                <h2 style="color:var(--gray)">Oyun Alanı</h2>
-                <p>Yeni içerik için hazır...</p>
+        <div id="page-farm" class="page active">
+            <div style="text-align: center; margin-bottom: 20px; padding-top: 20px;">
+                <div style="color: var(--accent); font-size: 0.9rem; font-weight: bold;"><i class="fas fa-crown"></i> Starter</div>
+            </div>
+            <div class="farm-card">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                    <span style="color: var(--gray); font-size: 0.9rem;"><i class="fas fa-coins" style="color: var(--accent);"></i> Farming Status</span>
+                    <span style="color: #4cd137; font-size: 0.8rem;">● Active</span>
+                </div>
+                <div style="font-size: 2.5rem; font-weight: 900; margin-bottom: 20px;">
+                    <span id="farm-amount">0.00000</span> <small style="font-size: 1rem; color: var(--gray);">OXN</small>
+                </div>
+                <div class="stat-row"><span>Hourly Rate</span><span style="color: #ff4757;">9 OXN/hr</span></div>
+                <div class="stat-row"><span>Claim Period</span><span>Every 1 hour</span></div>
+                <div class="progress-container">
+                    <div id="farm-progress" class="progress-bar"></div>
+                    <span id="claim-timer" class="timer-text">Yükleniyor...</span>
+                </div>
+                <button id="btn-claim" class="btn btn-blue" onclick="processClaim()" disabled style="background: #2f3542; opacity: 0.6;">Boost Farm</button>
             </div>
         </div>
 
@@ -73,11 +95,11 @@
         <div id="page-friends" class="page">
             <h2 style="margin: 20px 0;">Dostlar</h2>
             <div class="card" style="text-align:center;">
-                <p style="color:var(--gray)">Arkadaşlarını davet et, her biri için kazanç sağla!</p>
+                <p style="color:var(--gray)">Arkadaşlarını davet et, kazanç sağla!</p>
                 <h3 style="color:var(--accent)">+30 Flashy</h3>
                 <div style="display:flex; gap:10px; margin-top:15px;">
                     <button class="btn btn-accent" onclick="copyRef()" style="flex:1">Kopyala</button>
-                    <button class="btn btn-blue" onclick="shareRef()" style="flex:2">Arkadaşlarına Gönder</button>
+                    <button class="btn btn-blue" onclick="shareRef()" style="flex:2">Davet Et</button>
                 </div>
             </div>
             <h3 id="friend-count">Dostların (0)</h3>
@@ -86,7 +108,7 @@
     </div>
 
     <div class="nav">
-        <div class="nav-item active" onclick="nav('game', this)"><i class="fas fa-play"></i>OYUN</div>
+        <div class="nav-item active" onclick="nav('farm', this)"><i class="fas fa-seedling"></i>FARM</div>
         <div class="nav-item" onclick="nav('tasks', this)"><i class="fas fa-tasks"></i>GÖREVLER</div>
         <div class="nav-item" onclick="nav('friends', this)"><i class="fas fa-users"></i>DOSTLAR</div>
         <div class="nav-item" onclick="nav('wallet', this)"><i class="fas fa-wallet"></i>CÜZDAN</div>

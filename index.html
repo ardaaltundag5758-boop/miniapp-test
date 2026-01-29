@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, viewport-fit=cover">
-    <title>Uni Jump - Dreamy Edition</title>
+    <title>Uni Jump - Full Edition</title>
     <style>
         body {
             margin: 0; padding: 0;
@@ -17,10 +17,9 @@
             position: relative; 
             width: 100%; max-width: 450px; 
             height: 100%; max-height: 850px;
-            /* Arka plan resmi ve dolgunluk ayarı */
             background-image: url('Gemini_Generated_Image_rkng00rkng00rkng.jpg');
-            background-size: 150% auto; /* Görselin daha dolu durması için hafif zoom */
-            background-position: center bottom;
+            background-size: cover;
+            background-position: center;
             box-shadow: 0 0 50px rgba(0,0,0,0.3);
             overflow: hidden; border-radius: 15px;
         }
@@ -55,6 +54,7 @@
             cursor: pointer; margin-top: 25px; font-weight: bold;
             box-shadow: 0 10px 0 #ee5253;
             transition: 0.1s;
+            pointer-events: auto; /* Tıklama sorunu için eklendi */
         }
         button:active { transform: translateY(5px); box-shadow: 0 5px 0 #ee5253; }
     </style>
@@ -71,7 +71,7 @@
 
     <div id="start-screen">
         <h1 style="font-size: 54px; margin-bottom: 5px; text-shadow: 4px 4px 0 white;">UNI JUMP</h1>
-        <p style="font-weight: bold; color: #444;">Hayallerine Zıpla!</p>
+        <p style="font-weight: bold; color: #444;">Dolu Dolu Macera!</p>
         <button id="startBtn">BAŞLA</button>
     </div>
 </div>
@@ -96,33 +96,27 @@ resizeCanvas();
 let player, platforms, gravity, jumpForce, score, gameActive = false;
 let joystickActive = false;
 let joystickX = 0, basePosX = 0, basePosY = 0;
-let bgOffsetY = 100; // Paralaks için başlangıç değeri
 
 class Player {
     constructor() {
-        this.width = 45; this.height = 45;
+        this.width = 40; this.height = 40;
         this.reset();
     }
     reset() {
-        this.x = canvas.width / 2 - 22;
+        this.x = canvas.width / 2 - 20;
         this.y = canvas.height - 150;
         this.vx = 0; this.vy = 0;
     }
     draw() {
-        // Karakteri görseldeki mantar unicorn'a benzetme (basit çizim)
+        // Görseldeki karakter tarzı
         ctx.fillStyle = 'white';
         ctx.beginPath();
-        ctx.roundRect(this.x, this.y + 10, this.width, this.height - 10, 15);
+        ctx.roundRect(this.x, this.y + 10, this.width, this.height - 10, 10);
         ctx.fill();
-        // Mantar şapka
         ctx.fillStyle = '#ff6b6b';
         ctx.beginPath();
-        ctx.arc(this.x + 22, this.y + 15, 25, Math.PI, 0);
+        ctx.arc(this.x + 20, this.y + 10, 22, Math.PI, 0);
         ctx.fill();
-        // Benekler
-        ctx.fillStyle = 'white';
-        ctx.beginPath(); ctx.arc(this.x + 15, this.y + 5, 4, 0, Math.PI * 2); ctx.fill();
-        ctx.beginPath(); ctx.arc(this.x + 30, this.y + 8, 3, 0, Math.PI * 2); ctx.fill();
     }
     update() {
         this.vy += gravity;
@@ -135,31 +129,46 @@ class Player {
 }
 
 class Platform {
-    constructor(x, y, width = 90, isGround = false) {
+    constructor(x, y, width = 85, isGround = false) {
         this.x = x; this.y = y;
-        this.width = width; this.height = 20;
+        this.width = width; this.height = 18;
         this.isGround = isGround;
-        this.isMoving = !isGround && Math.random() < 0.2; 
-        this.speed = (Math.random() < 0.5 ? 1 : -1) * (2 + Math.random() * 2);
     }
 
     draw() {
-        if (this.isMoving) {
-            this.x += this.speed;
-            if (this.x <= 0 || this.x + this.width >= canvas.width) this.speed *= -1;
-            ctx.fillStyle = '#feca57'; 
-        } else {
-            ctx.fillStyle = this.isGround ? 'transparent' : 'rgba(255, 255, 255, 0.8)';
-        }
-        
+        if (this.isGround) return;
+
+        // Buzlu Platform Gövdesi (Mavi-Beyaz Geçiş)
+        let grad = ctx.createLinearGradient(this.x, this.y, this.x, this.y + this.height);
+        grad.addColorStop(0, '#ffffff');
+        grad.addColorStop(0.5, '#74b9ff');
+        grad.addColorStop(1, '#0984e3');
+
+        ctx.fillStyle = grad;
         ctx.beginPath();
-        ctx.roundRect(this.x, this.y, this.width, this.height, 10);
+        ctx.roundRect(this.x, this.y, this.width, this.height, 8);
         ctx.fill();
-        if(!this.isGround) {
-            ctx.strokeStyle = '#ff9f43';
-            ctx.lineWidth = 2;
-            ctx.stroke();
-        }
+
+        // Kar Sarkıtları (Görseldeki gibi)
+        ctx.fillStyle = '#ffffff';
+        // Sol sarkıt
+        ctx.beginPath();
+        ctx.moveTo(this.x + 15, this.y + this.height);
+        ctx.lineTo(this.x + 20, this.y + this.height + 12);
+        ctx.lineTo(this.x + 25, this.y + this.height);
+        ctx.fill();
+        // Sağ sarkıt
+        ctx.beginPath();
+        ctx.moveTo(this.x + 55, this.y + this.height);
+        ctx.lineTo(this.x + 60, this.y + this.height + 15);
+        ctx.lineTo(this.x + 65, this.y + this.height);
+        ctx.fill();
+
+        // Üst Beyaz Kar Tabakası
+        ctx.fillStyle = 'rgba(255,255,255,0.8)';
+        ctx.beginPath();
+        ctx.roundRect(this.x + 5, this.y + 2, this.width - 10, 6, 4);
+        ctx.fill();
     }
 }
 
@@ -169,56 +178,55 @@ function init() {
     gravity = 0.45;
     jumpForce = -15;
     score = 0;
-    bgOffsetY = 100;
     ui.innerText = `SKOR: 0`;
     
     platforms.push(new Platform(0, canvas.height - 30, canvas.width, true));
     
-    for (let i = 1; i < 10; i++) {
+    for (let i = 1; i < 9; i++) {
         platforms.push(new Platform(
-            Math.random() * (canvas.width - 90), 
-            (canvas.height - 30) - (i * 110)
+            Math.random() * (canvas.width - 85), 
+            (canvas.height - 30) - (i * 115)
         ));
     }
 }
 
 function startGame() {
+    console.log("Oyun Başlıyor...");
     startScreen.style.display = 'none';
     gameActive = true;
     init();
     animate();
 }
 
-startBtn.addEventListener('click', startGame);
+// Event listener'ları hem tık hem dokunmatik için güncelledim
+startBtn.onclick = (e) => {
+    e.stopPropagation();
+    startGame();
+};
 
 function animate() {
     if (!gameActive) return;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    if (player.y < canvas.height / 2) {
-        let moveUp = canvas.height / 2 - player.y;
+    if (player.y < canvas.height / 3) {
+        let moveUp = canvas.height / 3 - player.y;
         player.y += moveUp;
         score += Math.floor(moveUp);
         ui.innerText = `SKOR: ${score}`;
-        
-        // Arka plan paralaks hareketi
-        bgOffsetY += moveUp * 0.2;
-        container.style.backgroundPositionY = `${bgOffsetY}px`;
         
         platforms.forEach(p => {
             p.y += moveUp;
             if (p.y > canvas.height) {
                 p.y = 0;
-                p.x = Math.random() * (canvas.width - 90);
+                p.x = Math.random() * (canvas.width - 85);
                 p.isGround = false; 
-                p.isMoving = Math.random() < 0.2;
             }
         });
     }
 
     platforms.forEach(p => {
         p.draw();
-        if (player.vy > 0 && player.x + player.width*0.1 < p.x + p.width && player.x + player.width*0.9 > p.x) {
+        if (player.vy > 0 && player.x + player.width*0.2 < p.x + p.width && player.x + player.width*0.8 > p.x) {
             if (player.y + player.height > p.y && player.y + player.height < p.y + p.height + player.vy + 2) {
                 player.y = p.y - player.height;
                 player.vy = jumpForce;
@@ -233,13 +241,13 @@ function animate() {
         gameActive = false;
         startScreen.style.display = 'flex';
         startScreen.innerHTML = `<h1 style="font-size:48px; text-shadow:4px 4px 0 white;">EYVAH!</h1><p style="font-size:24px; font-weight:bold; color:#444;">Skor: ${score}</p><button id="restartBtn">TEKRAR DENE</button>`;
-        document.getElementById('restartBtn').addEventListener('click', () => location.reload());
+        document.getElementById('restartBtn').onclick = () => location.reload();
     } else {
         requestAnimationFrame(animate);
     }
 }
 
-// Joystick kodları (Dokunmatik hassasiyeti artırıldı)
+// Joystick kodları
 function startJoystick(e) {
     if (!gameActive) return;
     joystickActive = true;
@@ -256,7 +264,6 @@ function startJoystick(e) {
 function moveJoystick(e) {
     if (!joystickActive) return;
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
     const rect = container.getBoundingClientRect();
     let deltaX = (clientX - rect.left) - basePosX;
     const maxDist = 50;
@@ -271,9 +278,9 @@ function endJoystick() {
 }
 
 container.addEventListener('mousedown', startJoystick);
-container.addEventListener('touchstart', (e) => { startJoystick(e); e.preventDefault(); }, {passive: false});
+container.addEventListener('touchstart', (e) => { if(gameActive) e.preventDefault(); startJoystick(e); }, {passive: false});
 window.addEventListener('mousemove', moveJoystick);
-window.addEventListener('touchmove', (e) => { moveJoystick(e); }, {passive: false});
+window.addEventListener('touchmove', (e) => { if(gameActive) e.preventDefault(); moveJoystick(e); }, {passive: false});
 window.addEventListener('mouseup', endJoystick);
 window.addEventListener('touchend', endJoystick);
 

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, viewport-fit=cover">
-    <title>Uni Jump - Pro Physics</title>
+    <title>Uni Jump - Dynamic Joystick</title>
     <style>
         body {
             margin: 0; padding: 0;
@@ -27,17 +27,23 @@
             text-shadow: 2px 2px 4px rgba(0,0,0,0.5); pointer-events: none;
             z-index: 5;
         }
+        /* DİNAMİK JOYSTICK TASARIMI */
         #joystick-wrapper {
-            position: absolute; bottom: 60px; left: 50%;
-            transform: translateX(-50%); width: 120px; height: 120px;
-            background: rgba(255, 255, 255, 0.1); border-radius: 50%;
-            display: flex; justify-content: center; align-items: center;
-            z-index: 20; border: 2px solid rgba(255, 255, 255, 0.15);
+            position: absolute; 
+            width: 100px; height: 100px;
+            background: rgba(255, 255, 255, 0.15); 
+            border-radius: 50%;
+            display: none; /* Sadece dokunulduğunda görünür */
+            justify-content: center; align-items: center;
+            z-index: 20; border: 2px solid rgba(255, 255, 255, 0.2);
+            pointer-events: none; /* Dokunmayı engellemesin */
         }
         #joystick-knob {
-            width: 55px; height: 55px; background: #00e676;
-            border-radius: 50%; box-shadow: 0 0 20px rgba(0,230,118,0.6);
-            cursor: pointer; touch-action: none; position: absolute;
+            width: 45px; height: 45px; 
+            background: #00e676;
+            border-radius: 50%; 
+            box-shadow: 0 0 15px rgba(0,230,118,0.6);
+            position: absolute;
         }
         #start-screen {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -64,7 +70,7 @@
 
     <div id="start-screen">
         <h1 style="font-size: 50px; margin-bottom: 10px; color: #00e676;">UNI JUMP</h1>
-        <p>Ayağını bloğa tam denk getir!</p>
+        <p>Ekrana basılı tut ve sürükle!</p>
         <button onclick="startGame()">BAŞLA</button>
     </div>
 </div>
@@ -87,6 +93,8 @@ resizeCanvas();
 let player, platforms, gravity, jumpForce, score, gameActive;
 let joystickActive = false;
 let joystickX = 0;
+let basePosX = 0; // Joystick'in ilk tıklandığı yer (Merkez)
+let basePosY = 0;
 
 class Player {
     constructor() {
@@ -141,14 +149,9 @@ function init() {
     score = 0;
     gameActive = true;
     ui.innerText = `Skor: 0`;
-    
     platforms.push(new Platform(0, canvas.height - 30, canvas.width, true));
-    
     for (let i = 1; i < 8; i++) {
-        platforms.push(new Platform(
-            Math.random() * (canvas.width - 85), 
-            (canvas.height - 30) - (i * 120)
-        ));
+        platforms.push(new Platform(Math.random() * (canvas.width - 85), (canvas.height - 30) - (i * 120)));
     }
 }
 
@@ -178,19 +181,10 @@ function animate() {
 
     platforms.forEach(p => {
         p.draw();
-        
-        // --- GELİŞMİŞ ÇARPIŞMA FİZİĞİ ---
-        // 1. Sadece aşağı düşerken çarpışma olsun (vy > 0)
-        if (player.vy > 0 && 
-            player.x + player.width * 0.2 < p.x + p.width && 
-            player.x + player.width * 0.8 > p.x) {
-            
-            // 2. Karakterin ayağı platformun üst seviyesindeyse VEYA içinden geçmek üzereyse
-            if (player.y + player.height > p.y && 
-                player.y + player.height < p.y + p.height + player.vy) {
-                
-                player.y = p.y - player.height; // Karakteri tam platformun üzerine koy
-                player.vy = jumpForce; // Zıplat
+        if (player.vy > 0 && player.x + player.width * 0.2 < p.x + p.width && player.x + player.width * 0.8 > p.x) {
+            if (player.y + player.height > p.y && player.y + player.height < p.y + p.height + player.vy) {
+                player.y = p.y - player.height;
+                player.vy = jumpForce;
             }
         }
     });
@@ -201,43 +195,74 @@ function animate() {
     if (player.y > canvas.height) {
         gameActive = false;
         startScreen.style.display = 'flex';
-        startScreen.innerHTML = `<h1>EYVAH!</h1><p style="font-size:24px">Skor: ${score}</p><button onclick="startGame()">DENE</button>`;
+        startScreen.innerHTML = `<h1>OYUN BİTTİ</h1><p style="font-size:24px">Skor: ${score}</p><button onclick="startGame()">TEKRAR</button>`;
     }
     requestAnimationFrame(animate);
 }
 
-// Joystick Kodları...
-function handleJoystick(e) {
-    if (!joystickActive) return;
+// --- DİNAMİK JOYSTICK MANTIĞI ---
+
+function startJoystick(e) {
+    if (!gameActive) return;
+    joystickActive = true;
+    
+    // Dokunulan veya tıklanan koordinatları al
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
     const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-    const rect = wrapper.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-    let deltaX = clientX - centerX;
-    let deltaY = clientY - centerY;
+    
+    basePosX = clientX;
+    basePosY = clientY;
+    
+    // Joystick çerçevesini oraya taşı ve göster
+    wrapper.style.display = 'flex';
+    wrapper.style.left = `${basePosX - 50}px`;
+    wrapper.style.top = `${basePosY - 50}px`;
+    
+    knob.style.transform = `translate(0px, 0px)`;
+}
+
+function moveJoystick(e) {
+    if (!joystickActive) return;
+    
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    
+    let deltaX = clientX - basePosX;
+    let deltaY = clientY - basePosY;
+    
     const maxDist = 50;
     const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+    
     if (distance > maxDist) {
         deltaX = (deltaX / distance) * maxDist;
         deltaY = (deltaY / distance) * maxDist;
+        
+        // --- BURASI KRİTİK: Çerçeve parmağı takip etsin ---
+        basePosX = clientX - deltaX;
+        basePosY = clientY - deltaY;
+        wrapper.style.left = `${basePosX - 50}px`;
+        wrapper.style.top = `${basePosY - 50}px`;
     }
+    
     knob.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
-    joystickX = deltaX / maxDist; 
+    joystickX = deltaX / maxDist;
 }
 
-function stopJoystick() {
+function endJoystick() {
     joystickActive = false;
-    knob.style.transform = `translate(0px, 0px)`;
     joystickX = 0;
+    wrapper.style.display = 'none'; // Bırakınca gizle
 }
 
-knob.addEventListener('mousedown', () => joystickActive = true);
-knob.addEventListener('touchstart', (e) => { joystickActive = true; e.preventDefault(); });
-window.addEventListener('mousemove', handleJoystick);
-window.addEventListener('touchmove', handleJoystick, { passive: false });
-window.addEventListener('mouseup', stopJoystick);
-window.addEventListener('touchend', stopJoystick);
+// Tüm ekranda dinle
+window.addEventListener('mousedown', startJoystick);
+window.addEventListener('touchstart', (e) => { startJoystick(e); e.preventDefault(); }, {passive: false});
+
+window.addEventListener('mousemove', moveJoystick);
+window.addEventListener('touchmove', (e) => { moveJoystick(e); e.preventDefault(); }, {passive: false});
+
+window.addEventListener('mouseup', endJoystick);
+window.addEventListener('touchend', endJoystick);
 
 </script>
 </body>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, viewport-fit=cover">
-    <title>Uni Jump - Pure Edition</title>
+    <title>Uni Jump - Moving Platforms</title>
     <style>
         body {
             margin: 0; padding: 0;
@@ -65,7 +65,7 @@
 
     <div id="start-screen">
         <h1 style="font-size: 48px; margin-bottom: 5px; color: #00e676;">UNI JUMP</h1>
-        <p style="opacity: 0.8;">Sadece yukarı tırman!</p>
+        <p style="opacity: 0.8;">Hareketli platformlara dikkat!</p>
         <button id="startBtn">BAŞLA</button>
     </div>
 </div>
@@ -122,11 +122,30 @@ class Player {
 
 class Platform {
     constructor(x, y, width = 85, isGround = false) {
-        this.x = x; this.y = y; this.width = width;
-        this.height = 16; this.isGround = isGround;
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = 16;
+        this.isGround = isGround;
+        
+        // HAREKETLİ PLATFORM AYARLARI
+        // Zemin değilse %30 ihtimalle hareketli olsun
+        this.isMoving = !isGround && Math.random() < 0.3;
+        this.speed = (Math.random() < 0.5 ? 1 : -1) * (2 + Math.random() * 2);
     }
+
     draw() {
-        ctx.fillStyle = this.isGround ? '#795548' : '#fff';
+        if (this.isMoving) {
+            this.x += this.speed;
+            // Duvar çarpışma kontrolü
+            if (this.x <= 0 || this.x + this.width >= canvas.width) {
+                this.speed *= -1;
+            }
+            ctx.fillStyle = '#e040fb'; // Hareketli platform rengi (Mor)
+        } else {
+            ctx.fillStyle = this.isGround ? '#795548' : '#fff'; // Sabit platform (Beyaz/Kahve)
+        }
+        
         ctx.beginPath();
         ctx.roundRect(this.x, this.y, this.width, this.height, 6);
         ctx.fill();
@@ -141,10 +160,10 @@ function init() {
     score = 0;
     ui.innerText = `Skor: 0`;
     
-    // Sadece başlangıç için ZEMİN (Ground)
+    // İlk zemin
     platforms.push(new Platform(0, canvas.height - 30, canvas.width, true));
     
-    // İlk platformları yerleştir
+    // İlk platform seti
     for (let i = 1; i < 8; i++) {
         platforms.push(new Platform(
             Math.random() * (canvas.width - 85), 
@@ -175,19 +194,21 @@ function animate() {
         
         platforms.forEach(p => {
             p.y += moveUp;
-            // Ekranda aşağı düşen platformu yukarı taşı
             if (p.y > canvas.height) {
                 p.y = 0;
                 p.x = Math.random() * (canvas.width - 85);
-                // ÖNEMLİ: Yukarı taşınan zemin artık normal bir platformdur!
                 p.isGround = false; 
-                p.width = 85; 
+                p.width = 85;
+                // Yeni platform %30 şansla yine hareketli olabilir
+                p.isMoving = Math.random() < 0.3;
+                p.speed = (Math.random() < 0.5 ? 1 : -1) * (2 + Math.random() * 2);
             }
         });
     }
 
     platforms.forEach(p => {
         p.draw();
+        // Gelişmiş Çarpışma
         if (player.vy > 0 && player.x + player.width*0.2 < p.x + p.width && player.x + player.width*0.8 > p.x) {
             if (player.y + player.height > p.y && player.y + player.height < p.y + p.height + player.vy + 2) {
                 player.y = p.y - player.height;
@@ -202,7 +223,7 @@ function animate() {
     if (player.y > canvas.height) {
         gameActive = false;
         startScreen.style.display = 'flex';
-        startScreen.innerHTML = `<h1>OYUN BİTTİ</h1><p style="font-size:24px">Skor: ${score}</p><button id="restartBtn">TEKRAR DENE</button>`;
+        startScreen.innerHTML = `<h1>OYUN BİTTİ</h1><p style="font-size:24px">Skor: ${score}</p><button id="restartBtn">TEKRAR</button>`;
         const rBtn = document.getElementById('restartBtn');
         rBtn.addEventListener('click', () => location.reload());
         rBtn.addEventListener('touchstart', () => location.reload());
@@ -211,7 +232,7 @@ function animate() {
     }
 }
 
-// JOYSTICK SİSTEMİ
+// JOYSTICK KODLARI...
 function startJoystick(e) {
     if (!gameActive) return;
     joystickActive = true;

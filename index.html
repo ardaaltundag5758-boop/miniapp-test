@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, viewport-fit=cover">
-    <title>Uni Jump - Full Edition</title>
+    <title>Uni Jump - Ice Edition</title>
     <style>
         body {
             margin: 0; padding: 0;
             display: flex; justify-content: center; align-items: center;
             height: 100vh; width: 100vw;
-            background-color: #a8d8ea;
+            background-color: #121212;
             font-family: 'Segoe UI', Arial, sans-serif; 
             overflow: hidden; touch-action: none;
         }
@@ -17,46 +17,45 @@
             position: relative; 
             width: 100%; max-width: 450px; 
             height: 100%; max-height: 850px;
-            background-image: url('Gemini_Generated_Image_rkng00rkng00rkng.jpg');
+            /* Arka plan kontrastı için hafif bir overlay ile birlikte resim */
+            background: linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.1)), url('Gemini_Generated_Image_rkng00rkng00rkng.jpg');
             background-size: cover;
             background-position: center;
-            box-shadow: 0 0 50px rgba(0,0,0,0.3);
-            overflow: hidden; border-radius: 15px;
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+            overflow: hidden; border-radius: 10px;
         }
-        canvas { display: block; width: 100%; height: 100%; position: relative; z-index: 2; }
+        canvas { display: block; width: 100%; height: 100%; }
         #ui {
             position: absolute; top: 40px; left: 20px;
             color: #ff6b6b; font-size: 28px; font-weight: 900;
             text-shadow: 2px 2px 0px white; pointer-events: none;
             z-index: 5;
         }
+        #start-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.4); backdrop-filter: blur(8px);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            color: white; text-align: center; z-index: 100;
+        }
+        button {
+            padding: 18px 55px; font-size: 26px; background: #ff6b6b;
+            color: white; border: 4px solid white; border-radius: 40px;
+            cursor: pointer; margin-top: 25px; font-weight: bold;
+            box-shadow: 0 8px 0 #ee5253; transition: 0.1s;
+        }
+        button:active { transform: translateY(4px); box-shadow: 0 4px 0 #ee5253; }
+        
         #joystick-wrapper {
             position: absolute; width: 100px; height: 100px;
-            background: rgba(255, 255, 255, 0.4); border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2); border-radius: 50%;
             display: none; justify-content: center; align-items: center;
-            z-index: 20; border: 3px solid white;
+            z-index: 20; border: 2px solid rgba(255, 255, 255, 0.3);
             pointer-events: none;
         }
         #joystick-knob {
-            width: 45px; height: 45px; background: #ffcfdf;
-            border-radius: 50%; box-shadow: 0 0 15px rgba(255,255,255,0.8);
+            width: 45px; height: 45px; background: #00e676;
+            border-radius: 50%; box-shadow: 0 0 15px rgba(0,230,118,0.6);
         }
-        #start-screen {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255, 255, 255, 0.2); 
-            backdrop-filter: blur(5px);
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            color: #ff6b6b; text-align: center; z-index: 100;
-        }
-        button {
-            padding: 15px 50px; font-size: 26px; background: #ff6b6b;
-            color: white; border: 4px solid white; border-radius: 40px;
-            cursor: pointer; margin-top: 25px; font-weight: bold;
-            box-shadow: 0 10px 0 #ee5253;
-            transition: 0.1s;
-            pointer-events: auto; /* Tıklama sorunu için eklendi */
-        }
-        button:active { transform: translateY(5px); box-shadow: 0 5px 0 #ee5253; }
     </style>
 </head>
 <body>
@@ -64,14 +63,10 @@
 <div id="game-container">
     <div id="ui">SKOR: 0</div>
     <canvas id="gameCanvas"></canvas>
-    
-    <div id="joystick-wrapper">
-        <div id="joystick-knob"></div>
-    </div>
-
+    <div id="joystick-wrapper"><div id="joystick-knob"></div></div>
     <div id="start-screen">
-        <h1 style="font-size: 54px; margin-bottom: 5px; text-shadow: 4px 4px 0 white;">UNI JUMP</h1>
-        <p style="font-weight: bold; color: #444;">Dolu Dolu Macera!</p>
+        <h1 style="font-size: 52px; margin-bottom: 5px; text-shadow: 4px 4px 0 #ff6b6b;">UNI JUMP</h1>
+        <p style="opacity: 0.9; font-weight: bold;">Buzlu Dünyada Zıpla!</p>
         <button id="startBtn">BAŞLA</button>
     </div>
 </div>
@@ -108,7 +103,7 @@ class Player {
         this.vx = 0; this.vy = 0;
     }
     draw() {
-        // Görseldeki karakter tarzı
+        // Karakter (Mantar Şapkalı Stil)
         ctx.fillStyle = 'white';
         ctx.beginPath();
         ctx.roundRect(this.x, this.y + 10, this.width, this.height - 10, 10);
@@ -131,44 +126,73 @@ class Player {
 class Platform {
     constructor(x, y, width = 85, isGround = false) {
         this.x = x; this.y = y;
-        this.width = width; this.height = 18;
+        this.width = width; 
+        this.height = 24; // İstediğin gibi kalınlaştırıldı
         this.isGround = isGround;
     }
 
     draw() {
         if (this.isGround) return;
 
-        // Buzlu Platform Gövdesi (Mavi-Beyaz Geçiş)
+        // 1. Gölge (Alt Kısım Parlaması için Kontrast)
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = 'rgba(0,0,0,0.3)';
+
+        // 2. Ana Gövde - Buzlu Mavi Karakteristik Gradyan
         let grad = ctx.createLinearGradient(this.x, this.y, this.x, this.y + this.height);
-        grad.addColorStop(0, '#ffffff');
-        grad.addColorStop(0.5, '#74b9ff');
-        grad.addColorStop(1, '#0984e3');
+        grad.addColorStop(0,   '#e3f2fd');
+        grad.addColorStop(0.4, '#81d4fa');
+        grad.addColorStop(0.7, '#4fc3f7');
+        grad.addColorStop(1,   '#0288d1');
 
         ctx.fillStyle = grad;
         ctx.beginPath();
-        ctx.roundRect(this.x, this.y, this.width, this.height, 8);
+        ctx.roundRect(this.x, this.y, this.width, this.height, 16); 
+        ctx.fill();
+        ctx.shadowBlur = 0; // Diğer çizimler için gölgeyi sıfırla
+
+        // 3. İç Parlama Efekti
+        ctx.fillStyle = 'rgba(255,255,255,0.45)';
+        ctx.beginPath();
+        ctx.roundRect(this.x + 6, this.y + 3, this.width - 12, 12, 10);
         ctx.fill();
 
-        // Kar Sarkıtları (Görseldeki gibi)
+        // 4. Kenar Çizgisi (Cartoon Kontrast)
+        ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(this.x, this.y, this.width, this.height);
+
+        // 5. Kalın Beyaz Kar Tabakası (Üst Kısım)
         ctx.fillStyle = '#ffffff';
-        // Sol sarkıt
         ctx.beginPath();
-        ctx.moveTo(this.x + 15, this.y + this.height);
-        ctx.lineTo(this.x + 20, this.y + this.height + 12);
-        ctx.lineTo(this.x + 25, this.y + this.height);
-        ctx.fill();
-        // Sağ sarkıt
-        ctx.beginPath();
-        ctx.moveTo(this.x + 55, this.y + this.height);
-        ctx.lineTo(this.x + 60, this.y + this.height + 15);
-        ctx.lineTo(this.x + 65, this.y + this.height);
+        ctx.roundRect(this.x + 4, this.y - 4, this.width - 8, 16, 10);
         ctx.fill();
 
-        // Üst Beyaz Kar Tabakası
-        ctx.fillStyle = 'rgba(255,255,255,0.8)';
-        ctx.beginPath();
-        ctx.roundRect(this.x + 5, this.y + 2, this.width - 10, 6, 4);
-        ctx.fill();
+        // 6. 4 Adet Uzun Buz Sarkıtı
+        ctx.fillStyle = '#e3f2fd';
+        const positions = [0.18, 0.38, 0.62, 0.82];
+        const lengths = [22, 28, 20, 25]; // Daha uzun yapıldı
+
+        for (let i = 0; i < 4; i++) {
+            const px = this.x + this.width * positions[i];
+            const py = this.y + this.height - 2;
+
+            ctx.beginPath();
+            ctx.moveTo(px - 7, py);
+            ctx.lineTo(px, py + lengths[i]);
+            ctx.lineTo(px + 7, py);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Sarkıt Parlaması
+            ctx.fillStyle = 'rgba(255,255,255,0.6)';
+            ctx.beginPath();
+            ctx.moveTo(px - 3, py);
+            ctx.lineTo(px, py + lengths[i] * 0.7);
+            ctx.lineTo(px + 3, py);
+            ctx.fill();
+            ctx.fillStyle = '#e3f2fd'; // Renk sıfırla
+        }
     }
 }
 
@@ -180,54 +204,57 @@ function init() {
     score = 0;
     ui.innerText = `SKOR: 0`;
     
+    // İlk zemin
     platforms.push(new Platform(0, canvas.height - 30, canvas.width, true));
     
+    // Platformları dağıt
     for (let i = 1; i < 9; i++) {
         platforms.push(new Platform(
-            Math.random() * (canvas.width - 85), 
-            (canvas.height - 30) - (i * 115)
+            Math.random() * (canvas.width - 90), 
+            (canvas.height - 30) - (i * 120)
         ));
     }
 }
 
 function startGame() {
-    console.log("Oyun Başlıyor...");
     startScreen.style.display = 'none';
     gameActive = true;
     init();
     animate();
 }
 
-// Event listener'ları hem tık hem dokunmatik için güncelledim
-startBtn.onclick = (e) => {
-    e.stopPropagation();
-    startGame();
-};
+startBtn.onclick = (e) => { e.stopPropagation(); startGame(); };
 
 function animate() {
     if (!gameActive) return;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    // Kamera Takibi
     if (player.y < canvas.height / 3) {
         let moveUp = canvas.height / 3 - player.y;
         player.y += moveUp;
-        score += Math.floor(moveUp);
+        score += Math.floor(moveUp / 10);
         ui.innerText = `SKOR: ${score}`;
         
         platforms.forEach(p => {
             p.y += moveUp;
             if (p.y > canvas.height) {
                 p.y = 0;
-                p.x = Math.random() * (canvas.width - 85);
+                p.x = Math.random() * (canvas.width - 90);
                 p.isGround = false; 
             }
         });
     }
 
+    // Çarpışma Kontrolü ve Çizim
     platforms.forEach(p => {
         p.draw();
-        if (player.vy > 0 && player.x + player.width*0.2 < p.x + p.width && player.x + player.width*0.8 > p.x) {
-            if (player.y + player.height > p.y && player.y + player.height < p.y + p.height + player.vy + 2) {
+        // Sadece üst yüzeyle çarpışma (Hassas Ayar)
+        if (player.vy > 0 && 
+            player.x + player.width * 0.2 < p.x + p.width && 
+            player.x + player.width * 0.8 > p.x) {
+            if (player.y + player.height > p.y && 
+                player.y + player.height < p.y + 15) { // Sadece en üst 15px
                 player.y = p.y - player.height;
                 player.vy = jumpForce;
             }
@@ -240,14 +267,14 @@ function animate() {
     if (player.y > canvas.height) {
         gameActive = false;
         startScreen.style.display = 'flex';
-        startScreen.innerHTML = `<h1 style="font-size:48px; text-shadow:4px 4px 0 white;">EYVAH!</h1><p style="font-size:24px; font-weight:bold; color:#444;">Skor: ${score}</p><button id="restartBtn">TEKRAR DENE</button>`;
+        startScreen.innerHTML = `<h1 style="font-size:48px; text-shadow:4px 4px 0 #ff6b6b;">EYVAH!</h1><p style="font-size:24px; font-weight:bold;">Skor: ${score}</p><button id="restartBtn">TEKRAR DENE</button>`;
         document.getElementById('restartBtn').onclick = () => location.reload();
     } else {
         requestAnimationFrame(animate);
     }
 }
 
-// Joystick kodları
+// Kontroller
 function startJoystick(e) {
     if (!gameActive) return;
     joystickActive = true;

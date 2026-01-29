@@ -1,17 +1,18 @@
 const tg = window.Telegram.WebApp;
 tg.expand();
 
+// GLOBAL STATE
 let state = {
     bal: parseInt(localStorage.getItem('f_bal')) || 0,
     friends: JSON.parse(localStorage.getItem('f_friends')) || [],
     tasks: JSON.parse(localStorage.getItem('f_done_tasks')) || [],
     farmStartTime: parseInt(localStorage.getItem('f_start')) || Date.now(),
-    hourlyRate: 9,
-    claimDuration: 3600
+    hourlyRate: 22,      // Saatte 22 OXN
+    claimDuration: 86400 // 24 Saat (saniye cinsinden)
 };
 
 const BOT_NAME = "FlashyGameBot";
-const REF_LINK = `https://t.me/${BOT_NAME}?start=${tg.initDataUnsafe.user?.id || '123'}`;
+const REF_LINK = `https://t.me/${miniapptestttt123_bot}?start=${tg.initDataUnsafe.user?.id || '123'}`;
 
 window.onload = () => {
     initUser();
@@ -47,10 +48,11 @@ function nav(id, el) {
 function updateFarm() {
     const now = Date.now();
     const elapsed = Math.floor((now - state.farmStartTime) / 1000);
-    const remaining = Math.max(0, state.claimDuration - (elapsed % state.claimDuration));
+    const remaining = Math.max(0, state.claimDuration - elapsed);
     
     const perSecond = state.hourlyRate / 3600;
-    const currentMined = (elapsed % state.claimDuration) * perSecond;
+    // Toplam biriken miktar (24 saatlik sınırı geçemez)
+    const currentMined = Math.min(state.hourlyRate * 24, elapsed * perSecond);
     
     const farmAmtEl = document.getElementById('farm-amount');
     const farmProgEl = document.getElementById('farm-progress');
@@ -58,7 +60,12 @@ function updateFarm() {
     const btnEl = document.getElementById('btn-claim');
 
     if(farmAmtEl) farmAmtEl.innerText = currentMined.toFixed(5);
-    if(farmProgEl) farmProgEl.style.width = ((state.claimDuration - remaining) / state.claimDuration * 100) + "%";
+    
+    // Progress bar hesaplama
+    if(farmProgEl) {
+        const progressPercent = Math.min(100, (elapsed / state.claimDuration) * 100);
+        farmProgEl.style.width = progressPercent + "%";
+    }
 
     if (elapsed >= state.claimDuration) {
         if(timerEl) timerEl.innerText = "Claim Ready!";
@@ -69,9 +76,10 @@ function updateFarm() {
             btnEl.innerText = "CLAIM OXN";
         }
     } else {
-        const mins = Math.floor(remaining / 60);
+        const hrs = Math.floor(remaining / 3600);
+        const mins = Math.floor((remaining % 3600) / 60);
         const secs = remaining % 60;
-        if(timerEl) timerEl.innerText = `Next Claim in ${mins}m ${secs}s`;
+        if(timerEl) timerEl.innerText = `Next Claim in ${hrs}h ${mins}m ${secs}s`;
         if(btnEl) {
             btnEl.disabled = true;
             btnEl.style.opacity = "0.6";
@@ -81,7 +89,8 @@ function updateFarm() {
 }
 
 function processClaim() {
-    addBal(state.hourlyRate);
+    // 24 saatlik toplam kazancı ekle (22 * 24 = 528 OXN)
+    addBal(state.hourlyRate * 24);
     state.farmStartTime = Date.now();
     localStorage.setItem('f_start', state.farmStartTime);
     tg.HapticFeedback.notificationOccurred('success');

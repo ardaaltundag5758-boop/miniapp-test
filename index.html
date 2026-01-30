@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Flashy Farming</title>
+    <title>Flashy Farming Boosted</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* CSS: MODERN MINIMAL MOBILE UI */
         :root { 
             --bg: #000000; 
             --card: #111111; 
@@ -18,69 +17,54 @@
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-        
-        body { 
-            background-color: var(--bg); 
-            color: var(--text); 
-            font-family: 'Inter', -apple-system, sans-serif; 
-            overflow-x: hidden;
-            width: 100%;
-        }
+        body { background-color: var(--bg); color: var(--text); font-family: 'Inter', -apple-system, sans-serif; overflow-x: hidden; width: 100%; }
 
-        #page-farm {
-            width: 100%;
-            max-width: 500px;
-            margin: 0 auto;
-            padding: 20px 15px 100px 15px;
-            display: flex;
-            flex-direction: column;
-        }
+        #page-farm { width: 100%; max-width: 500px; margin: 0 auto; padding: 20px 15px 100px 15px; display: flex; flex-direction: column; }
 
-        /* Kullanıcı Alanı */
+        /* Kullanıcı & Bakiye */
         .user-header { display: flex; flex-direction: column; align-items: center; margin-top: 10px; gap: 8px; }
         .avatar-circle { width: 60px; height: 60px; border-radius: 50%; border: 2px solid #1a1a1a; padding: 3px; object-fit: cover; }
         .username-text { font-size: 0.9rem; color: var(--gray); font-weight: 500; }
-
-        /* Bakiye Alanı */
         .balance-container { text-align: center; margin: 35px 0; }
         .total-balance { font-size: 3.2rem; font-weight: 800; letter-spacing: -1.5px; }
         .unit-text { font-size: 1.2rem; color: var(--gray); font-weight: 400; margin-left: 5px; }
-        .level-tag { display: inline-flex; align-items: center; gap: 6px; background: #121212; padding: 6px 14px; border-radius: 20px; font-size: 0.75rem; color: #888; margin-top: 8px; border: 1px solid #1a1a1a; }
-        .crown-icon { color: #fcd535; font-size: 0.8rem; }
 
-        /* Farming Status Kartı */
+        /* Farming Kartı */
         .farming-card { background: var(--card); border-radius: 26px; padding: 22px; border: 1px solid #1f1f1f; width: 100%; }
         .card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .card-label { color: #444; font-size: 0.7rem; text-transform: uppercase; font-weight: 700; letter-spacing: 1px; }
         .status-badge { display: flex; align-items: center; gap: 6px; }
         .dot { width: 8px; height: 8px; border-radius: 50%; }
         .status-txt { font-size: 0.75rem; font-weight: 600; }
-
         .amount-display { font-size: 2.4rem; font-weight: 700; margin-bottom: 15px; }
-        .amount-display .sub { font-size: 1rem; color: #333; font-weight: 400; }
-
+        .amount-display .sub { font-size: 1rem; color: #333; }
         .stat-row { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 8px; }
         .stat-row .lbl { color: #555; }
         .stat-row .val { color: #eee; font-weight: 500; }
 
-        /* Progress Bar */
+        /* Bar */
         .bar-bg { height: 10px; background: #000; border-radius: 10px; overflow: hidden; margin: 15px 0 10px 0; border: 1px solid #1a1a1a; }
         .bar-fill { width: 0%; height: 100%; background: var(--accent-gradient); transition: width 1s linear; }
 
-        /* Claim Button */
+        /* Butonlar */
         .claim-btn { 
-            width: 100%; margin: 25px 0; padding: 18px; border-radius: 20px; border: none;
+            width: 100%; margin-top: 25px; padding: 18px; border-radius: 20px; border: none;
             background: var(--accent-gradient); color: white; font-weight: 700; font-size: 1rem;
             box-shadow: 0 10px 20px rgba(255, 45, 85, 0.2); transition: 0.2s;
         }
-        .claim-btn:active { transform: scale(0.98); }
-        .claim-btn:disabled { background: #1a1a1a; color: #444; box-shadow: none; opacity: 0.6; }
+        .boost-btn {
+            width: 80%; margin: 12px auto; padding: 12px; border-radius: 15px; border: 1px solid var(--accent);
+            background: transparent; color: var(--accent); font-weight: 600; font-size: 0.85rem;
+            transition: 0.2s; display: block; text-align: center;
+        }
+        .boost-btn:active { background: rgba(255, 45, 85, 0.1); transform: scale(0.95); }
+        .boost-btn:disabled { border-color: #222; color: #444; opacity: 0.5; }
 
-        /* Footer Grid */
-        .footer-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        /* Footer */
+        .footer-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
         .v-item { background: #080808; border-radius: 22px; padding: 18px 5px; display: flex; flex-direction: column; align-items: center; gap: 10px; border: 1px solid #111; }
         .v-item span { font-size: 0.7rem; color: #444; font-weight: 600; }
-        .gif-img { width: 35px; height: 35px; object-fit: contain; }
+        .gif-img { width: 35px; height: 35px; }
     </style>
 </head>
 <body>
@@ -88,15 +72,11 @@
 <div id="page-farm">
     <div class="user-header">
         <img id="u-pic" class="avatar-circle" src="https://cdn-icons-png.flaticon.com/512/149/149071.png">
-        <span id="u-name" class="username-text">Yükleniyor...</span>
+        <span id="u-name" class="username-text">User</span>
     </div>
 
     <div class="balance-container">
         <h1 class="total-balance"><span id="global-bal">0</span> <span class="unit-text">flsy</span></h1>
-        <div class="level-tag">
-            <span>Starter</span>
-            <i class="fas fa-crown crown-icon"></i>
-        </div>
     </div>
 
     <div class="farming-card">
@@ -104,59 +84,50 @@
             <span class="card-label">Farming Status</span>
             <div class="status-badge">
                 <span id="status-dot" class="dot"></span>
-                <span id="status-text" class="status-txt">Active</span>
+                <span id="status-text" class="status-txt">Idle</span>
             </div>
         </div>
-
         <div class="amount-display">
             <span id="farm-amount">0.00000</span> <span class="sub">flsy</span>
         </div>
-
         <div class="stat-row">
             <span class="lbl">Hourly Rate</span>
             <span class="val">22 flsy hr</span>
         </div>
         <div class="stat-row">
-            <span class="lbl">Claim Period</span>
-            <span class="val">Every 12 hours</span>
+            <span class="lbl">Total Period</span>
+            <span id="claim-period-val" class="val">12 hours</span>
         </div>
-
-        <div class="bar-bg">
-            <div id="farm-progress" class="bar-fill"></div>
-        </div>
+        <div class="bar-bg"><div id="farm-progress" class="bar-fill"></div></div>
         <p id="claim-timer" style="text-align:center; font-size:0.8rem; color:#444;">--:--:--</p>
     </div>
 
     <button id="btn-claim" class="claim-btn" onclick="processClaim()">CLAIM REWARDS</button>
+    <button id="btn-boost" class="boost-btn" onclick="applyBoost()">🚀 BOOST FARM (+12h)</button>
 
     <div class="footer-grid">
-        <div class="v-item">
-            <img src="https://i.imgur.com/G3P2JpT.gif" class="gif-img">
-            <span>Rewards</span>
-        </div>
-        <div class="v-item">
-            <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJidW5hbm9pZnR6eXp6ZzR6ZzR6ZzR6ZzR6ZzR6ZzR6ZzR6ZzR6JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1z/3o7TKVUn7iM8FMEU24/giphy.gif" class="gif-img">
-            <span>Earn</span>
-        </div>
-        <div class="v-item">
-            <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJidW5hbm9pZnR6eXp6ZzR6ZzR6ZzR6ZzR6ZzR6ZzR6ZzR6JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1z/3o7TKMGpxPucV53WTe/giphy.gif" class="gif-img">
-            <span>Spin</span>
-        </div>
+        <div class="v-item"><img src="https://i.imgur.com/G3P2JpT.gif" class="gif-img"><span>Rewards</span></div>
+        <div class="v-item"><img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJidW5hbm9pZnR6eXp6ZzR6ZzR6ZzR6ZzR6ZzR6ZzR6ZzR6ZzR6JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1z/3o7TKVUn7iM8FMEU24/giphy.gif" class="gif-img"><span>Earn</span></div>
+        <div class="v-item"><img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJidW5hbm9pZnR6eXp6ZzR6ZzR6ZzR6ZzR6ZzR6ZzR6ZzR6JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1z/3o7TKMGpxPucV53WTe/giphy.gif" class="gif-img"><span>Spin</span></div>
     </div>
 </div>
 
 <script>
-    // JS: FARMING LOGIC
     const tg = window.Telegram.WebApp;
     tg.expand();
-    tg.ready();
 
     let state = {
         bal: parseInt(localStorage.getItem('f_bal')) || 0,
         farmStartTime: parseInt(localStorage.getItem('f_start')) || 0,
         hourlyRate: 22,
-        claimDuration: 43200 // 12 Saat
+        baseDuration: 43200, // 12 Saat
+        isBoosted: localStorage.getItem('f_boosted') === 'true' // Boost durumu kaydı
     };
+
+    // Mevcut aktif süreyi hesapla (Boosted ise 24h, değilse 12h)
+    function getActiveDuration() {
+        return state.isBoosted ? state.baseDuration * 2 : state.baseDuration;
+    }
 
     window.onload = () => {
         initUser();
@@ -166,16 +137,21 @@
 
     function initUser() {
         const user = tg.initDataUnsafe.user;
-        if (user) {
-            document.getElementById('u-name').innerText = user.first_name;
-            if (user.photo_url) document.getElementById('u-pic').src = user.photo_url;
-        } else {
-            document.getElementById('u-name').innerText = "Flashy User";
-        }
+        if (user) document.getElementById('u-name').innerText = user.first_name;
     }
 
     function updateUI() {
         document.getElementById('global-bal').innerText = state.bal.toLocaleString();
+        document.getElementById('claim-period-val').innerText = state.isBoosted ? "24 hours" : "12 hours";
+        
+        // Boost butonu kontrolü
+        const boostBtn = document.getElementById('btn-boost');
+        if(state.isBoosted || state.farmStartTime === 0) {
+            boostBtn.disabled = true;
+            boostBtn.innerText = state.isBoosted ? "🚀 BOOST APPLIED" : "🚀 BOOST FARM (+12h)";
+        } else {
+            boostBtn.disabled = false;
+        }
     }
 
     function updateFarm() {
@@ -189,29 +165,23 @@
         if (state.farmStartTime === 0) {
             timer.innerText = "Ready to start";
             btn.innerText = "START FARMING";
-            btn.disabled = false;
-            dot.style.background = "#444";
-            statusText.innerText = "Idle";
             return;
         }
 
+        const duration = getActiveDuration();
         const elapsed = Math.floor((Date.now() - state.farmStartTime) / 1000);
-        const remaining = Math.max(0, state.claimDuration - elapsed);
-        const mined = Math.min(state.hourlyRate * 12, (elapsed * (state.hourlyRate / 3600)));
+        const remaining = Math.max(0, duration - elapsed);
+        const mined = Math.min(state.hourlyRate * (duration/3600), (elapsed * (state.hourlyRate / 3600)));
         
         amount.innerText = mined.toFixed(5);
-        
-        const percent = Math.min(100, (elapsed / state.claimDuration) * 100);
-        progress.style.width = percent + "%";
+        progress.style.width = Math.min(100, (elapsed / duration) * 100) + "%";
 
-        if (elapsed >= state.claimDuration) {
+        if (elapsed >= duration) {
             timer.innerText = "Claim Ready!";
             btn.innerText = "CLAIM REWARDS";
             btn.disabled = false;
             dot.style.background = "#4cd137";
-            dot.style.boxShadow = "0 0 8px #4cd137";
             statusText.innerText = "Ready";
-            statusText.style.color = "#4cd137";
         } else {
             const h = Math.floor(remaining / 3600);
             const m = Math.floor((remaining % 3600) / 60);
@@ -220,25 +190,42 @@
             btn.innerText = "FARMING...";
             btn.disabled = true;
             dot.style.background = "#ff2d55";
-            dot.style.boxShadow = "0 0 8px #ff2d55";
             statusText.innerText = "Active";
-            statusText.style.color = "#ff2d55";
         }
     }
 
     function processClaim() {
+        const duration = getActiveDuration();
         const elapsed = Math.floor((Date.now() - state.farmStartTime) / 1000);
         
-        if (state.farmStartTime === 0 || elapsed >= state.claimDuration) {
+        if (state.farmStartTime === 0 || elapsed >= duration) {
             if (state.farmStartTime !== 0) {
-                state.bal += (state.hourlyRate * 12);
+                state.bal += (state.hourlyRate * (duration / 3600));
                 localStorage.setItem('f_bal', state.bal);
             }
+            // Sıfırla
             state.farmStartTime = Date.now();
+            state.isBoosted = false; // Claim sonrası boost sıfırlanır
             localStorage.setItem('f_start', state.farmStartTime);
+            localStorage.setItem('f_boosted', 'false');
             updateUI();
             tg.HapticFeedback.notificationOccurred('success');
         }
+    }
+
+    function applyBoost() {
+        const boostBtn = document.getElementById('btn-boost');
+        boostBtn.disabled = true;
+        boostBtn.innerText = "Loading Ad...";
+
+        // Reklam Simülasyonu (2 saniye bekleme)
+        setTimeout(() => {
+            state.isBoosted = true;
+            localStorage.setItem('f_boosted', 'true');
+            updateUI();
+            tg.showAlert("Boost Successful! Farming period extended to 24 hours.");
+            tg.HapticFeedback.notificationOccurred('success');
+        }, 2000);
     }
 </script>
 

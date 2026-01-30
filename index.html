@@ -60,25 +60,19 @@
         .boost-btn:active { transform: scale(0.98); }
         .boost-btn:disabled { background: #1a1a1a; color: #444; opacity: 0.5; }
 
+        /* Footer Grid Düzenlemesi */
         .footer-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 30px; }
-        .v-item { background: #080808; border-radius: 24px; padding: 15px 5px; display: flex; flex-direction: column; align-items: center; gap: 8px; border: 1px solid #111; }
+        .v-item { background: #080808; border-radius: 24px; padding: 15px 5px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; border: 1px solid #111; height: 110px; }
         .v-item span { font-size: 0.75rem; color: #444; font-weight: 600; }
         
-        /* Rewards Para Görseli */
-        .rewards-webp {
-            width: 60px; /* İstediğin gibi 60 yapıldı */
+        /* Ortak WebP Stil (Boyut 60 yapıldı) */
+        .footer-webp {
+            width: 60px; 
             height: auto;
             animation: float 3s ease-in-out infinite;
         }
 
-        /* Earn Roket Görseli */
-        .earn-webp {
-            width: 45px; /* Roket için ideal boyut */
-            height: auto;
-            animation: float 3s ease-in-out infinite;
-        }
-
-        .gif-img { width: 35px; height: 35px; }
+        .gif-img { width: 40px; height: 40px; }
 
         @keyframes float {
             0% { transform: translateY(0px); }
@@ -126,13 +120,15 @@
 
     <div class="footer-grid">
         <div class="v-item">
-            <img src="https://raw.githubusercontent.com/ardaaltundag5758-boop/gifler/main/Money%20With%20Wings.webp" class="rewards-webp" alt="Rewards">
+            <img src="https://raw.githubusercontent.com/ardaaltundag5758-boop/gifler/main/Money%20With%20Wings.webp" class="footer-webp" alt="Rewards">
             <span>Rewards</span>
         </div>
+        
         <div class="v-item">
-            <img src="https://github.com/ardaaltundag5758-boop/gifler/blob/main/Rocket.webp?raw=true" class="earn-webp" alt="Earn">
+            <img src="https://github.com/ardaaltundag5758-boop/gifler/blob/main/Rocket.webp?raw=true" class="footer-webp" alt="Earn">
             <span>Earn</span>
         </div>
+
         <div class="v-item">
             <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJidW5hbm9pZnR6eXp6ZzR6ZzR6ZzR6ZzR6ZzR6ZzR6ZzR6ZzR6JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1z/3o7TKMGpxPucV53WTe/giphy.gif" class="gif-img">
             <span>Spin</span>

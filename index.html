@@ -5,17 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Flashy App</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { 
             --bg: #000000; 
             --card: #111111; 
             --gold: #FFD700;
+            --gold-dark: #b8860b;
             --blue: #007AFF;
             --gray: #666666; 
-            --dark-btn: #181818;
-            --neon-glow: rgba(255, 45, 85, 0.3); /* Pembe-mor arası yumuşak neon */
+            --dark-btn: #121212;
+            /* 4. GÜÇLENDİRİLMİŞ NEON GLOW */
+            --neon-strong: rgba(255, 0, 127, 0.7); 
+            --neon-soft: rgba(138, 43, 226, 0.5);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -28,56 +30,76 @@
         .avatar-circle { width: 40px; height: 40px; border-radius: 50%; border: 1.5px solid #1a1a1a; padding: 2px; }
         .username-text { font-size: 0.95rem; font-weight: 600; }
 
-        /* 1. BAKİYE GLOW EFEKTİ */
-        .balance-container { 
-            text-align: center; 
-            margin-bottom: 30px; 
-            margin-top: 20px; 
-            position: relative;
-        }
+        /* 4. BAKİYE GLOW ARTIŞI */
+        .balance-container { text-align: center; margin-bottom: 30px; margin-top: 20px; }
         .total-balance { 
             font-size: 3.5rem; 
             font-weight: 800; 
             letter-spacing: -1.5px;
-            position: relative;
-            z-index: 2;
-            /* Yumuşak Neon Gölge */
-            text-shadow: 0 0 20px var(--neon-glow), 0 0 40px rgba(138, 43, 226, 0.2);
+            color: #ffffff;
+            text-shadow: 
+                0 0 10px #fff,
+                0 0 25px var(--neon-strong),
+                0 0 50px var(--neon-soft);
         }
-        .unit-text { font-size: 1.2rem; color: var(--gray); margin-left: 8px; }
+        .unit-text { font-size: 1.2rem; color: var(--gray); margin-left: 8px; text-shadow: none; }
 
         .farming-card { background: var(--card); border-radius: 28px; padding: 25px; border: 1px solid #1f1f1f; width: 100%; margin-bottom: 25px; }
         .card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .status-txt { font-size: 0.8rem; font-weight: 600; color: var(--gray); }
         .amount-display { font-size: 2.6rem; font-weight: 800; }
-        .amount-display .sub { font-size: 1rem; color: #333; }
 
-        /* 2. FARM BUTONU & LOTTIE */
+        /* 1. HAREKETLİ GRADIENT BUTON */
         .farm-btn-container {
-            position: relative; width: 100%; height: 65px; background: var(--dark-btn);
+            position: relative; width: 100%; height: 65px; 
+            background: linear-gradient(270deg, #121212, #1a1a00, #121212);
+            background-size: 400% 400%;
+            animation: moveGradient 8s ease infinite;
             border-radius: 50px; overflow: hidden; display: flex; align-items: center;
             justify-content: center; border: 1px solid #222; cursor: pointer; margin-bottom: 12px;
         }
-        .lottie-bg {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            z-index: 0;
-            opacity: 0.4;
-            pointer-events: none;
+
+        @keyframes moveGradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
+
+        /* 3. PROGRESS SHINE EFEKTİ */
         .farm-progress-overlay {
             position: absolute; left: 0; top: 0; height: 100%; width: 0%;
             background: var(--gold); opacity: 0.8; transition: width 1s linear; z-index: 1;
         }
+        .farm-progress-overlay::after {
+            content: "";
+            position: absolute; top: 0; left: 0; width: 40px; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            animation: shine 2s infinite;
+        }
+
+        @keyframes shine {
+            0% { left: -40px; }
+            100% { left: 100%; }
+        }
+
+        /* 2. IKON PULSE ANIMASYONU */
         .farm-btn-content {
             position: relative; z-index: 2; display: flex; align-items: center;
             gap: 10px; font-weight: 700; font-size: 1rem; color: #fff;
         }
-        .farm-btn-container.ready { background: var(--gold); }
+        .farm-btn-content i {
+            animation: iconPulse 2s infinite ease-in-out;
+        }
+
+        @keyframes iconPulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .farm-btn-container.ready { background: var(--gold); animation: none; }
         .farm-btn-container.ready .farm-btn-content { color: #000; }
+        .farm-btn-container.ready .farm-btn-content i { animation: none; }
 
         .boost-btn {
             width: 100%; height: 55px; background: var(--blue); border-radius: 18px;
@@ -111,7 +133,7 @@
     </div>
 
     <div class="balance-container">
-        <h1 class="total-balance" id="glow-text"><span id="global-bal">0</span> <span class="unit-text">FLSY</span></h1>
+        <h1 class="total-balance"><span id="global-bal">0</span> <span class="unit-text">FLSY</span></h1>
     </div>
 
     <div class="farming-card">
@@ -120,17 +142,14 @@
             <span id="status-text" class="status-txt">Idle</span>
         </div>
         <div class="amount-display">
-            <span id="farm-amount">0.00000</span> <span class="sub">FLSY</span>
+            <span id="farm-amount">0.00000</span> <span class="sub" style="color:#333; font-size:1rem;">FLSY</span>
         </div>
     </div>
 
     <div id="farm-btn" class="farm-btn-container" onclick="processClaim()">
-        <div class="lottie-bg">
-            <lottie-player id="btn-lottie" src="https://assets10.lottiefiles.com/packages/lf20_m6cu96ze.json" background="transparent" speed="1" loop autoplay></lottie-player>
-        </div>
         <div id="farm-progress-bar" class="farm-progress-overlay"></div>
         <div class="farm-btn-content">
-            <i class="fas fa-stopwatch"></i>
+            <i class="fas fa-clock"></i>
             <span id="claim-timer">Start Farming</span>
         </div>
     </div>
@@ -202,12 +221,10 @@
         const amount = document.getElementById('farm-amount');
         const progress = document.getElementById('farm-progress-bar');
         const statusText = document.getElementById('status-text');
-        const lottie = document.getElementById('btn-lottie');
 
         if (state.farmStartTime === 0) {
             timer.innerText = "Start Farming";
             progress.style.width = "0%";
-            lottie.speed = 0.5; // Farming yokken yavaş nabız
             return;
         }
 
@@ -224,7 +241,6 @@
             timer.innerText = "Claim Ready";
             farmBtn.classList.add('ready');
             statusText.innerText = "Ready";
-            lottie.speed = 2; // Hazırken daha hızlı yanıp sönme
         } else {
             const h = Math.floor(remaining / 3600);
             const m = Math.floor((remaining % 3600) / 60);
@@ -232,19 +248,14 @@
             timer.innerText = `next claim in ${h}h ${m}m ${s}s`;
             farmBtn.classList.remove('ready');
             statusText.innerText = "Active";
-            lottie.speed = 1; // Aktifken normal hız
         }
     }
 
     function processClaim() {
         const duration = getActiveDuration();
         const elapsed = Math.floor((Date.now() - state.farmStartTime) / 1000);
-        const lottie = document.getElementById('btn-lottie');
         
         if (state.farmStartTime === 0 || elapsed >= duration) {
-            // Butona basıldığında efekt
-            lottie.play(); 
-            
             if (state.farmStartTime !== 0) {
                 state.bal += (state.hourlyRate * (duration / 3600));
                 localStorage.setItem('f_bal', state.bal);

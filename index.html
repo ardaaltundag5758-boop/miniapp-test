@@ -19,7 +19,7 @@
             --neon-soft: rgba(138, 43, 226, 0.5);
             --idle-color: #bfa500;
             --active-color: #00ff7f;
-            --nav-red: #FF3B30; /* Aktif sekme için kırmızı vurgu */
+            --nav-red: #FF3B30;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -42,40 +42,49 @@
             position: relative; transition: 0.3s;
         }
         .nav-item i { font-size: 1.2rem; transition: transform 0.3s ease; }
-        
-        /* Aktif Sekme Stili */
         .nav-item.active { color: #fff; }
         .nav-item.active::after {
             content: ""; position: absolute; bottom: 8px; width: 20px; height: 3px;
             background: var(--nav-red); border-radius: 10px; box-shadow: 0 0 8px var(--nav-red);
         }
-
-        /* SEKME TIKLAMA ANİMASYONU (Sağ üst çapraza hareket) */
         .nav-item:active i { transform: translate(4px, -4px); }
 
-        /* FARM EKRANI ÖZEL STİLLERİ (Eski kodlar korundu) */
+        /* FARM EKRANI BİLEŞENLERİ */
         .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .avatar-circle { width: 40px; height: 40px; border-radius: 50%; border: 1.5px solid #1a1a1a; padding: 2px; }
+        
         .balance-container { text-align: center; margin-bottom: 30px; margin-top: 20px; }
-        .total-balance { font-size: 3.2rem; font-weight: 800; text-shadow: 0 0 10px #fff, 0 0 25px var(--neon-strong); }
-        .farming-card { background: var(--card); border-radius: 28px; padding: 25px; border: 1px solid #1f1f1f; margin-bottom: 20px; }
+        .total-balance { 
+            font-size: 3.5rem; font-weight: 800; letter-spacing: -1.5px;
+            text-shadow: 0 0 10px #fff, 0 0 25px var(--neon-strong), 0 0 50px var(--neon-soft);
+        }
+
+        .farming-card { background: var(--card); border-radius: 28px; padding: 25px; border: 1px solid #1f1f1f; margin-bottom: 25px; }
         .status-dot { width: 8px; height: 8px; border-radius: 50%; animation: pulseFade 1.5s infinite; }
-        
-        @keyframes pulseFade { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-        
+        @keyframes pulseFade { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.3; transform: scale(0.9); } }
+
         .farm-btn-container {
-            position: relative; width: 100%; height: 60px; border-radius: 50px; overflow: hidden;
+            position: relative; width: 100%; height: 65px; border-radius: 50px; overflow: hidden;
             display: flex; align-items: center; justify-content: center; border: 1px solid #222;
             background: linear-gradient(270deg, #121212, #1a1a00, #121212); background-size: 400%;
-            animation: moveGradient 8s infinite; cursor: pointer;
+            animation: moveGradient 8s infinite; cursor: pointer; margin-bottom: 12px;
         }
         @keyframes moveGradient { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
         
-        .farm-progress-overlay { position: absolute; left: 0; top: 0; height: 100%; background: var(--gold); opacity: 0.8; z-index: 1; }
-        .boost-btn { width: 100%; height: 50px; background: var(--gold-bright); border-radius: 15px; border: none; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .boost-btn:disabled { background: var(--gold-soft); opacity: 0.6; }
+        .farm-progress-overlay { position: absolute; left: 0; top: 0; height: 100%; background: var(--gold); opacity: 0.8; z-index: 1; transition: width 1s linear; }
+        .farm-progress-overlay::after { content: ""; position: absolute; top: 0; left: 0; width: 40px; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent); animation: shine 2s infinite; }
+        @keyframes shine { 0% { left: -40px; } 100% { left: 100%; } }
 
-        /* DİĞER SAYFALAR İÇİN BASİT MESAJ */
+        .boost-btn { width: 100%; height: 55px; background: var(--gold-bright); border-radius: 18px; border: none; color: #000; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s; }
+        .boost-btn:disabled { background: var(--gold-soft); color: rgba(0,0,0,0.5); opacity: 0.7; }
+
+        /* REWARDS GRID (Geri Getirilen Kısım) */
+        .footer-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 30px; padding-bottom: 20px; }
+        .v-item { background: #080808; border-radius: 24px; padding: 15px 5px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; border: 1px solid #111; height: 115px; }
+        .v-item span { font-size: 0.75rem; color: #444; font-weight: 600; }
+        .footer-webp { width: 60px; height: 60px; object-fit: contain; animation: float 3s ease-in-out infinite; }
+        @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-5px); } }
+
         .placeholder-text { text-align: center; margin-top: 50px; color: var(--gray); font-style: italic; }
     </style>
 </head>
@@ -83,55 +92,71 @@
 
 <div id="farm" class="tab-content active">
     <div class="top-bar">
-        <div style="display:flex; align-items:center; gap:10px;">
+        <div style="display:flex; align-items:center; gap:12px;">
             <img id="u-pic" class="avatar-circle" src="https://cdn-icons-png.flaticon.com/512/149/149071.png">
-            <span id="u-name" style="font-weight:600;">User</span>
+            <span id="u-name" style="font-weight:600; font-size:0.95rem;">User</span>
         </div>
         <i class="fas fa-bars"></i>
     </div>
 
     <div class="balance-container">
-        <h1 class="total-balance"><span id="global-bal">0</span> <span style="font-size:1rem; color:var(--gray);">FLSY</span></h1>
+        <h1 class="total-balance" id="global-bal-display"><span id="global-bal">0</span> <span style="font-size:1.2rem; color:var(--gray); margin-left:8px; text-shadow:none;">FLSY</span></h1>
     </div>
 
     <div class="farming-card">
-        <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
             <div style="display:flex; align-items:center; gap:8px;">
-                <img src="https://github.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/blob/main/Travel%20and%20Places/Locomotive.webp?raw=true" style="width:20px;">
-                <span style="font-size:0.7rem; font-weight:700; color:#444;">STATUS</span>
+                <img src="https://github.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/blob/main/Travel%20and%20Places/Locomotive.webp?raw=true" style="width:22px;">
+                <span style="color:#444; font-size:0.75rem; font-weight:700; text-transform:uppercase;">Farming Status</span>
             </div>
-            <div style="display:flex; align-items:center; gap:6px;">
+            <div style="display:flex; align-items:center; gap:8px;">
                 <div id="status-dot" class="status-dot"></div>
                 <span id="status-text" style="font-size:0.8rem; font-weight:700;">Idle</span>
             </div>
         </div>
-        <div style="font-size:2.4rem; font-weight:800;" id="farm-amount">0.00000</div>
+        <div style="font-size:2.6rem; font-weight:800;"><span id="farm-amount">0.00000</span> <span style="color:#333; font-size:1rem;">FLSY</span></div>
     </div>
 
     <div id="farm-btn" class="farm-btn-container" onclick="processClaim()">
         <div id="farm-progress-bar" class="farm-progress-overlay"></div>
-        <div style="position:relative; z-index:2; font-weight:700;" id="claim-timer">Start Farming</div>
+        <div style="position:relative; z-index:2; display:flex; align-items:center; gap:10px; font-weight:700; color:#fff;">
+            <i class="fas fa-clock" style="animation: iconPulse 2s infinite ease-in-out;"></i>
+            <span id="claim-timer">Start Farming</span>
+        </div>
     </div>
 
-    <button id="btn-boost" class="boost-btn" onclick="applyBoost()" style="margin-top:10px;">
-        <img src="https://github.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/blob/main/Animals%20and%20Nature/High%20Voltage.webp?raw=true" style="width:20px;">
+    <button id="btn-boost" class="boost-btn" onclick="applyBoost()">
+        <img src="https://github.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/blob/main/Animals%20and%20Nature/High%20Voltage.webp?raw=true" style="width:24px;">
         <span id="boost-text">Boost Farm</span>
     </button>
+
+    <div class="footer-grid">
+        <div class="v-item">
+            <img src="https://raw.githubusercontent.com/ardaaltundag5758-boop/gifler/main/Money%20With%20Wings.webp" class="footer-webp" alt="Rewards">
+            <span>Rewards</span>
+        </div>
+        <div class="v-item">
+            <img src="https://github.com/ardaaltundag5758-boop/gifler/blob/main/Rocket.webp?raw=true" class="footer-webp" alt="Earn">
+            <span>Earn</span>
+        </div>
+        <div class="v-item">
+            <img src="https://github.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/blob/main/Activity/Video%20Game.webp?raw=true" class="footer-webp" alt="Spin">
+            <span>Spin</span>
+        </div>
+    </div>
 </div>
 
 <div id="tasks" class="tab-content">
     <h2 style="text-align:center;">Tasks</h2>
-    <p class="placeholder-text">Coming Soon...</p>
+    <p class="placeholder-text">New tasks will appear here soon.</p>
 </div>
-
 <div id="friends" class="tab-content">
     <h2 style="text-align:center;">Friends</h2>
-    <p class="placeholder-text">Invite friends to earn more!</p>
+    <p class="placeholder-text">Invite friends and earn bonus FLSY!</p>
 </div>
-
 <div id="wallet" class="tab-content">
     <h2 style="text-align:center;">Wallet</h2>
-    <p class="placeholder-text">Connect your wallet soon.</p>
+    <p class="placeholder-text">Wallet integration is in progress.</p>
 </div>
 
 <nav class="bottom-nav">
@@ -157,23 +182,16 @@
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    // TAB SİSTEMİ
     function switchTab(tabId) {
-        // Tüm içerikleri gizle
         document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-        // Hedef içeriği göster
         document.getElementById(tabId).classList.add('active');
-        
-        // Navigasyon ikonlarını güncelle
         document.querySelectorAll('.nav-item').forEach(item => {
             item.classList.remove('active');
-            if(item.innerText.toLowerCase() === tabId) item.classList.add('active');
+            if(item.querySelector('span').innerText.toLowerCase() === tabId) item.classList.add('active');
         });
-
         tg.HapticFeedback.impactOccurred('light');
     }
 
-    // FARM LOGIC (Eski sistem aynen entegre edildi)
     let state = {
         bal: parseInt(localStorage.getItem('f_bal')) || 0,
         farmStartTime: parseInt(localStorage.getItem('f_start')) || 0,
@@ -216,8 +234,10 @@
         if (state.farmStartTime === 0) {
             timer.innerText = "Start Farming";
             progress.style.width = "0%";
+            statusText.innerText = "Idle";
             statusText.style.color = "var(--idle-color)";
             statusDot.style.backgroundColor = "var(--idle-color)";
+            statusDot.style.boxShadow = "0 0 8px var(--idle-color)";
             return;
         }
 
@@ -232,6 +252,7 @@
             statusText.innerText = "Ready";
             statusText.style.color = "var(--active-color)";
             statusDot.style.backgroundColor = "var(--active-color)";
+            statusDot.style.boxShadow = "0 0 8px var(--active-color)";
         } else {
             const rem = Math.max(0, duration - elapsed);
             const h = Math.floor(rem / 3600);
@@ -240,6 +261,7 @@
             statusText.innerText = "Active";
             statusText.style.color = "var(--active-color)";
             statusDot.style.backgroundColor = "var(--active-color)";
+            statusDot.style.boxShadow = "0 0 8px var(--active-color)";
         }
     }
 

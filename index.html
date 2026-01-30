@@ -22,10 +22,11 @@
         .tab-content { display: none; height: calc(100vh - 70px); overflow-y: auto; padding: 20px 20px 100px 20px; }
         .tab-content.active { display: flex; flex-direction: column; }
 
+        /* ALT NAVİGASYON (Sadece 2 Sekme) */
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; width: 100%; height: 70px;
             background: rgba(10, 10, 10, 0.95); backdrop-filter: blur(10px);
-            display: grid; grid-template-columns: repeat(3, 1fr);
+            display: grid; grid-template-columns: repeat(2, 1fr);
             border-top: 1px solid #1a1a1a; z-index: 1000;
         }
         .nav-item {
@@ -65,14 +66,6 @@
         .stat-res { font-size: 1.1rem; font-weight: 700; }
         .premium-tag { color: var(--premium-blue); font-size: 0.75rem; font-weight: 800; border: 1px solid var(--premium-blue); padding: 2px 8px; border-radius: 50px; }
 
-        .category-title { font-size: 0.9rem; font-weight: 800; color: var(--gray); text-transform: uppercase; margin: 20px 0 12px 0; display: flex; align-items: center; gap: 8px; }
-        .task-card { background: var(--card); border: 1px solid #1f1f1f; border-radius: 20px; padding: 16px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .task-reward { font-size: 0.85rem; font-weight: 600; color: var(--gold); }
-        .task-btn { background: #fff; color: #000; border: none; border-radius: 12px; padding: 8px 16px; font-weight: 700; min-width: 80px; }
-        .task-btn.checking { background: #333; color: var(--gray); }
-        .task-btn.claim { background: var(--nav-red); color: #fff; }
-        .task-btn.done { background: #1a1a1a; color: #444; }
-
         .placeholder-text { text-align: center; margin-top: 50px; color: var(--gray); font-style: italic; }
     </style>
 </head>
@@ -97,36 +90,14 @@
     </div>
 </div>
 
-<div id="tasks" class="tab-content">
-    <div class="category-title"><i class="fas fa-fire"></i> Hot Tasks</div>
-    <div class="task-card">
-        <div><span style="font-weight:700;">Subscribe to Channel</span><br><span class="task-reward">+50 FLSY</span></div>
-        <button class="task-btn" onclick="handleTask(this, '#')">Start</button>
-    </div>
-    <div class="task-card">
-        <div><span style="font-weight:700;">Subscribe to Group</span><br><span class="task-reward">+50 FLSY</span></div>
-        <button class="task-btn" onclick="handleTask(this, '#')">Start</button>
-    </div>
-</div>
-
 <div id="friends" class="tab-content">
     <h2 style="text-align:center;">Friends</h2>
     <p class="placeholder-text">Invite friends to get more FLSY.</p>
 </div>
 
-<div id="wallet" class="tab-content">
-    <div class="score-card" style="margin-top:20px;">
-        <div class="score-value" id="wallet-bal">0</div>
-        <div class="score-label">Current Balance</div>
-    </div>
-    <p class="placeholder-text">Withdrawals coming soon.</p>
-</div>
-
 <nav class="bottom-nav">
     <div class="nav-item active" onclick="switchTab('home')"><i class="fas fa-home"></i><span>Home</span></div>
-    <div class="nav-item" onclick="switchTab('tasks')"><i class="fas fa-tasks"></i><span>Tasks</span></div>
     <div class="nav-item" onclick="switchTab('friends')"><i class="fas fa-users"></i><span>Friends</span></div>
-    <div class="nav-item" onclick="switchTab('wallet')"><i class="fas fa-wallet"></i><span>Wallet</span></div>
 </nav>
 
 <script>
@@ -151,6 +122,7 @@
             const userId = user.id;
             let age = 1;
 
+            // Optimize edilmiş yaş hesaplama
             if (userId < 50000000) age = 11;
             else if (userId < 150000000) age = 10;
             else if (userId < 250000000) age = 9;
@@ -169,7 +141,6 @@
 
             document.getElementById('acc-age').innerText = age + " years";
             document.getElementById('total-flsy').innerText = points.toLocaleString();
-            document.getElementById('wallet-bal').innerText = points.toLocaleString();
             
             if (hasPremium) {
                 document.getElementById('is-premium').innerText = "Active";
@@ -189,19 +160,6 @@
             if(label === tabId || (tabId === 'home' && label === 'home')) i.classList.add('active');
         });
         tg.HapticFeedback.impactOccurred('light');
-    }
-
-    function handleTask(btn, link) {
-        if (btn.innerText === "Start") {
-            btn.innerText = "Checking"; btn.classList.add('checking');
-            setTimeout(() => {
-                btn.innerText = "Claim"; btn.classList.remove('checking'); btn.classList.add('claim');
-                tg.HapticFeedback.notificationOccurred('warning');
-            }, 5000);
-        } else if (btn.classList.contains('claim')) {
-            btn.innerText = "Done"; btn.classList.remove('claim'); btn.classList.add('done'); btn.disabled = true;
-            tg.HapticFeedback.notificationOccurred('success');
-        }
     }
 
     window.onload = () => { initProfile(); };

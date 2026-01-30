@@ -11,11 +11,10 @@
             --bg: #000000; 
             --card: #111111; 
             --gold: #FFD700;
-            --gold-dark: #b8860b;
-            --blue: #007AFF;
+            --gold-soft: #8B8000; /* Soluk sarı (Boost aktifken) */
+            --gold-bright: #FFD700; /* Parlak sarı (Boost hazır) */
             --gray: #666666; 
             --dark-btn: #121212;
-            /* 4. GÜÇLENDİRİLMİŞ NEON GLOW */
             --neon-strong: rgba(255, 0, 127, 0.7); 
             --neon-soft: rgba(138, 43, 226, 0.5);
         }
@@ -30,17 +29,13 @@
         .avatar-circle { width: 40px; height: 40px; border-radius: 50%; border: 1.5px solid #1a1a1a; padding: 2px; }
         .username-text { font-size: 0.95rem; font-weight: 600; }
 
-        /* 4. BAKİYE GLOW ARTIŞI */
+        /* BAKİYE GLOW */
         .balance-container { text-align: center; margin-bottom: 30px; margin-top: 20px; }
         .total-balance { 
             font-size: 3.5rem; 
             font-weight: 800; 
             letter-spacing: -1.5px;
-            color: #ffffff;
-            text-shadow: 
-                0 0 10px #fff,
-                0 0 25px var(--neon-strong),
-                0 0 50px var(--neon-soft);
+            text-shadow: 0 0 10px #fff, 0 0 25px var(--neon-strong), 0 0 50px var(--neon-soft);
         }
         .unit-text { font-size: 1.2rem; color: var(--gray); margin-left: 8px; text-shadow: none; }
 
@@ -49,7 +44,7 @@
         .status-txt { font-size: 0.8rem; font-weight: 600; color: var(--gray); }
         .amount-display { font-size: 2.6rem; font-weight: 800; }
 
-        /* 1. HAREKETLİ GRADIENT BUTON */
+        /* HAREKETLİ GRADIENT BUTON */
         .farm-btn-container {
             position: relative; width: 100%; height: 65px; 
             background: linear-gradient(270deg, #121212, #1a1a00, #121212);
@@ -65,60 +60,50 @@
             100% { background-position: 0% 50%; }
         }
 
-        /* 3. PROGRESS SHINE EFEKTİ */
         .farm-progress-overlay {
             position: absolute; left: 0; top: 0; height: 100%; width: 0%;
             background: var(--gold); opacity: 0.8; transition: width 1s linear; z-index: 1;
         }
         .farm-progress-overlay::after {
-            content: "";
-            position: absolute; top: 0; left: 0; width: 40px; height: 100%;
+            content: ""; position: absolute; top: 0; left: 0; width: 40px; height: 100%;
             background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
             animation: shine 2s infinite;
         }
 
-        @keyframes shine {
-            0% { left: -40px; }
-            100% { left: 100%; }
-        }
+        @keyframes shine { 0% { left: -40px; } 100% { left: 100%; } }
 
-        /* 2. IKON PULSE ANIMASYONU */
-        .farm-btn-content {
-            position: relative; z-index: 2; display: flex; align-items: center;
-            gap: 10px; font-weight: 700; font-size: 1rem; color: #fff;
-        }
-        .farm-btn-content i {
-            animation: iconPulse 2s infinite ease-in-out;
-        }
+        .farm-btn-content { position: relative; z-index: 2; display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1rem; color: #fff; }
+        .farm-btn-content i { animation: iconPulse 2s infinite ease-in-out; }
 
-        @keyframes iconPulse {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.2); opacity: 0.8; }
-            100% { transform: scale(1); opacity: 1; }
-        }
+        @keyframes iconPulse { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
 
         .farm-btn-container.ready { background: var(--gold); animation: none; }
         .farm-btn-container.ready .farm-btn-content { color: #000; }
-        .farm-btn-container.ready .farm-btn-content i { animation: none; }
 
+        /* SARI BOOST BUTONU */
         .boost-btn {
-            width: 100%; height: 55px; background: var(--blue); border-radius: 18px;
-            border: none; color: white; font-weight: 700; font-size: 1rem;
-            display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.2s;
+            width: 100%; height: 55px; 
+            background: var(--gold-bright); 
+            border-radius: 18px;
+            border: none; color: #000; font-weight: 700; font-size: 1rem;
+            display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s;
+            cursor: pointer;
         }
+        .boost-btn img { width: 24px; height: 24px; }
         .boost-btn:active { transform: scale(0.98); }
-        .boost-btn:disabled { background: #1a1a1a; color: #444; opacity: 0.5; }
+        .boost-btn:disabled { 
+            background: var(--gold-soft); /* Soluk sarı */
+            color: rgba(0,0,0,0.5); 
+            opacity: 0.7; 
+            cursor: not-allowed;
+        }
 
         .footer-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 30px; }
         .v-item { background: #080808; border-radius: 24px; padding: 15px 5px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; border: 1px solid #111; height: 115px; }
         .v-item span { font-size: 0.75rem; color: #444; font-weight: 600; }
         .footer-webp { width: 60px; height: 60px; object-fit: contain; animation: float 3s ease-in-out infinite; }
 
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-5px); }
-            100% { transform: translateY(0px); }
-        }
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-5px); } 100% { transform: translateY(0px); } }
     </style>
 </head>
 <body>
@@ -155,7 +140,8 @@
     </div>
 
     <button id="btn-boost" class="boost-btn" onclick="applyBoost()">
-        <i class="fas fa-bolt"></i> Boost Farm
+        <img src="https://github.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/blob/main/Animals%20and%20Nature/High%20Voltage.webp?raw=true" alt="bolt">
+        <span id="boost-text">Boost Farm</span>
     </button>
 
     <div class="footer-grid">
@@ -207,11 +193,14 @@
     function updateUI() {
         document.getElementById('global-bal').innerText = state.bal.toLocaleString();
         const boostBtn = document.getElementById('btn-boost');
+        const boostText = document.getElementById('boost-text');
+        
         if(state.isBoosted || state.farmStartTime === 0) {
             boostBtn.disabled = true;
-            boostBtn.innerText = state.isBoosted ? "Boost Applied" : "Boost Farm";
+            boostText.innerText = state.isBoosted ? "Boost Applied" : "Boost Farm";
         } else {
             boostBtn.disabled = false;
+            boostText.innerText = "Boost Farm";
         }
     }
 

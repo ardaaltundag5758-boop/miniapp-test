@@ -22,13 +22,31 @@
         #page-farm { width: 100%; max-width: 500px; margin: 0 auto; padding: 20px 15px 100px 15px; display: flex; flex-direction: column; }
 
         /* Üst Bar */
-        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .profile-area { display: flex; align-items: center; gap: 12px; }
         .avatar-circle { width: 40px; height: 40px; border-radius: 50%; border: 1.5px solid #1a1a1a; padding: 2px; }
         .username-text { font-size: 0.95rem; font-weight: 600; }
 
+        /* Yeni Eklenen WebP Resim Alanı */
+        .hero-image-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+        .main-hero-img {
+            width: 120px; /* Boyutu buradan ayarlayabilirsin */
+            height: auto;
+            animation: float 3s ease-in-out infinite; /* Hafif yüzme efekti */
+        }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
         /* Bakiye */
-        .balance-container { text-align: center; margin-bottom: 40px; }
+        .balance-container { text-align: center; margin-bottom: 30px; }
         .total-balance { font-size: 3.5rem; font-weight: 800; letter-spacing: -1.5px; }
         .unit-text { font-size: 1.2rem; color: var(--gray); margin-left: 8px; }
 
@@ -39,69 +57,30 @@
         .amount-display { font-size: 2.6rem; font-weight: 800; }
         .amount-display .sub { font-size: 1rem; color: #333; }
 
-        /* YENİ NESİL FARM BUTONU (İçinde Progress Bar Olan) */
+        /* Farm Butonu */
         .farm-btn-container {
-            position: relative;
-            width: 100%;
-            height: 65px;
-            background: var(--dark-btn);
-            border-radius: 50px;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid #222;
-            cursor: pointer;
-            margin-bottom: 12px;
+            position: relative; width: 100%; height: 65px; background: var(--dark-btn);
+            border-radius: 50px; overflow: hidden; display: flex; align-items: center;
+            justify-content: center; border: 1px solid #222; cursor: pointer; margin-bottom: 12px;
         }
-
         .farm-progress-overlay {
-            position: absolute;
-            left: 0;
-            top: 0;
-            height: 100%;
-            width: 0%;
-            background: var(--gold);
-            opacity: 0.8;
-            transition: width 1s linear;
-            z-index: 1;
+            position: absolute; left: 0; top: 0; height: 100%; width: 0%;
+            background: var(--gold); opacity: 0.8; transition: width 1s linear; z-index: 1;
         }
-
         .farm-btn-content {
-            position: relative;
-            z-index: 2;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: 700;
-            font-size: 1rem;
-            color: #fff;
+            position: relative; z-index: 2; display: flex; align-items: center;
+            gap: 10px; font-weight: 700; font-size: 1rem; color: #fff;
         }
+        .farm-btn-container.ready { background: var(--gold); }
+        .farm-btn-container.ready .farm-btn-content { color: #000; }
 
-        .farm-btn-container.ready {
-            background: var(--gold);
-        }
-        .farm-btn-container.ready .farm-btn-content {
-            color: #000;
-        }
-
-        /* BOOST BUTONU */
+        /* Boost Butonu */
         .boost-btn {
-            width: 100%;
-            height: 55px;
-            background: var(--blue);
-            border-radius: 18px;
-            border: none;
-            color: white;
-            font-weight: 700;
-            font-size: 1rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            transition: 0.2s;
+            width: 100%; height: 55px; background: var(--blue); border-radius: 18px;
+            border: none; color: white; font-weight: 700; font-size: 1rem;
+            display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.2s;
         }
-        .boost-btn:active { transform: scale(0.98); opacity: 0.9; }
+        .boost-btn:active { transform: scale(0.98); }
         .boost-btn:disabled { background: #1a1a1a; color: #444; opacity: 0.5; }
 
         /* Footer */
@@ -122,6 +101,10 @@
         <i class="fas fa-bars"></i>
     </div>
 
+    <div class="hero-image-container">
+        <img src="https://raw.githubusercontent.com/ardaaltundag5758-boop/gifler/main/Money%20With%20Wings.webp" class="main-hero-img" alt="Money Wings">
+    </div>
+
     <div class="balance-container">
         <h1 class="total-balance"><span id="global-bal">0</span> <span class="unit-text">FLSY</span></h1>
     </div>
@@ -139,7 +122,7 @@
     <div id="farm-btn" class="farm-btn-container" onclick="processClaim()">
         <div id="farm-progress-bar" class="farm-progress-overlay"></div>
         <div class="farm-btn-content">
-            <i id="farm-icon" class="fas fa-stopwatch"></i>
+            <i class="fas fa-stopwatch"></i>
             <span id="claim-timer">Start Farming</span>
         </div>
     </div>

@@ -11,12 +11,14 @@
             --bg: #000000; 
             --card: #111111; 
             --gold: #FFD700;
-            --gold-soft: #8B8000; /* Soluk sarı (Boost aktifken) */
-            --gold-bright: #FFD700; /* Parlak sarı (Boost hazır) */
+            --gold-soft: #8B8000;
+            --gold-bright: #FFD700;
             --gray: #666666; 
             --dark-btn: #121212;
             --neon-strong: rgba(255, 0, 127, 0.7); 
             --neon-soft: rgba(138, 43, 226, 0.5);
+            --idle-color: #bfa500; /* Kapalı sarı */
+            --active-color: #00ff7f; /* Canlı yeşil */
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -29,7 +31,6 @@
         .avatar-circle { width: 40px; height: 40px; border-radius: 50%; border: 1.5px solid #1a1a1a; padding: 2px; }
         .username-text { font-size: 0.95rem; font-weight: 600; }
 
-        /* BAKİYE GLOW */
         .balance-container { text-align: center; margin-bottom: 30px; margin-top: 20px; }
         .total-balance { 
             font-size: 3.5rem; 
@@ -41,10 +42,14 @@
 
         .farming-card { background: var(--card); border-radius: 28px; padding: 25px; border: 1px solid #1f1f1f; width: 100%; margin-bottom: 25px; }
         .card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .status-txt { font-size: 0.8rem; font-weight: 600; color: var(--gray); }
+        
+        /* Status Alanı Düzenlemesi */
+        .status-container { display: flex; align-items: center; gap: 6px; }
+        #status-icon { width: 18px; height: 18px; object-fit: contain; }
+        .status-txt { font-size: 0.8rem; font-weight: 700; transition: color 0.3s; }
+
         .amount-display { font-size: 2.6rem; font-weight: 800; }
 
-        /* HAREKETLİ GRADIENT BUTON */
         .farm-btn-container {
             position: relative; width: 100%; height: 65px; 
             background: linear-gradient(270deg, #121212, #1a1a00, #121212);
@@ -54,49 +59,23 @@
             justify-content: center; border: 1px solid #222; cursor: pointer; margin-bottom: 12px;
         }
 
-        @keyframes moveGradient {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
+        @keyframes moveGradient { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
-        .farm-progress-overlay {
-            position: absolute; left: 0; top: 0; height: 100%; width: 0%;
-            background: var(--gold); opacity: 0.8; transition: width 1s linear; z-index: 1;
-        }
-        .farm-progress-overlay::after {
-            content: ""; position: absolute; top: 0; left: 0; width: 40px; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-            animation: shine 2s infinite;
-        }
+        .farm-progress-overlay { position: absolute; left: 0; top: 0; height: 100%; width: 0%; background: var(--gold); opacity: 0.8; transition: width 1s linear; z-index: 1; }
+        .farm-progress-overlay::after { content: ""; position: absolute; top: 0; left: 0; width: 40px; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent); animation: shine 2s infinite; }
 
         @keyframes shine { 0% { left: -40px; } 100% { left: 100%; } }
 
         .farm-btn-content { position: relative; z-index: 2; display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1rem; color: #fff; }
         .farm-btn-content i { animation: iconPulse 2s infinite ease-in-out; }
-
         @keyframes iconPulse { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
 
         .farm-btn-container.ready { background: var(--gold); animation: none; }
         .farm-btn-container.ready .farm-btn-content { color: #000; }
 
-        /* SARI BOOST BUTONU */
-        .boost-btn {
-            width: 100%; height: 55px; 
-            background: var(--gold-bright); 
-            border-radius: 18px;
-            border: none; color: #000; font-weight: 700; font-size: 1rem;
-            display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s;
-            cursor: pointer;
-        }
+        .boost-btn { width: 100%; height: 55px; background: var(--gold-bright); border-radius: 18px; border: none; color: #000; font-weight: 700; font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s; }
         .boost-btn img { width: 24px; height: 24px; }
-        .boost-btn:active { transform: scale(0.98); }
-        .boost-btn:disabled { 
-            background: var(--gold-soft); /* Soluk sarı */
-            color: rgba(0,0,0,0.5); 
-            opacity: 0.7; 
-            cursor: not-allowed;
-        }
+        .boost-btn:disabled { background: var(--gold-soft); color: rgba(0,0,0,0.5); opacity: 0.7; }
 
         .footer-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 30px; }
         .v-item { background: #080808; border-radius: 24px; padding: 15px 5px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; border: 1px solid #111; height: 115px; }
@@ -124,7 +103,10 @@
     <div class="farming-card">
         <div class="card-head">
             <span style="color:#444; font-size:0.75rem; font-weight:700;">FARMING STATUS</span>
-            <span id="status-text" class="status-txt">Idle</span>
+            <div class="status-container">
+                <img id="status-icon" src="" alt="">
+                <span id="status-text" class="status-txt">Idle</span>
+            </div>
         </div>
         <div class="amount-display">
             <span id="farm-amount">0.00000</span> <span class="sub" style="color:#333; font-size:1rem;">FLSY</span>
@@ -172,6 +154,11 @@
         isBoosted: localStorage.getItem('f_boosted') === 'true'
     };
 
+    const icons = {
+        idle: "https://github.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/blob/main/Symbols/Yellow%20Heart.webp?raw=true",
+        active: "https://github.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/blob/main/Symbols/Green%20Heart.webp?raw=true"
+    };
+
     function getActiveDuration() {
         return state.isBoosted ? state.baseDuration * 2 : state.baseDuration;
     }
@@ -210,10 +197,14 @@
         const amount = document.getElementById('farm-amount');
         const progress = document.getElementById('farm-progress-bar');
         const statusText = document.getElementById('status-text');
+        const statusIcon = document.getElementById('status-icon');
 
         if (state.farmStartTime === 0) {
             timer.innerText = "Start Farming";
             progress.style.width = "0%";
+            statusText.innerText = "Idle";
+            statusText.style.color = "var(--idle-color)";
+            statusIcon.src = icons.idle;
             return;
         }
 
@@ -230,6 +221,8 @@
             timer.innerText = "Claim Ready";
             farmBtn.classList.add('ready');
             statusText.innerText = "Ready";
+            statusText.style.color = "var(--active-color)";
+            statusIcon.src = icons.active;
         } else {
             const h = Math.floor(remaining / 3600);
             const m = Math.floor((remaining % 3600) / 60);
@@ -237,6 +230,8 @@
             timer.innerText = `next claim in ${h}h ${m}m ${s}s`;
             farmBtn.classList.remove('ready');
             statusText.innerText = "Active";
+            statusText.style.color = "var(--active-color)";
+            statusIcon.src = icons.active;
         }
     }
 

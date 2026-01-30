@@ -17,8 +17,8 @@
             --dark-btn: #121212;
             --neon-strong: rgba(255, 0, 127, 0.7); 
             --neon-soft: rgba(138, 43, 226, 0.5);
-            --idle-color: #bfa500; /* Kapalı sarı */
-            --active-color: #00ff7f; /* Canlı yeşil */
+            --idle-color: #bfa500;
+            --active-color: #00ff7f;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -43,10 +43,25 @@
         .farming-card { background: var(--card); border-radius: 28px; padding: 25px; border: 1px solid #1f1f1f; width: 100%; margin-bottom: 25px; }
         .card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         
-        /* Status Alanı Düzenlemesi */
-        .status-container { display: flex; align-items: center; gap: 6px; }
-        #status-icon { width: 18px; height: 18px; object-fit: contain; }
-        .status-txt { font-size: 0.8rem; font-weight: 700; transition: color 0.3s; }
+        .head-left { display: flex; align-items: center; gap: 8px; }
+        .loco-icon { width: 22px; height: 22px; object-fit: contain; }
+        .head-title { color: #444; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+
+        /* YANIP SÖNEN NOKTA (PULSE DOT) */
+        .status-container { display: flex; align-items: center; gap: 8px; }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            animation: pulseFade 1.5s infinite ease-in-out;
+        }
+        .status-txt { font-size: 0.8rem; font-weight: 700; transition: color 0.3s; text-transform: capitalize; }
+
+        @keyframes pulseFade {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.3; transform: scale(0.9); }
+            100% { opacity: 1; transform: scale(1); }
+        }
 
         .amount-display { font-size: 2.6rem; font-weight: 800; }
 
@@ -102,9 +117,12 @@
 
     <div class="farming-card">
         <div class="card-head">
-            <span style="color:#444; font-size:0.75rem; font-weight:700;">FARMING STATUS</span>
+            <div class="head-left">
+                <img src="https://github.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/blob/main/Travel%20and%20Places/Locomotive.webp?raw=true" class="loco-icon" alt="loco">
+                <span class="head-title">Farming Status</span>
+            </div>
             <div class="status-container">
-                <img id="status-icon" src="" alt="">
+                <div id="status-dot" class="status-dot"></div>
                 <span id="status-text" class="status-txt">Idle</span>
             </div>
         </div>
@@ -154,11 +172,6 @@
         isBoosted: localStorage.getItem('f_boosted') === 'true'
     };
 
-    const icons = {
-        idle: "https://github.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/blob/main/Symbols/Yellow%20Heart.webp?raw=true",
-        active: "https://github.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/blob/main/Symbols/Green%20Heart.webp?raw=true"
-    };
-
     function getActiveDuration() {
         return state.isBoosted ? state.baseDuration * 2 : state.baseDuration;
     }
@@ -197,14 +210,15 @@
         const amount = document.getElementById('farm-amount');
         const progress = document.getElementById('farm-progress-bar');
         const statusText = document.getElementById('status-text');
-        const statusIcon = document.getElementById('status-icon');
+        const statusDot = document.getElementById('status-dot');
 
         if (state.farmStartTime === 0) {
             timer.innerText = "Start Farming";
             progress.style.width = "0%";
             statusText.innerText = "Idle";
             statusText.style.color = "var(--idle-color)";
-            statusIcon.src = icons.idle;
+            statusDot.style.backgroundColor = "var(--idle-color)";
+            statusDot.style.boxShadow = "0 0 8px var(--idle-color)";
             return;
         }
 
@@ -222,7 +236,8 @@
             farmBtn.classList.add('ready');
             statusText.innerText = "Ready";
             statusText.style.color = "var(--active-color)";
-            statusIcon.src = icons.active;
+            statusDot.style.backgroundColor = "var(--active-color)";
+            statusDot.style.boxShadow = "0 0 8px var(--active-color)";
         } else {
             const h = Math.floor(remaining / 3600);
             const m = Math.floor((remaining % 3600) / 60);
@@ -231,7 +246,8 @@
             farmBtn.classList.remove('ready');
             statusText.innerText = "Active";
             statusText.style.color = "var(--active-color)";
-            statusIcon.src = icons.active;
+            statusDot.style.backgroundColor = "var(--active-color)";
+            statusDot.style.boxShadow = "0 0 8px var(--active-color)";
         }
     }
 

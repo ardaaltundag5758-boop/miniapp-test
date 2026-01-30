@@ -49,18 +49,16 @@
         }
         .nav-item:active i { transform: translate(4px, -4px); }
 
-        /* FARM EKRANI BİLEŞENLERİ */
+        /* FARM EKRANI TASARIMI */
         .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .avatar-circle { width: 40px; height: 40px; border-radius: 50%; border: 1.5px solid #1a1a1a; padding: 2px; }
-        
         .balance-container { text-align: center; margin-bottom: 30px; margin-top: 20px; }
         .total-balance { 
             font-size: 3.5rem; font-weight: 800; letter-spacing: -1.5px;
             text-shadow: 0 0 10px #fff, 0 0 25px var(--neon-strong), 0 0 50px var(--neon-soft);
         }
-
         .farming-card { background: var(--card); border-radius: 28px; padding: 25px; border: 1px solid #1f1f1f; margin-bottom: 25px; }
-        .status-dot { width: 8px; height: 8px; border-radius: 50%; animation: pulseFade 1.5s infinite; }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; animation: pulseFade 1.5s infinite ease-in-out; }
         @keyframes pulseFade { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.3; transform: scale(0.9); } }
 
         .farm-btn-container {
@@ -70,20 +68,26 @@
             animation: moveGradient 8s infinite; cursor: pointer; margin-bottom: 12px;
         }
         @keyframes moveGradient { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-        
         .farm-progress-overlay { position: absolute; left: 0; top: 0; height: 100%; background: var(--gold); opacity: 0.8; z-index: 1; transition: width 1s linear; }
         .farm-progress-overlay::after { content: ""; position: absolute; top: 0; left: 0; width: 40px; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent); animation: shine 2s infinite; }
         @keyframes shine { 0% { left: -40px; } 100% { left: 100%; } }
 
-        .boost-btn { width: 100%; height: 55px; background: var(--gold-bright); border-radius: 18px; border: none; color: #000; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s; }
-        .boost-btn:disabled { background: var(--gold-soft); color: rgba(0,0,0,0.5); opacity: 0.7; }
-
-        /* REWARDS GRID (Geri Getirilen Kısım) */
+        .boost-btn { width: 100%; height: 55px; background: var(--gold-bright); border-radius: 18px; border: none; color: #000; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .footer-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 30px; padding-bottom: 20px; }
         .v-item { background: #080808; border-radius: 24px; padding: 15px 5px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; border: 1px solid #111; height: 115px; }
-        .v-item span { font-size: 0.75rem; color: #444; font-weight: 600; }
         .footer-webp { width: 60px; height: 60px; object-fit: contain; animation: float 3s ease-in-out infinite; }
         @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-5px); } }
+
+        /* TASKS SEKMESİ ÖZEL STİLLERİ */
+        .category-title { font-size: 0.9rem; font-weight: 800; color: var(--gray); text-transform: uppercase; margin: 20px 0 12px 0; display: flex; align-items: center; gap: 8px; }
+        .category-title i { color: var(--nav-red); font-size: 0.8rem; }
+        .task-card { background: var(--card); border: 1px solid #1f1f1f; border-radius: 20px; padding: 16px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .task-name { font-size: 0.95rem; font-weight: 700; display: block; margin-bottom: 4px; }
+        .task-reward { font-size: 0.85rem; font-weight: 600; color: var(--gold); }
+        .task-btn { background: #fff; color: #000; border: none; border-radius: 12px; padding: 8px 16px; font-weight: 700; font-size: 0.85rem; min-width: 85px; cursor: pointer; }
+        .task-btn.checking { background: #333; color: var(--gray); cursor: not-allowed; }
+        .task-btn.claim { background: var(--nav-red); color: #fff; box-shadow: 0 0 10px var(--nav-red); }
+        .task-btn.done { background: #1a1a1a; color: #444; cursor: default; }
 
         .placeholder-text { text-align: center; margin-top: 50px; color: var(--gray); font-style: italic; }
     </style>
@@ -94,20 +98,20 @@
     <div class="top-bar">
         <div style="display:flex; align-items:center; gap:12px;">
             <img id="u-pic" class="avatar-circle" src="https://cdn-icons-png.flaticon.com/512/149/149071.png">
-            <span id="u-name" style="font-weight:600; font-size:0.95rem;">User</span>
+            <span id="u-name" style="font-weight:600;">User</span>
         </div>
         <i class="fas fa-bars"></i>
     </div>
 
     <div class="balance-container">
-        <h1 class="total-balance" id="global-bal-display"><span id="global-bal">0</span> <span style="font-size:1.2rem; color:var(--gray); margin-left:8px; text-shadow:none;">FLSY</span></h1>
+        <h1 class="total-balance"><span id="global-bal">0</span> <span style="font-size:1.2rem; color:var(--gray); margin-left:8px; text-shadow:none;">FLSY</span></h1>
     </div>
 
     <div class="farming-card">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
             <div style="display:flex; align-items:center; gap:8px;">
                 <img src="https://github.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/blob/main/Travel%20and%20Places/Locomotive.webp?raw=true" style="width:22px;">
-                <span style="color:#444; font-size:0.75rem; font-weight:700; text-transform:uppercase;">Farming Status</span>
+                <span style="color:#444; font-size:0.75rem; font-weight:700;">FARMING STATUS</span>
             </div>
             <div style="display:flex; align-items:center; gap:8px;">
                 <div id="status-dot" class="status-dot"></div>
@@ -119,9 +123,8 @@
 
     <div id="farm-btn" class="farm-btn-container" onclick="processClaim()">
         <div id="farm-progress-bar" class="farm-progress-overlay"></div>
-        <div style="position:relative; z-index:2; display:flex; align-items:center; gap:10px; font-weight:700; color:#fff;">
-            <i class="fas fa-clock" style="animation: iconPulse 2s infinite ease-in-out;"></i>
-            <span id="claim-timer">Start Farming</span>
+        <div style="position:relative; z-index:2; font-weight:700; display:flex; align-items:center; gap:10px;">
+            <i class="fas fa-clock"></i> <span id="claim-timer">Start Farming</span>
         </div>
     </div>
 
@@ -131,98 +134,83 @@
     </button>
 
     <div class="footer-grid">
-        <div class="v-item">
-            <img src="https://raw.githubusercontent.com/ardaaltundag5758-boop/gifler/main/Money%20With%20Wings.webp" class="footer-webp" alt="Rewards">
-            <span>Rewards</span>
-        </div>
-        <div class="v-item">
-            <img src="https://github.com/ardaaltundag5758-boop/gifler/blob/main/Rocket.webp?raw=true" class="footer-webp" alt="Earn">
-            <span>Earn</span>
-        </div>
-        <div class="v-item">
-            <img src="https://github.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/blob/main/Activity/Video%20Game.webp?raw=true" class="footer-webp" alt="Spin">
-            <span>Spin</span>
-        </div>
+        <div class="v-item"><img src="https://raw.githubusercontent.com/ardaaltundag5758-boop/gifler/main/Money%20With%20Wings.webp" class="footer-webp"><span>Rewards</span></div>
+        <div class="v-item"><img src="https://github.com/ardaaltundag5758-boop/gifler/blob/main/Rocket.webp?raw=true" class="footer-webp"><span>Earn</span></div>
+        <div class="v-item"><img src="https://github.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/blob/main/Activity/Video%20Game.webp?raw=true" class="footer-webp"><span>Spin</span></div>
     </div>
 </div>
 
 <div id="tasks" class="tab-content">
-    <h2 style="text-align:center;">Tasks</h2>
-    <p class="placeholder-text">New tasks will appear here soon.</p>
-</div>
-<div id="friends" class="tab-content">
-    <h2 style="text-align:center;">Friends</h2>
-    <p class="placeholder-text">Invite friends and earn bonus FLSY!</p>
-</div>
-<div id="wallet" class="tab-content">
-    <h2 style="text-align:center;">Wallet</h2>
-    <p class="placeholder-text">Wallet integration is in progress.</p>
+    <div class="category-title"><i class="fas fa-fire"></i> Hot Tasks</div>
+    <div class="task-card">
+        <div><span class="task-name">Subscribe to the channel</span><span class="task-reward">+50 FLSY</span></div>
+        <button class="task-btn" onclick="handleTask(this, 'https://t.me/telegram')">Start</button>
+    </div>
+    <div class="task-card">
+        <div><span class="task-name">Subscribe to the group</span><span class="task-reward">+50 FLSY</span></div>
+        <button class="task-btn" onclick="handleTask(this, 'https://t.me/telegram')">Start</button>
+    </div>
+
+    <div class="category-title"><i class="fas fa-users"></i> Friends Tasks</div>
+    <div class="task-card">
+        <div><span class="task-name">Invite a friend</span><span class="task-reward">+40 FLSY</span></div>
+        <button class="task-btn" onclick="handleTask(this, '#')">Start</button>
+    </div>
+    <div class="task-card">
+        <div><span class="task-name">Invite 5 friends</span><span class="task-reward">+150 FLSY</span></div>
+        <button class="task-btn" onclick="handleTask(this, '#')">Start</button>
+    </div>
+    <div class="task-card">
+        <div><span class="task-name">Invite 10 friends</span><span class="task-reward">+300 FLSY</span></div>
+        <button class="task-btn" onclick="handleTask(this, '#')">Start</button>
+    </div>
 </div>
 
+<div id="friends" class="tab-content"><h2 style="text-align:center;">Friends</h2><p class="placeholder-text">Coming soon...</p></div>
+<div id="wallet" class="tab-content"><h2 style="text-align:center;">Wallet</h2><p class="placeholder-text">Coming soon...</p></div>
+
 <nav class="bottom-nav">
-    <div class="nav-item active" onclick="switchTab('farm')">
-        <i class="fas fa-seedling"></i>
-        <span>Farm</span>
-    </div>
-    <div class="nav-item" onclick="switchTab('tasks')">
-        <i class="fas fa-tasks"></i>
-        <span>Tasks</span>
-    </div>
-    <div class="nav-item" onclick="switchTab('friends')">
-        <i class="fas fa-users"></i>
-        <span>Friends</span>
-    </div>
-    <div class="nav-item" onclick="switchTab('wallet')">
-        <i class="fas fa-wallet"></i>
-        <span>Wallet</span>
-    </div>
+    <div class="nav-item active" onclick="switchTab('farm')"><i class="fas fa-seedling"></i><span>Farm</span></div>
+    <div class="nav-item" onclick="switchTab('tasks')"><i class="fas fa-tasks"></i><span>Tasks</span></div>
+    <div class="nav-item" onclick="switchTab('friends')"><i class="fas fa-users"></i><span>Friends</span></div>
+    <div class="nav-item" onclick="switchTab('wallet')"><i class="fas fa-wallet"></i><span>Wallet</span></div>
 </nav>
 
 <script>
-    const tg = window.Telegram.WebApp;
-    tg.expand();
+    const tg = window.Telegram.WebApp; tg.expand();
 
     function switchTab(tabId) {
-        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
         document.getElementById(tabId).classList.add('active');
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.classList.remove('active');
-            if(item.querySelector('span').innerText.toLowerCase() === tabId) item.classList.add('active');
+        document.querySelectorAll('.nav-item').forEach(i => {
+            i.classList.remove('active');
+            if(i.innerText.toLowerCase() === tabId) i.classList.add('active');
         });
         tg.HapticFeedback.impactOccurred('light');
     }
 
-    let state = {
-        bal: parseInt(localStorage.getItem('f_bal')) || 0,
-        farmStartTime: parseInt(localStorage.getItem('f_start')) || 0,
-        hourlyRate: 22,
-        baseDuration: 43200,
-        isBoosted: localStorage.getItem('f_boosted') === 'true'
-    };
-
-    function getActiveDuration() { return state.isBoosted ? state.baseDuration * 2 : state.baseDuration; }
-
-    window.onload = () => {
-        initUser();
-        updateUI();
-        setInterval(updateFarm, 1000);
-    };
-
-    function initUser() {
-        const user = tg.initDataUnsafe.user;
-        if (user) {
-            document.getElementById('u-name').innerText = user.first_name;
-            if (user.photo_url) document.getElementById('u-pic').src = user.photo_url;
+    // TASK MANTIĞI
+    function handleTask(btn, link) {
+        if (btn.innerText === "Start") {
+            if(link !== '#') window.open(link, '_blank');
+            btn.innerText = "Checking"; btn.classList.add('checking');
+            setTimeout(() => {
+                btn.innerText = "Claim"; btn.classList.remove('checking'); btn.classList.add('claim');
+                tg.HapticFeedback.notificationOccurred('warning');
+            }, 5000);
+        } else if (btn.classList.contains('claim')) {
+            btn.innerText = "Done"; btn.classList.remove('claim'); btn.classList.add('done'); btn.disabled = true;
+            tg.HapticFeedback.notificationOccurred('success');
         }
     }
 
-    function updateUI() {
-        document.getElementById('global-bal').innerText = state.bal.toLocaleString();
-        const boostBtn = document.getElementById('btn-boost');
-        const boostText = document.getElementById('boost-text');
-        boostBtn.disabled = (state.isBoosted || state.farmStartTime === 0);
-        boostText.innerText = state.isBoosted ? "Boost Applied" : "Boost Farm";
-    }
+    // FARM MANTIĞI
+    let state = {
+        bal: parseInt(localStorage.getItem('f_bal')) || 0,
+        farmStartTime: parseInt(localStorage.getItem('f_start')) || 0,
+        hourlyRate: 22, baseDuration: 43200,
+        isBoosted: localStorage.getItem('f_boosted') === 'true'
+    };
 
     function updateFarm() {
         const timer = document.getElementById('claim-timer');
@@ -233,17 +221,16 @@
 
         if (state.farmStartTime === 0) {
             timer.innerText = "Start Farming";
-            progress.style.width = "0%";
             statusText.innerText = "Idle";
             statusText.style.color = "var(--idle-color)";
             statusDot.style.backgroundColor = "var(--idle-color)";
-            statusDot.style.boxShadow = "0 0 8px var(--idle-color)";
             return;
         }
 
-        const duration = getActiveDuration();
+        const duration = state.isBoosted ? state.baseDuration * 2 : state.baseDuration;
         const elapsed = Math.floor((Date.now() - state.farmStartTime) / 1000);
         const mined = Math.min(state.hourlyRate * (duration/3600), (elapsed * (state.hourlyRate / 3600)));
+        
         amount.innerText = mined.toFixed(5);
         progress.style.width = Math.min(100, (elapsed / duration) * 100) + "%";
 
@@ -255,8 +242,7 @@
             statusDot.style.boxShadow = "0 0 8px var(--active-color)";
         } else {
             const rem = Math.max(0, duration - elapsed);
-            const h = Math.floor(rem / 3600);
-            const m = Math.floor((rem % 3600) / 60);
+            const h = Math.floor(rem / 3600), m = Math.floor((rem % 3600) / 60);
             timer.innerText = `${h}h ${m}m ${rem % 60}s`;
             statusText.innerText = "Active";
             statusText.style.color = "var(--active-color)";
@@ -266,28 +252,38 @@
     }
 
     function processClaim() {
-        const duration = getActiveDuration();
+        const duration = state.isBoosted ? state.baseDuration * 2 : state.baseDuration;
         const elapsed = Math.floor((Date.now() - state.farmStartTime) / 1000);
         if (state.farmStartTime === 0 || elapsed >= duration) {
             if (state.farmStartTime !== 0) {
                 state.bal += (state.hourlyRate * (duration / 3600));
                 localStorage.setItem('f_bal', state.bal);
             }
-            state.farmStartTime = Date.now();
-            state.isBoosted = false;
+            state.farmStartTime = Date.now(); state.isBoosted = false;
             localStorage.setItem('f_start', state.farmStartTime);
             localStorage.setItem('f_boosted', 'false');
             updateUI();
-            tg.HapticFeedback.notificationOccurred('success');
         }
     }
 
     function applyBoost() {
-        state.isBoosted = true;
-        localStorage.setItem('f_boosted', 'true');
-        updateUI();
-        tg.HapticFeedback.notificationOccurred('success');
+        state.isBoosted = true; localStorage.setItem('f_boosted', 'true'); updateUI();
     }
+
+    function updateUI() {
+        document.getElementById('global-bal').innerText = state.bal.toLocaleString();
+        document.getElementById('btn-boost').disabled = (state.isBoosted || state.farmStartTime === 0);
+        document.getElementById('boost-text').innerText = state.isBoosted ? "Boost Applied" : "Boost Farm";
+    }
+
+    window.onload = () => {
+        const user = tg.initDataUnsafe.user;
+        if (user) {
+            document.getElementById('u-name').innerText = user.first_name;
+            if (user.photo_url) document.getElementById('u-pic').src = user.photo_url;
+        }
+        updateUI(); setInterval(updateFarm, 1000);
+    };
 </script>
 
 </body>

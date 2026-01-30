@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Flashy App</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { 
@@ -14,6 +15,7 @@
             --blue: #007AFF;
             --gray: #666666; 
             --dark-btn: #181818;
+            --neon-glow: rgba(255, 45, 85, 0.3); /* Pembe-mor arası yumuşak neon */
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -26,8 +28,22 @@
         .avatar-circle { width: 40px; height: 40px; border-radius: 50%; border: 1.5px solid #1a1a1a; padding: 2px; }
         .username-text { font-size: 0.95rem; font-weight: 600; }
 
-        .balance-container { text-align: center; margin-bottom: 30px; margin-top: 20px; }
-        .total-balance { font-size: 3.5rem; font-weight: 800; letter-spacing: -1.5px; }
+        /* 1. BAKİYE GLOW EFEKTİ */
+        .balance-container { 
+            text-align: center; 
+            margin-bottom: 30px; 
+            margin-top: 20px; 
+            position: relative;
+        }
+        .total-balance { 
+            font-size: 3.5rem; 
+            font-weight: 800; 
+            letter-spacing: -1.5px;
+            position: relative;
+            z-index: 2;
+            /* Yumuşak Neon Gölge */
+            text-shadow: 0 0 20px var(--neon-glow), 0 0 40px rgba(138, 43, 226, 0.2);
+        }
         .unit-text { font-size: 1.2rem; color: var(--gray); margin-left: 8px; }
 
         .farming-card { background: var(--card); border-radius: 28px; padding: 25px; border: 1px solid #1f1f1f; width: 100%; margin-bottom: 25px; }
@@ -36,10 +52,21 @@
         .amount-display { font-size: 2.6rem; font-weight: 800; }
         .amount-display .sub { font-size: 1rem; color: #333; }
 
+        /* 2. FARM BUTONU & LOTTIE */
         .farm-btn-container {
             position: relative; width: 100%; height: 65px; background: var(--dark-btn);
             border-radius: 50px; overflow: hidden; display: flex; align-items: center;
             justify-content: center; border: 1px solid #222; cursor: pointer; margin-bottom: 12px;
+        }
+        .lottie-bg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 0;
+            opacity: 0.4;
+            pointer-events: none;
         }
         .farm-progress-overlay {
             position: absolute; left: 0; top: 0; height: 100%; width: 0%;
@@ -63,14 +90,7 @@
         .footer-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 30px; }
         .v-item { background: #080808; border-radius: 24px; padding: 15px 5px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; border: 1px solid #111; height: 115px; }
         .v-item span { font-size: 0.75rem; color: #444; font-weight: 600; }
-        
-        /* Tüm alt kutucuk görselleri için ortak stil */
-        .footer-webp {
-            width: 60px; 
-            height: 60px;
-            object-fit: contain;
-            animation: float 3s ease-in-out infinite;
-        }
+        .footer-webp { width: 60px; height: 60px; object-fit: contain; animation: float 3s ease-in-out infinite; }
 
         @keyframes float {
             0% { transform: translateY(0px); }
@@ -91,7 +111,7 @@
     </div>
 
     <div class="balance-container">
-        <h1 class="total-balance"><span id="global-bal">0</span> <span class="unit-text">FLSY</span></h1>
+        <h1 class="total-balance" id="glow-text"><span id="global-bal">0</span> <span class="unit-text">FLSY</span></h1>
     </div>
 
     <div class="farming-card">
@@ -105,6 +125,9 @@
     </div>
 
     <div id="farm-btn" class="farm-btn-container" onclick="processClaim()">
+        <div class="lottie-bg">
+            <lottie-player id="btn-lottie" src="https://assets10.lottiefiles.com/packages/lf20_m6cu96ze.json" background="transparent" speed="1" loop autoplay></lottie-player>
+        </div>
         <div id="farm-progress-bar" class="farm-progress-overlay"></div>
         <div class="farm-btn-content">
             <i class="fas fa-stopwatch"></i>
@@ -121,12 +144,10 @@
             <img src="https://raw.githubusercontent.com/ardaaltundag5758-boop/gifler/main/Money%20With%20Wings.webp" class="footer-webp" alt="Rewards">
             <span>Rewards</span>
         </div>
-        
         <div class="v-item">
             <img src="https://github.com/ardaaltundag5758-boop/gifler/blob/main/Rocket.webp?raw=true" class="footer-webp" alt="Earn">
             <span>Earn</span>
         </div>
-
         <div class="v-item">
             <img src="https://github.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/blob/main/Activity/Video%20Game.webp?raw=true" class="footer-webp" alt="Spin">
             <span>Spin</span>
@@ -181,10 +202,12 @@
         const amount = document.getElementById('farm-amount');
         const progress = document.getElementById('farm-progress-bar');
         const statusText = document.getElementById('status-text');
+        const lottie = document.getElementById('btn-lottie');
 
         if (state.farmStartTime === 0) {
             timer.innerText = "Start Farming";
             progress.style.width = "0%";
+            lottie.speed = 0.5; // Farming yokken yavaş nabız
             return;
         }
 
@@ -201,6 +224,7 @@
             timer.innerText = "Claim Ready";
             farmBtn.classList.add('ready');
             statusText.innerText = "Ready";
+            lottie.speed = 2; // Hazırken daha hızlı yanıp sönme
         } else {
             const h = Math.floor(remaining / 3600);
             const m = Math.floor((remaining % 3600) / 60);
@@ -208,14 +232,19 @@
             timer.innerText = `next claim in ${h}h ${m}m ${s}s`;
             farmBtn.classList.remove('ready');
             statusText.innerText = "Active";
+            lottie.speed = 1; // Aktifken normal hız
         }
     }
 
     function processClaim() {
         const duration = getActiveDuration();
         const elapsed = Math.floor((Date.now() - state.farmStartTime) / 1000);
+        const lottie = document.getElementById('btn-lottie');
         
         if (state.farmStartTime === 0 || elapsed >= duration) {
+            // Butona basıldığında efekt
+            lottie.play(); 
+            
             if (state.farmStartTime !== 0) {
                 state.bal += (state.hourlyRate * (duration / 3600));
                 localStorage.setItem('f_bal', state.bal);

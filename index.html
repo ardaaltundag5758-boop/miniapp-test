@@ -42,9 +42,21 @@
         }
         .nav-item:active i { transform: translate(4px, -4px); }
 
-        /* ANALİZ / ANA EKRAN TASARIMI */
+        /* ANA EKRAN (HESAP ANALİZİ) */
         .welcome-header { text-align: center; margin-top: 20px; margin-bottom: 40px; }
-        .avatar-main { width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--nav-red); padding: 3px; margin-bottom: 15px; }
+        
+        /* PROFIL GÖRSELİ GÜNCELLEMESİ */
+        .avatar-main { 
+            width: 85px; 
+            height: 85px; 
+            border-radius: 50%; 
+            border: 2px solid var(--nav-red); 
+            padding: 3px; 
+            margin-bottom: 15px;
+            object-fit: cover; /* Video/Resim kutuya tam oturur */
+            background: #1a1a1a;
+            box-shadow: 0 0 15px rgba(255, 59, 48, 0.2);
+        }
         
         .score-card { 
             background: linear-gradient(145deg, #161616, #0a0a0a); 
@@ -64,7 +76,7 @@
         .stat-res { font-size: 1.1rem; font-weight: 700; }
         .premium-tag { color: var(--premium-blue); font-size: 0.75rem; font-weight: 800; border: 1px solid var(--premium-blue); padding: 2px 8px; border-radius: 50px; }
 
-        /* TASKS STİLLERİ (Aynen Korundu) */
+        /* TASKS STİLLERİ */
         .category-title { font-size: 0.9rem; font-weight: 800; color: var(--gray); text-transform: uppercase; margin: 20px 0 12px 0; display: flex; align-items: center; gap: 8px; }
         .task-card { background: var(--card); border: 1px solid #1f1f1f; border-radius: 20px; padding: 16px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .task-reward { font-size: 0.85rem; font-weight: 600; color: var(--gold); }
@@ -81,7 +93,7 @@
 <div id="home" class="tab-content active">
     <div class="welcome-header">
         <img id="u-pic" class="avatar-main" src="https://cdn-icons-png.flaticon.com/512/149/149071.png">
-        <h2 id="u-name">Checking Account...</h2>
+        <h2 id="u-name">Loading Profile...</h2>
     </div>
 
     <div class="score-card">
@@ -142,27 +154,43 @@
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    // HESAP YAŞI VE PUAN MANTIĞI
-    function calculatePoints() {
+    function initProfile() {
         const user = tg.initDataUnsafe.user;
-        // Simüle edilmiş yaş (Telegram API normalde tam tarihi vermez, ID üzerinden tahmin edilir)
-        // Burada görsel amaçlı rastgele ama tutarlı bir yaş mantığı kuruyoruz
-        const userId = user ? user.id : 12345678;
-        const age = Math.max(1, Math.floor(10 - (userId / 1000000000) * 5)); // Örnek algoritma
-        const hasPremium = user ? user.is_premium : false;
+        const uNameElement = document.getElementById('u-name');
+        const uPicElement = document.getElementById('u-pic');
 
-        let points = age * 450; // Yaş başına 450 puan
-        if (hasPremium) points += 1000;
+        if (user) {
+            uNameElement.innerText = user.first_name + (user.last_name ? " " + user.last_name : "");
+            
+            // PROFİL FOTOĞRAFI VE VİDEO ÖNİZLEME DESTEĞİ
+            if (user.photo_url) {
+                uPicElement.src = user.photo_url;
+                // Fotoğraf yüklenemezse varsayılan görsele dön
+                uPicElement.onerror = function() {
+                    this.src = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+                };
+            } else {
+                uPicElement.src = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+            }
 
-        // UI Güncelleme
-        document.getElementById('u-name').innerText = user ? user.first_name : "User";
-        document.getElementById('acc-age').innerText = age + " years";
-        document.getElementById('total-flsy').innerText = points.toLocaleString();
-        document.getElementById('wallet-bal').innerText = points.toLocaleString();
-        
-        if (hasPremium) {
-            document.getElementById('is-premium').innerText = "Active";
-            document.getElementById('prem-badge').innerHTML = '<span class="premium-tag">PREMIUM</span>';
+            // Puanlama ve Yaş Analizi
+            const userId = user.id;
+            const age = Math.max(1, Math.floor(10 - (userId / 1000000000) * 5)); 
+            const hasPremium = user.is_premium || false;
+
+            let points = age * 450;
+            if (hasPremium) points += 1000;
+
+            document.getElementById('acc-age').innerText = age + " years";
+            document.getElementById('total-flsy').innerText = points.toLocaleString();
+            document.getElementById('wallet-bal').innerText = points.toLocaleString();
+            
+            if (hasPremium) {
+                document.getElementById('is-premium').innerText = "Active";
+                document.getElementById('prem-badge').innerHTML = '<span class="premium-tag">PREMIUM</span>';
+            }
+        } else {
+            uNameElement.innerText = "Guest User";
         }
     }
 
@@ -190,7 +218,7 @@
     }
 
     window.onload = () => {
-        calculatePoints();
+        initProfile();
     };
 </script>
 

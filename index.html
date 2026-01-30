@@ -27,26 +27,8 @@
         .avatar-circle { width: 40px; height: 40px; border-radius: 50%; border: 1.5px solid #1a1a1a; padding: 2px; }
         .username-text { font-size: 0.95rem; font-weight: 600; }
 
-        /* Yeni Eklenen WebP Resim Alanı */
-        .hero-image-container {
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            margin-bottom: 10px;
-        }
-        .main-hero-img {
-            width: 120px; /* Boyutu buradan ayarlayabilirsin */
-            height: auto;
-            animation: float 3s ease-in-out infinite; /* Hafif yüzme efekti */
-        }
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-            100% { transform: translateY(0px); }
-        }
-
         /* Bakiye */
-        .balance-container { text-align: center; margin-bottom: 30px; }
+        .balance-container { text-align: center; margin-bottom: 30px; margin-top: 20px; }
         .total-balance { font-size: 3.5rem; font-weight: 800; letter-spacing: -1.5px; }
         .unit-text { font-size: 1.2rem; color: var(--gray); margin-left: 8px; }
 
@@ -83,11 +65,25 @@
         .boost-btn:active { transform: scale(0.98); }
         .boost-btn:disabled { background: #1a1a1a; color: #444; opacity: 0.5; }
 
-        /* Footer */
+        /* Footer Grid */
         .footer-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 30px; }
         .v-item { background: #080808; border-radius: 24px; padding: 20px 5px; display: flex; flex-direction: column; align-items: center; gap: 10px; border: 1px solid #111; }
         .v-item span { font-size: 0.75rem; color: #444; font-weight: 600; }
-        .gif-img { width: 40px; height: 40px; }
+        
+        /* Rewards için özel WebP stil */
+        .rewards-webp {
+            width: 32px; /* Daha küçük boyut */
+            height: auto;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .gif-img { width: 35px; height: 35px; }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+            100% { transform: translateY(0px); }
+        }
     </style>
 </head>
 <body>
@@ -99,10 +95,6 @@
             <span id="u-name" class="username-text">User</span>
         </div>
         <i class="fas fa-bars"></i>
-    </div>
-
-    <div class="hero-image-container">
-        <img src="https://raw.githubusercontent.com/ardaaltundag5758-boop/gifler/main/Money%20With%20Wings.webp" class="main-hero-img" alt="Money Wings">
     </div>
 
     <div class="balance-container">
@@ -132,9 +124,18 @@
     </button>
 
     <div class="footer-grid">
-        <div class="v-item"><img src="https://i.imgur.com/G3P2JpT.gif" class="gif-img"><span>Rewards</span></div>
-        <div class="v-item"><img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJidW5hbm9pZnR6eXp6ZzR6ZzR6ZzR6ZzR6ZzR6ZzR6ZzR6ZzR6JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1z/3o7TKVUn7iM8FMEU24/giphy.gif" class="gif-img"><span>Earn</span></div>
-        <div class="v-item"><img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJidW5hbm9pZnR6eXp6ZzR6ZzR6ZzR6ZzR6ZzR6ZzR6ZzR6JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1z/3o7TKMGpxPucV53WTe/giphy.gif" class="gif-img"><span>Spin</span></div>
+        <div class="v-item">
+            <img src="https://raw.githubusercontent.com/ardaaltundag5758-boop/gifler/main/Money%20With%20Wings.webp" class="rewards-webp" alt="Rewards">
+            <span>Rewards</span>
+        </div>
+        <div class="v-item">
+            <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJidW5hbm9pZnR6eXp6ZzR6ZzR6ZzR6ZzR6ZzR6ZzR6ZzR6ZzR6JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1z/3o7TKVUn7iM8FMEU24/giphy.gif" class="gif-img">
+            <span>Earn</span>
+        </div>
+        <div class="v-item">
+            <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJidW5hbm9pZnR6eXp6ZzR6ZzR6ZzR6ZzR6ZzR6ZzR6ZzR6JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1z/3o7TKMGpxPucV53WTe/giphy.gif" class="gif-img">
+            <span>Spin</span>
+        </div>
     </div>
 </div>
 

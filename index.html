@@ -19,167 +19,183 @@
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         body { background-color: var(--bg); color: #fff; font-family: 'Inter', -apple-system, sans-serif; overflow: hidden; width: 100%; height: 100vh; }
 
+        /* AÇILIŞ EKRANI (INTRO) */
+        #intro-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at center, #1a0505 0%, #000 100%);
+            z-index: 9999; display: flex; flex-direction: column; align-items: center;
+            justify-content: center; padding: 30px; text-align: center;
+        }
+        .intro-avatar { width: 120px; height: 120px; border-radius: 50%; border: 3px solid var(--nav-red); margin-bottom: 15px; object-fit: cover; }
+        .intro-level { background: var(--nav-red); color: #fff; padding: 4px 12px; border-radius: 50px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; margin-bottom: 30px; }
+        .intro-age { color: var(--gray); font-size: 1.1rem; margin-bottom: 5px; }
+        .intro-points { font-size: 4rem; font-weight: 900; margin-bottom: 40px; color: #fff; text-shadow: 0 0 20px rgba(255,255,255,0.2); }
+        .intro-btn { 
+            width: 80%; background: #fff; color: #000; border: none; padding: 18px; 
+            border-radius: 20px; font-weight: 800; font-size: 1.1rem; cursor: pointer; transition: 0.3s;
+        }
+        
+        /* PREMIUM DURUM EKRANI */
+        #premium-status-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 10000; display: none; flex-direction: column;
+            align-items: center; justify-content: center; padding: 30px; text-align: center;
+        }
+        .prem-icon { font-size: 4rem; margin-bottom: 20px; }
+        .prem-msg { font-size: 1.2rem; color: #fff; margin-bottom: 30px; line-height: 1.5; font-weight: 600; }
+
+        /* ANA UYGULAMA YAPISI (GİZLİ BAŞLAR) */
+        #main-app { display: none; }
         .tab-content { display: none; height: calc(100vh - 70px); overflow-y: auto; padding: 20px 20px 100px 20px; }
         .tab-content.active { display: flex; flex-direction: column; }
 
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; width: 100%; height: 70px;
             background: rgba(10, 10, 10, 0.95); backdrop-filter: blur(10px);
-            display: grid; grid-template-columns: repeat(2, 1fr);
-            border-top: 1px solid #1a1a1a; z-index: 1000;
+            display: grid; grid-template-columns: repeat(2, 1fr); border-top: 1px solid #1a1a1a; z-index: 1000;
         }
-        .nav-item {
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            gap: 4px; color: var(--gray); font-size: 0.75rem; font-weight: 600; cursor: pointer;
-            position: relative; transition: 0.3s;
-        }
+        .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: var(--gray); font-size: 0.75rem; font-weight: 600; }
         .nav-item.active { color: #fff; }
-        .nav-item.active::after {
-            content: ""; position: absolute; bottom: 8px; width: 20px; height: 3px;
-            background: var(--nav-red); border-radius: 10px; box-shadow: 0 0 8px var(--nav-red);
-        }
+        .nav-item.active::after { content: ""; position: absolute; bottom: 8px; width: 20px; height: 3px; background: var(--nav-red); border-radius: 10px; }
 
-        /* PROFIL ALANI */
+        /* PROFIL ALANI (HOME) */
         .welcome-header { text-align: center; margin-top: 20px; margin-bottom: 40px; }
-        .avatar-main { 
-            width: 85px; height: 85px; border-radius: 50%; border: 2px solid var(--nav-red); 
-            padding: 3px; margin-bottom: 15px; object-fit: cover; background: #1a1a1a;
-            box-shadow: 0 0 15px rgba(255, 59, 48, 0.2);
-        }
-        
-        /* RÜTBE (BADGE) STİLİ */
+        .avatar-main { width: 85px; height: 85px; border-radius: 50%; border: 2px solid var(--nav-red); padding: 3px; margin-bottom: 15px; object-fit: cover; }
         .user-info-wrapper { display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .rank-badge {
-            font-size: 0.65rem; font-weight: 800; text-transform: uppercase;
-            padding: 3px 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2);
-            background: rgba(255,255,255,0.05); color: #fff; letter-spacing: 0.5px;
-        }
-        .rank-diamond { border-color: #b9f2ff; color: #b9f2ff; box-shadow: 0 0 8px rgba(185, 242, 255, 0.3); }
-        .rank-gold { border-color: #ffd700; color: #ffd700; }
-        .rank-platinum { border-color: #e5e4e2; color: #e5e4e2; }
-
-        .score-card { 
-            background: linear-gradient(145deg, #161616, #0a0a0a); 
-            border-radius: 30px; padding: 30px; border: 1px solid #222;
-            text-align: center; margin-bottom: 20px;
-        }
-        .score-value { font-size: 3.5rem; font-weight: 900; letter-spacing: -2px; color: #fff; }
-        .score-label { color: var(--gray); font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
-
-        .stat-box { 
-            background: var(--card); border-radius: 20px; padding: 20px; 
-            display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;
-            border: 1px solid #1a1a1a;
-        }
-        .stat-info { display: flex; flex-direction: column; gap: 4px; }
-        .stat-label { color: var(--gray); font-size: 0.8rem; font-weight: 600; }
-        .stat-res { font-size: 1.1rem; font-weight: 700; }
-        .premium-tag { color: var(--premium-blue); font-size: 0.75rem; font-weight: 800; border: 1px solid var(--premium-blue); padding: 2px 8px; border-radius: 50px; }
-
-        .placeholder-text { text-align: center; margin-top: 50px; color: var(--gray); font-style: italic; }
+        .rank-badge { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; padding: 3px 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); }
+        .score-card { background: linear-gradient(145deg, #161616, #0a0a0a); border-radius: 30px; padding: 30px; text-align: center; margin-bottom: 20px; border: 1px solid #222; }
+        .score-value { font-size: 3.5rem; font-weight: 900; letter-spacing: -2px; }
+        .stat-box { background: var(--card); border-radius: 20px; padding: 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .rank-diamond { border-color: #b9f2ff; color: #b9f2ff; }
     </style>
 </head>
 <body>
 
-<div id="home" class="tab-content active">
-    <div class="welcome-header">
-        <img id="u-pic" class="avatar-main" src="https://cdn-icons-png.flaticon.com/512/149/149071.png">
-        <div class="user-info-wrapper">
-            <span id="u-rank" class="rank-badge">...</span>
-            <h2 id="u-name" style="font-size: 1.4rem;">Loading...</h2>
+<div id="intro-screen">
+    <img id="intro-pic" class="intro-avatar" src="https://cdn-icons-png.flaticon.com/512/149/149071.png">
+    <div id="intro-user-name" style="font-weight: 700; margin-bottom: 5px;">User</div>
+    <div id="intro-rank" class="intro-level">Apprentice</div>
+    <div class="intro-age" id="intro-age-text">... years on Telegram</div>
+    <div class="intro-points" id="intro-points-text">0</div>
+    <button class="intro-btn" onclick="showPremiumStep()">Continue</button>
+</div>
+
+<div id="premium-status-screen">
+    <div id="prem-icon" class="prem-icon"></div>
+    <div id="prem-msg" class="prem-msg"></div>
+    <button class="intro-btn" style="background: var(--nav-red); color: #fff;" onclick="finishIntro()">End</button>
+</div>
+
+<div id="main-app">
+    <div id="home" class="tab-content active">
+        <div class="welcome-header">
+            <img id="u-pic" class="avatar-main" src="https://cdn-icons-png.flaticon.com/512/149/149071.png">
+            <div class="user-info-wrapper">
+                <span id="u-rank" class="rank-badge">...</span>
+                <h2 id="u-name" style="font-size: 1.4rem;">User</h2>
+            </div>
+        </div>
+        <div class="score-card">
+            <div class="score-value" id="total-flsy">0</div>
+            <div style="color: var(--gray); font-size: 0.9rem;">Total FLSY Points</div>
+        </div>
+        <div class="stat-box">
+            <div><div style="color: var(--gray); font-size: 0.8rem;">Account Age</div><div id="acc-age" style="font-weight: 700;">... years</div></div>
+            <i class="fas fa-calendar-alt" style="color: var(--nav-red);"></i>
+        </div>
+        <div id="prem-stat-box" class="stat-box" style="display: none;">
+            <div><div style="color: var(--gray); font-size: 0.8rem;">Telegram Premium</div><div style="font-weight: 700; color: var(--premium-blue);">Active</div></div>
+            <i class="fas fa-check-circle" style="color: var(--premium-blue);"></i>
         </div>
     </div>
-    
-    <div class="score-card">
-        <div class="score-value" id="total-flsy">0</div>
-        <div class="score-label">Total FLSY Points</div>
+
+    <div id="friends" class="tab-content">
+        <h2 style="text-align:center;">Friends</h2>
+        <p style="text-align:center; margin-top:50px; color:var(--gray);">Coming Soon...</p>
     </div>
 
-    <div class="stat-box">
-        <div class="stat-info"><span class="stat-label">Account Age</span><span class="stat-res" id="acc-age">... years</span></div>
-        <i class="fas fa-calendar-alt" style="color: var(--nav-red);"></i>
-    </div>
-
-    <div class="stat-box">
-        <div class="stat-info"><span class="stat-label">Telegram Premium</span><span class="stat-res" id="is-premium">No</span></div>
-        <div id="prem-badge"></div>
-    </div>
+    <nav class="bottom-nav">
+        <div class="nav-item active" onclick="switchTab('home')"><i class="fas fa-home"></i><span>Home</span></div>
+        <div class="nav-item" onclick="switchTab('friends')"><i class="fas fa-users"></i><span>Friends</span></div>
+    </nav>
 </div>
-
-<div id="friends" class="tab-content">
-    <h2 style="text-align:center;">Friends</h2>
-    <p class="placeholder-text">Invite friends to get more FLSY.</p>
-</div>
-
-<nav class="bottom-nav">
-    <div class="nav-item active" onclick="switchTab('home')"><i class="fas fa-home"></i><span>Home</span></div>
-    <div class="nav-item" onclick="switchTab('friends')"><i class="fas fa-users"></i><span>Friends</span></div>
-</nav>
 
 <script>
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    function initProfile() {
+    const RANKS = {
+        1: "Apprentice", 2: "Bronze", 3: "Bronze Plus", 4: "Silver", 5: "Silver Plus",
+        6: "Gold", 7: "Gold Plus", 8: "Platinum", 9: "Platinum Plus", 10: "Diamond", 11: "Diamond"
+    };
+
+    let userData = { age: 1, points: 0, isPremium: false };
+
+    function initData() {
         const user = tg.initDataUnsafe.user;
-        const uNameElement = document.getElementById('u-name');
-        const uPicElement = document.getElementById('u-pic');
-        const uRankElement = document.getElementById('u-rank');
+        if (!user) return;
 
-        if (user) {
-            uNameElement.innerText = user.first_name;
-            
-            if (user.photo_url) {
-                uPicElement.src = user.photo_url;
-                uPicElement.onerror = function() { this.src = "https://cdn-icons-png.flaticon.com/512/149/149071.png"; };
-            }
+        // Yaş Hesaplama (Hata düzeltilmiş mantık)
+        const id = user.id;
+        if (id < 50000000) userData.age = 11;
+        else if (id < 150000000) userData.age = 10;
+        else if (id < 450000000) userData.age = 8;
+        else if (id < 1000000000) userData.age = 6;
+        else if (id < 5000000000) userData.age = 3;
+        else userData.age = 1;
 
-            const userId = user.id;
-            let age = 1;
+        userData.isPremium = user.is_premium || false;
+        userData.points = (userData.age * 450) + (userData.isPremium ? 1000 : 0);
 
-            if (userId < 50000000) age = 11;
-            else if (userId < 150000000) age = 10;
-            else if (userId < 250000000) age = 9;
-            else if (userId < 450000000) age = 8;
-            else if (userId < 700000000) age = 7;
-            else if (userId < 1000000000) age = 6;
-            else if (userId < 1300000000) age = 5;
-            else if (userId < 1800000000) age = 4;
-            else if (userId < 5000000000) age = 3;
-            else if (userId < 6500000000) age = 2;
-            else age = 1;
+        // UI Doldurma
+        document.getElementById('intro-user-name').innerText = user.first_name;
+        document.getElementById('u-name').innerText = user.first_name;
+        document.getElementById('intro-age-text').innerText = userData.age + " Years";
+        document.getElementById('acc-age').innerText = userData.age + " Years";
+        document.getElementById('intro-points-text').innerText = userData.points;
+        document.getElementById('total-flsy').innerText = userData.points.toLocaleString();
+        
+        const rankName = RANKS[userData.age] || "Apprentice";
+        document.getElementById('intro-rank').innerText = rankName;
+        document.getElementById('u-rank').innerText = rankName;
+        if(userData.age >= 10) document.getElementById('u-rank').classList.add('rank-diamond');
 
-            // RÜTBE ATAMASI
-            const ranks = {
-                1: { name: "Apprentice", class: "" },
-                2: { name: "Bronze", class: "" },
-                3: { name: "Bronze Plus", class: "" },
-                4: { name: "Silver", class: "" },
-                5: { name: "Silver Plus", class: "" },
-                6: { name: "Gold", class: "rank-gold" },
-                7: { name: "Gold Plus", class: "rank-gold" },
-                8: { name: "Platinum", class: "rank-platinum" },
-                9: { name: "Platinum Plus", class: "rank-platinum" },
-                10: { name: "Diamond", class: "rank-diamond" },
-                11: { name: "Diamond", class: "rank-diamond" }
-            };
-
-            const currentRank = ranks[age] || ranks[1];
-            uRankElement.innerText = currentRank.name;
-            if (currentRank.class) uRankElement.classList.add(currentRank.class);
-
-            const hasPremium = user.is_premium || false;
-            let points = age * 450;
-            if (hasPremium) points += 1000;
-
-            document.getElementById('acc-age').innerText = age + " years";
-            document.getElementById('total-flsy').innerText = points.toLocaleString();
-            
-            if (hasPremium) {
-                document.getElementById('is-premium').innerText = "Active";
-                document.getElementById('prem-badge').innerHTML = '<span class="premium-tag">PREMIUM</span>';
-            }
+        if(user.photo_url) {
+            document.getElementById('intro-pic').src = user.photo_url;
+            document.getElementById('u-pic').src = user.photo_url;
         }
+
+        if(userData.isPremium) document.getElementById('prem-stat-box').style.display = 'flex';
+
+        // Daha önce girmiş mi kontrol et
+        if (localStorage.getItem('flashy_onboarded')) {
+            document.getElementById('intro-screen').style.display = 'none';
+            document.getElementById('main-app').style.display = 'block';
+        }
+    }
+
+    function showPremiumStep() {
+        document.getElementById('intro-screen').style.display = 'none';
+        const premScreen = document.getElementById('premium-status-screen');
+        const icon = document.getElementById('prem-icon');
+        const msg = document.getElementById('prem-msg');
+
+        premScreen.style.display = 'flex';
+        if (userData.isPremium) {
+            icon.innerHTML = "🌟";
+            msg.innerHTML = "You are a Premium user!<br>An extra +1,000 FLSY has been added to your balance.";
+        } else {
+            icon.innerHTML = "👤";
+            msg.innerHTML = "You do not have Telegram Premium.<br>No extra bonus points awarded.";
+        }
+        tg.HapticFeedback.impactOccurred('medium');
+    }
+
+    function finishIntro() {
+        localStorage.setItem('flashy_onboarded', 'true');
+        document.getElementById('premium-status-screen').style.display = 'none';
+        document.getElementById('main-app').style.display = 'block';
+        tg.HapticFeedback.notificationOccurred('success');
     }
 
     function switchTab(tabId) {
@@ -187,13 +203,12 @@
         document.getElementById(tabId).classList.add('active');
         document.querySelectorAll('.nav-item').forEach(i => {
             i.classList.remove('active');
-            const label = i.querySelector('span').innerText.toLowerCase();
-            if(label === tabId) i.classList.add('active');
+            if(i.innerText.toLowerCase() === tabId) i.classList.add('active');
         });
         tg.HapticFeedback.impactOccurred('light');
     }
 
-    window.onload = () => { initProfile(); };
+    window.onload = initData;
 </script>
 </body>
 </html>

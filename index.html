@@ -39,19 +39,26 @@
         .sub-title { color: #666; font-size: 1rem; font-weight: 500; }
 
         .hero-center { position: relative; width: 100%; display: flex; align-items: center; justify-content: center; z-index: 2; }
-        .bg-flame { font-size: 180px; opacity: 0.15; position: absolute; filter: blur(2px) drop-shadow(0 0 30px rgba(255, 69, 0, 0.6)); animation: flamePulse 3s infinite alternate; user-select: none; }
-        @keyframes flamePulse { from { transform: scale(1); opacity: 0.15; } to { transform: scale(1.1); opacity: 0.25; } }
+        
+        /* Yeni Hareketli Alev Görseli Düzenlemesi */
+        .bg-flame-webp { 
+            width: 280px; height: 280px; 
+            position: absolute; 
+            z-index: 1; /* Yazının arkasında */
+            filter: drop-shadow(0 0 15px rgba(255, 69, 0, 0.4)); /* Hafif Glow */
+            user-select: none;
+        }
 
-        .age-highlight { position: relative; z-index: 3; display: flex; flex-direction: column; align-items: center; }
-        .age-number { font-size: 6rem; font-weight: 900; line-height: 1; color: #fff; }
-        .age-text { font-size: 1.5rem; font-weight: 700; color: #fff; margin-top: 5px; }
+        .age-highlight { position: relative; z-index: 3; display: flex; flex-direction: column; align-items: center; pointer-events: none; }
+        .age-number { font-size: 6rem; font-weight: 900; line-height: 1; color: #fff; text-shadow: 0 4px 20px rgba(0,0,0,0.8); }
+        .age-text { font-size: 1.5rem; font-weight: 700; color: #fff; margin-top: 5px; text-shadow: 0 2px 10px rgba(0,0,0,0.8); }
 
         .info-group { z-index: 2; width: 100%; margin-bottom: 30px; }
         .info-line { color: #888; font-size: 0.9rem; margin-bottom: 8px; }
         .info-white { color: #fff; font-weight: 600; }
         .continue-btn-elite { width: 100%; background: #fff; color: #000; border: none; padding: 20px; border-radius: 18px; font-weight: 800; font-size: 1.1rem; cursor: pointer; z-index: 2; }
 
-        /* ESKİ INTRO VE DİĞERLERİ (Gizli başlar) */
+        /* DİĞER EKRANLAR */
         #intro-screen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at center, #1a0505 0%, #000 100%); z-index: 9999; flex-direction: column; align-items: center; justify-content: center; padding: 30px; text-align: center; }
         .intro-avatar { width: 120px; height: 120px; border-radius: 50%; border: 3px solid var(--nav-red); margin-bottom: 15px; object-fit: cover; }
         .intro-level { background: var(--nav-red); color: #fff; padding: 4px 12px; border-radius: 50px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; margin-bottom: 30px; }
@@ -94,7 +101,7 @@
         <div class="sub-title" id="txt-joined-desc">You've joined Telegram</div>
     </div>
     <div class="hero-center">
-        <div class="bg-flame">🔥</div>
+        <img class="bg-flame-webp" src="https://github.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/blob/main/Animals%20and%20Nature/Fire.webp?raw=true" alt="Fire">
         <div class="age-highlight">
             <span class="age-number" id="wel-age-num">0</span>
             <span class="age-text" id="wel-age-txt">years ago</span>
@@ -176,7 +183,6 @@
         const userLang = user.language_code === 'tr' ? 'tr' : (user.language_code === 'ru' ? 'ru' : 'en');
         const lang = I18N[userLang];
 
-        // Yaş Logic
         const id = user.id;
         if (id < 50000000) userData.age = 11;
         else if (id < 150000000) userData.age = 10;
@@ -188,7 +194,6 @@
         userData.isPremium = user.is_premium || false;
         userData.points = (userData.age * 450) + (userData.isPremium ? 1000 : 0);
 
-        // Elite Screen Update
         document.getElementById('txt-elite-title').innerText = lang.elite;
         document.getElementById('txt-joined-desc').innerText = lang.joined;
         document.getElementById('wel-age-num').innerText = userData.age;
@@ -198,7 +203,6 @@
         document.getElementById('txt-top-percent').innerHTML = lang.top.replace("1%", '<span class="info-white">1%</span>');
         document.getElementById('btn-wel-continue').innerText = lang.btn;
 
-        // UI Update
         document.getElementById('intro-age-text').innerText = userData.age + " " + lang.yearsOn;
         document.getElementById('acc-age').innerText = userData.age + " " + lang.years;
         document.getElementById('btn-continue').innerText = lang.continue;
@@ -237,6 +241,7 @@
 
     function createStars() {
         const box = document.getElementById('stars-box');
+        if(!box) return;
         for (let i = 0; i < 40; i++) {
             const star = document.createElement('div');
             star.className = 'star';

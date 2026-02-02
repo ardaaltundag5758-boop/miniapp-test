@@ -14,7 +14,6 @@
             --gray: #666666; 
             --nav-red: #FF3B30;
             --premium-blue: #007AFF;
-            /* Rank Renkleri */
             --rank-apprentice: #00d2ff;
             --rank-adept: #a445f7;
             --rank-master: #ffca28;
@@ -23,27 +22,44 @@
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         body { background-color: var(--bg); color: #fff; font-family: 'Inter', -apple-system, sans-serif; overflow: hidden; width: 100%; height: 100vh; }
 
-        /* AÇILIŞ EKRANI (INTRO) */
-        #intro-screen {
+        /* ELITE WELCOME SCREEN */
+        #elite-welcome-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle at center, #1a0505 0%, #000 100%);
-            z-index: 9999; display: flex; flex-direction: column; align-items: center;
-            justify-content: center; padding: 30px; text-align: center;
+            background-color: #000; z-index: 20000;
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: space-between; padding: 60px 30px;
+            text-align: center; overflow: hidden;
         }
+        .stars-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+        .star { position: absolute; background: #fff; border-radius: 50%; opacity: 0.3; animation: twinkle var(--duration) infinite ease-in-out; }
+        @keyframes twinkle { 0%, 100% { opacity: 0.1; transform: translateY(0); } 50% { opacity: 0.6; transform: translateY(-20px); } }
+        
+        .header-group { z-index: 2; margin-top: 20px; }
+        .elite-title { font-size: 2.2rem; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; background: linear-gradient(to bottom, #fff 0%, #888 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .sub-title { color: #666; font-size: 1rem; font-weight: 500; }
+
+        .hero-center { position: relative; width: 100%; display: flex; align-items: center; justify-content: center; z-index: 2; }
+        .bg-flame { font-size: 180px; opacity: 0.15; position: absolute; filter: blur(2px) drop-shadow(0 0 30px rgba(255, 69, 0, 0.6)); animation: flamePulse 3s infinite alternate; user-select: none; }
+        @keyframes flamePulse { from { transform: scale(1); opacity: 0.15; } to { transform: scale(1.1); opacity: 0.25; } }
+
+        .age-highlight { position: relative; z-index: 3; display: flex; flex-direction: column; align-items: center; }
+        .age-number { font-size: 6rem; font-weight: 900; line-height: 1; color: #fff; }
+        .age-text { font-size: 1.5rem; font-weight: 700; color: #fff; margin-top: 5px; }
+
+        .info-group { z-index: 2; width: 100%; margin-bottom: 30px; }
+        .info-line { color: #888; font-size: 0.9rem; margin-bottom: 8px; }
+        .info-white { color: #fff; font-weight: 600; }
+        .continue-btn-elite { width: 100%; background: #fff; color: #000; border: none; padding: 20px; border-radius: 18px; font-weight: 800; font-size: 1.1rem; cursor: pointer; z-index: 2; }
+
+        /* ESKİ INTRO VE DİĞERLERİ (Gizli başlar) */
+        #intro-screen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at center, #1a0505 0%, #000 100%); z-index: 9999; flex-direction: column; align-items: center; justify-content: center; padding: 30px; text-align: center; }
         .intro-avatar { width: 120px; height: 120px; border-radius: 50%; border: 3px solid var(--nav-red); margin-bottom: 15px; object-fit: cover; }
         .intro-level { background: var(--nav-red); color: #fff; padding: 4px 12px; border-radius: 50px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; margin-bottom: 30px; }
         .intro-age { color: var(--gray); font-size: 1.1rem; margin-bottom: 5px; }
         .intro-points { font-size: 4rem; font-weight: 900; margin-bottom: 40px; color: #fff; text-shadow: 0 0 20px rgba(255,255,255,0.2); }
-        .intro-btn { 
-            width: 80%; background: #fff; color: #000; border: none; padding: 18px; 
-            border-radius: 20px; font-weight: 800; font-size: 1.1rem; cursor: pointer; transition: 0.3s;
-        }
+        .intro-btn { width: 80%; background: #fff; color: #000; border: none; padding: 18px; border-radius: 20px; font-weight: 800; font-size: 1.1rem; cursor: pointer; transition: 0.3s; }
         
-        #premium-status-screen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #000; z-index: 10000; display: none; flex-direction: column;
-            align-items: center; justify-content: center; padding: 30px; text-align: center;
-        }
+        #premium-status-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 10000; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 30px; text-align: center; }
         .prem-icon { font-size: 4rem; margin-bottom: 20px; }
         .prem-msg { font-size: 1.2rem; color: #fff; margin-bottom: 30px; line-height: 1.5; font-weight: 600; }
 
@@ -51,26 +67,14 @@
         .tab-content { display: none; height: calc(100vh - 70px); overflow-y: auto; padding: 20px 20px 100px 20px; }
         .tab-content.active { display: flex; flex-direction: column; }
 
-        .bottom-nav {
-            position: fixed; bottom: 0; left: 0; width: 100%; height: 70px;
-            background: rgba(10, 10, 10, 0.95); backdrop-filter: blur(10px);
-            display: grid; grid-template-columns: repeat(2, 1fr); border-top: 1px solid #1a1a1a; z-index: 1000;
-        }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 70px; background: rgba(10, 10, 10, 0.95); backdrop-filter: blur(10px); display: grid; grid-template-columns: repeat(2, 1fr); border-top: 1px solid #1a1a1a; z-index: 1000; }
         .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: var(--gray); font-size: 0.75rem; font-weight: 600; }
         .nav-item.active { color: #fff; }
         .nav-item.active::after { content: ""; position: absolute; bottom: 8px; width: 20px; height: 3px; background: var(--nav-red); border-radius: 10px; }
 
-        /* PROFIL ALANI (HOME) */
         .welcome-header { text-align: center; margin-top: 20px; margin-bottom: 40px; display: flex; flex-direction: column; align-items: center; }
         .avatar-main { width: 85px; height: 85px; border-radius: 50%; border: 2px solid var(--nav-red); padding: 3px; margin-bottom: 10px; object-fit: cover; }
-        
-        /* Rank Görünümü Düzenlemesi */
-        .rank-badge { 
-            font-size: 0.7rem; font-weight: 800; text-transform: uppercase; 
-            padding: 4px 12px; border-radius: 8px; margin-bottom: 10px;
-            letter-spacing: 1px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.5);
-        }
+        .rank-badge { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; padding: 4px 12px; border-radius: 8px; margin-bottom: 10px; letter-spacing: 1px; }
         .rank-apprentice { background: rgba(0, 210, 255, 0.15); color: var(--rank-apprentice); border: 1px solid var(--rank-apprentice); }
         .rank-adept { background: rgba(164, 69, 247, 0.15); color: var(--rank-adept); border: 1px solid var(--rank-adept); }
         .rank-master { background: rgba(255, 202, 40, 0.15); color: var(--rank-master); border: 1px solid var(--rank-master); }
@@ -78,13 +82,30 @@
         .score-card { background: linear-gradient(145deg, #161616, #0a0a0a); border-radius: 30px; padding: 30px; text-align: center; margin-bottom: 20px; border: 1px solid #222; }
         .score-value { font-size: 3.5rem; font-weight: 900; letter-spacing: -2px; }
         .stat-box { background: var(--card); border-radius: 20px; padding: 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-        
-        /* Premium Fire Görseli */
         .prem-fire-img { width: 35px; height: 35px; }
-
     </style>
 </head>
 <body>
+
+<div id="elite-welcome-screen">
+    <div class="stars-container" id="stars-box"></div>
+    <div class="header-group">
+        <div class="elite-title" id="txt-elite-title">ELITE MEMBER</div>
+        <div class="sub-title" id="txt-joined-desc">You've joined Telegram</div>
+    </div>
+    <div class="hero-center">
+        <div class="bg-flame">🔥</div>
+        <div class="age-highlight">
+            <span class="age-number" id="wel-age-num">0</span>
+            <span class="age-text" id="wel-age-txt">years ago</span>
+        </div>
+    </div>
+    <div class="info-group">
+        <div class="info-line"><span id="txt-acc-num">Your account number is</span> <span class="info-white" id="wel-user-id">#0</span></div>
+        <div class="info-line" id="txt-top-percent">You're in the top <span class="info-white">1%</span> Telegram users</div>
+    </div>
+    <button class="continue-btn-elite" id="btn-wel-continue" onclick="startAfterElite()">CONTINUE</button>
+</div>
 
 <div id="intro-screen">
     <img id="intro-pic" class="intro-avatar" src="https://cdn-icons-png.flaticon.com/512/149/149071.png">
@@ -121,12 +142,10 @@
             <img class="prem-fire-img" src="https://github.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/blob/main/Animals%20and%20Nature/Fire.webp?raw=true" alt="Fire">
         </div>
     </div>
-
     <div id="friends" class="tab-content">
         <h2 id="label-friends-title" style="text-align:center;">Friends</h2>
         <p id="label-coming-soon" style="text-align:center; margin-top:50px; color:var(--gray);">Coming Soon...</p>
     </div>
-
     <nav class="bottom-nav">
         <div class="nav-item active" onclick="switchTab('home')"><i class="fas fa-home"></i><span id="nav-home">Home</span></div>
         <div class="nav-item" onclick="switchTab('friends')"><i class="fas fa-users"></i><span id="nav-friends">Friends</span></div>
@@ -137,25 +156,16 @@
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    // Rank logic'ine dokunulmadı, sadece isimler ve görsel sınıflar eklendi
     const RANKS = {
-        1: {name: "Apprentice", class: "rank-apprentice"},
-        2: {name: "Apprentice", class: "rank-apprentice"},
-        3: {name: "Apprentice", class: "rank-apprentice"},
-        4: {name: "Adept", class: "rank-adept"},
-        5: {name: "Adept", class: "rank-adept"},
-        6: {name: "Adept", class: "rank-adept"},
-        7: {name: "Master", class: "rank-master"},
-        8: {name: "Master", class: "rank-master"},
-        9: {name: "Master", class: "rank-master"},
-        10: {name: "Master", class: "rank-master"},
-        11: {name: "Master", class: "rank-master"}
+        1: {name: "Apprentice", class: "rank-apprentice"}, 2: {name: "Apprentice", class: "rank-apprentice"}, 3: {name: "Apprentice", class: "rank-apprentice"},
+        4: {name: "Adept", class: "rank-adept"}, 5: {name: "Adept", class: "rank-adept"}, 6: {name: "Adept", class: "rank-adept"},
+        7: {name: "Master", class: "rank-master"}, 8: {name: "Master", class: "rank-master"}, 9: {name: "Master", class: "rank-master"}, 10: {name: "Master", class: "rank-master"}, 11: {name: "Master", class: "rank-master"}
     };
 
     const I18N = {
-        tr: { yearsOn: "yıldır Telegram'da", years: "Yıl", continue: "Devam Et", end: "Bitir", totalPoints: "Toplam FLSY Puanı", accAge: "Hesap Yaşı", premium: "Telegram Premium", active: "Aktif", friends: "Arkadaşlar", soon: "Yakında...", home: "Ana Sayfa", premYes: "Harika, Premium kullanıcısısın!<br>Bakiyene ekstra +1,000 FLSY eklendi.", premNo: "Telegram Premium bulunamadı.<br>Ekstra bonus puan kazanılamadı." },
-        en: { yearsOn: "years on Telegram", years: "Years", continue: "Continue", end: "End", totalPoints: "Total FLSY Points", accAge: "Account Age", premium: "Telegram Premium", active: "Active", friends: "Friends", soon: "Coming Soon...", home: "Home", premYes: "You are a Premium user!<br>An extra +1,000 FLSY has been added to your balance.", premNo: "You do not have Telegram Premium.<br>No extra bonus points awarded." },
-        ru: { yearsOn: "лет в Telegram", years: "лет", continue: "Продолжить", end: "Завершить", totalPoints: "Всего очков FLSY", accAge: "Возраст аккаунта", premium: "Telegram Premium", active: "Активен", friends: "Друзья", soon: "Скоро...", home: "Главная", premYes: "Вы Premium-пользователь!<br>К вашему балансу добавлено +1,000 FLSY.", premNo: "У вас нет Telegram Premium.<br>Бонусные баллы не начислены." }
+        tr: { elite: "ELİT ÜYE", joined: "Telegram'a katıldın", yearsAgo: "yıl önce", accNum: "Hesap numaran:", top: "En iyi %1 Telegram kullanıcısındasın", btn: "DEVAM ET", yearsOn: "yıldır Telegram'da", years: "Yıl", continue: "Devam Et", end: "Bitir", totalPoints: "Toplam FLSY Puanı", accAge: "Hesap Yaşı", premium: "Telegram Premium", active: "Aktif", friends: "Arkadaşlar", soon: "Yakında...", home: "Ana Sayfa", premYes: "Harika, Premium kullanıcısısın!<br>Bakiyene ekstra +1,000 FLSY eklendi.", premNo: "Telegram Premium bulunamadı.<br>Ekstra bonus puan kazanılamadı." },
+        en: { elite: "ELITE MEMBER", joined: "You've joined Telegram", yearsAgo: "years ago", accNum: "Your account number is", top: "You're in the top 1% Telegram users", btn: "CONTINUE", yearsOn: "years on Telegram", years: "Years", continue: "Continue", end: "End", totalPoints: "Total FLSY Points", accAge: "Account Age", premium: "Telegram Premium", active: "Active", friends: "Friends", soon: "Coming Soon...", home: "Home", premYes: "You are a Premium user!<br>An extra +1,000 FLSY has been added to your balance.", premNo: "You do not have Telegram Premium.<br>No extra bonus points awarded." },
+        ru: { elite: "ЭЛИТНЫЙ УЧАСТНИК", joined: "Вы присоединились к Telegram", yearsAgo: "лет назад", accNum: "Ваш номер аккаунта:", top: "Вы входите в 1% лучших пользователей", btn: "ПРОДОЛЖИТЬ", yearsOn: "лет в Telegram", years: "лет", continue: "Продолжить", end: "Завершить", totalPoints: "Всего очков FLSY", accAge: "Возраст аккаунта", premium: "Telegram Premium", active: "Активен", friends: "Друзья", soon: "Скоро...", home: "Главная", premYes: "Вы Premium-пользователь!<br>К вашему балансу добавлено +1,000 FLSY.", premNo: "У вас нет Telegram Premium.<br>Бонусные баллы не начислены." }
     };
 
     let userData = { age: 1, points: 0, isPremium: false };
@@ -163,10 +173,10 @@
     function initData() {
         const user = tg.initDataUnsafe.user;
         if (!user) return;
-
         const userLang = user.language_code === 'tr' ? 'tr' : (user.language_code === 'ru' ? 'ru' : 'en');
         const lang = I18N[userLang];
 
+        // Yaş Logic
         const id = user.id;
         if (id < 50000000) userData.age = 11;
         else if (id < 150000000) userData.age = 10;
@@ -178,6 +188,17 @@
         userData.isPremium = user.is_premium || false;
         userData.points = (userData.age * 450) + (userData.isPremium ? 1000 : 0);
 
+        // Elite Screen Update
+        document.getElementById('txt-elite-title').innerText = lang.elite;
+        document.getElementById('txt-joined-desc').innerText = lang.joined;
+        document.getElementById('wel-age-num').innerText = userData.age;
+        document.getElementById('wel-age-txt').innerText = lang.yearsAgo;
+        document.getElementById('txt-acc-num').innerText = lang.accNum;
+        document.getElementById('wel-user-id').innerText = "#" + user.id;
+        document.getElementById('txt-top-percent').innerHTML = lang.top.replace("1%", '<span class="info-white">1%</span>');
+        document.getElementById('btn-wel-continue').innerText = lang.btn;
+
+        // UI Update
         document.getElementById('intro-age-text').innerText = userData.age + " " + lang.yearsOn;
         document.getElementById('acc-age').innerText = userData.age + " " + lang.years;
         document.getElementById('btn-continue').innerText = lang.continue;
@@ -190,7 +211,6 @@
         document.getElementById('label-coming-soon').innerText = lang.soon;
         document.getElementById('nav-home').innerText = lang.home;
         document.getElementById('nav-friends').innerText = lang.friends;
-
         document.getElementById('intro-user-name').innerText = user.first_name;
         document.getElementById('u-name').innerText = user.first_name;
         document.getElementById('intro-points-text').innerText = userData.points;
@@ -206,13 +226,32 @@
             document.getElementById('intro-pic').src = user.photo_url;
             document.getElementById('u-pic').src = user.photo_url;
         }
-
         if(userData.isPremium) document.getElementById('prem-stat-box').style.display = 'flex';
 
         if (localStorage.getItem('flashy_onboarded')) {
-            document.getElementById('intro-screen').style.display = 'none';
+            document.getElementById('elite-welcome-screen').style.display = 'none';
             document.getElementById('main-app').style.display = 'block';
         }
+        createStars();
+    }
+
+    function createStars() {
+        const box = document.getElementById('stars-box');
+        for (let i = 0; i < 40; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            const size = Math.random() * 3 + 'px';
+            star.style.width = size; star.style.height = size;
+            star.style.left = Math.random() * 100 + '%'; star.style.top = Math.random() * 100 + '%';
+            star.style.setProperty('--duration', Math.random() * 3 + 2 + 's');
+            box.appendChild(star);
+        }
+    }
+
+    function startAfterElite() {
+        document.getElementById('elite-welcome-screen').style.display = 'none';
+        document.getElementById('intro-screen').style.display = 'flex';
+        tg.HapticFeedback.impactOccurred('medium');
     }
 
     function showPremiumStep() {
@@ -224,13 +263,8 @@
         const icon = document.getElementById('prem-icon');
         const msg = document.getElementById('prem-msg');
         premScreen.style.display = 'flex';
-        if (userData.isPremium) {
-            icon.innerHTML = "🌟";
-            msg.innerHTML = lang.premYes;
-        } else {
-            icon.innerHTML = "👤";
-            msg.innerHTML = lang.premNo;
-        }
+        if (userData.isPremium) { icon.innerHTML = "🌟"; msg.innerHTML = lang.premYes; }
+        else { icon.innerHTML = "👤"; msg.innerHTML = lang.premNo; }
         tg.HapticFeedback.impactOccurred('medium');
     }
 

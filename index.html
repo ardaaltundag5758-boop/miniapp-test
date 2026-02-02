@@ -14,6 +14,10 @@
             --gray: #666666; 
             --nav-red: #FF3B30;
             --premium-blue: #007AFF;
+            /* Rank Renkleri */
+            --rank-apprentice: #00d2ff;
+            --rank-adept: #a445f7;
+            --rank-master: #ffca28;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -35,7 +39,6 @@
             border-radius: 20px; font-weight: 800; font-size: 1.1rem; cursor: pointer; transition: 0.3s;
         }
         
-        /* PREMIUM DURUM EKRANI */
         #premium-status-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #000; z-index: 10000; display: none; flex-direction: column;
@@ -44,7 +47,6 @@
         .prem-icon { font-size: 4rem; margin-bottom: 20px; }
         .prem-msg { font-size: 1.2rem; color: #fff; margin-bottom: 30px; line-height: 1.5; font-weight: 600; }
 
-        /* ANA UYGULAMA YAPISI (GİZLİ BAŞLAR) */
         #main-app { display: none; }
         .tab-content { display: none; height: calc(100vh - 70px); overflow-y: auto; padding: 20px 20px 100px 20px; }
         .tab-content.active { display: flex; flex-direction: column; }
@@ -59,14 +61,27 @@
         .nav-item.active::after { content: ""; position: absolute; bottom: 8px; width: 20px; height: 3px; background: var(--nav-red); border-radius: 10px; }
 
         /* PROFIL ALANI (HOME) */
-        .welcome-header { text-align: center; margin-top: 20px; margin-bottom: 40px; }
-        .avatar-main { width: 85px; height: 85px; border-radius: 50%; border: 2px solid var(--nav-red); padding: 3px; margin-bottom: 15px; object-fit: cover; }
-        .user-info-wrapper { display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .rank-badge { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; padding: 3px 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); }
+        .welcome-header { text-align: center; margin-top: 20px; margin-bottom: 40px; display: flex; flex-direction: column; align-items: center; }
+        .avatar-main { width: 85px; height: 85px; border-radius: 50%; border: 2px solid var(--nav-red); padding: 3px; margin-bottom: 10px; object-fit: cover; }
+        
+        /* Rank Görünümü Düzenlemesi */
+        .rank-badge { 
+            font-size: 0.7rem; font-weight: 800; text-transform: uppercase; 
+            padding: 4px 12px; border-radius: 8px; margin-bottom: 10px;
+            letter-spacing: 1px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+        .rank-apprentice { background: rgba(0, 210, 255, 0.15); color: var(--rank-apprentice); border: 1px solid var(--rank-apprentice); }
+        .rank-adept { background: rgba(164, 69, 247, 0.15); color: var(--rank-adept); border: 1px solid var(--rank-adept); }
+        .rank-master { background: rgba(255, 202, 40, 0.15); color: var(--rank-master); border: 1px solid var(--rank-master); }
+
         .score-card { background: linear-gradient(145deg, #161616, #0a0a0a); border-radius: 30px; padding: 30px; text-align: center; margin-bottom: 20px; border: 1px solid #222; }
         .score-value { font-size: 3.5rem; font-weight: 900; letter-spacing: -2px; }
         .stat-box { background: var(--card); border-radius: 20px; padding: 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-        .rank-diamond { border-color: #b9f2ff; color: #b9f2ff; }
+        
+        /* Premium Fire Görseli */
+        .prem-fire-img { width: 35px; height: 35px; }
+
     </style>
 </head>
 <body>
@@ -77,46 +92,44 @@
     <div id="intro-rank" class="intro-level">Apprentice</div>
     <div class="intro-age" id="intro-age-text">... years on Telegram</div>
     <div class="intro-points" id="intro-points-text">0</div>
-    <button class="intro-btn" onclick="showPremiumStep()">Continue</button>
+    <button class="intro-btn" id="btn-continue" onclick="showPremiumStep()">Continue</button>
 </div>
 
 <div id="premium-status-screen">
     <div id="prem-icon" class="prem-icon"></div>
     <div id="prem-msg" class="prem-msg"></div>
-    <button class="intro-btn" style="background: var(--nav-red); color: #fff;" onclick="finishIntro()">End</button>
+    <button class="intro-btn" id="btn-end" style="background: var(--nav-red); color: #fff;" onclick="finishIntro()">End</button>
 </div>
 
 <div id="main-app">
     <div id="home" class="tab-content active">
         <div class="welcome-header">
             <img id="u-pic" class="avatar-main" src="https://cdn-icons-png.flaticon.com/512/149/149071.png">
-            <div class="user-info-wrapper">
-                <span id="u-rank" class="rank-badge">...</span>
-                <h2 id="u-name" style="font-size: 1.4rem;">User</h2>
-            </div>
+            <span id="u-rank" class="rank-badge rank-apprentice">Apprentice</span>
+            <h2 id="u-name" style="font-size: 1.4rem;">User</h2>
         </div>
         <div class="score-card">
             <div class="score-value" id="total-flsy">0</div>
-            <div style="color: var(--gray); font-size: 0.9rem;">Total FLSY Points</div>
+            <div id="label-total-points" style="color: var(--gray); font-size: 0.9rem;">Total FLSY Points</div>
         </div>
         <div class="stat-box">
-            <div><div style="color: var(--gray); font-size: 0.8rem;">Account Age</div><div id="acc-age" style="font-weight: 700;">... years</div></div>
+            <div><div id="label-acc-age" style="color: var(--gray); font-size: 0.8rem;">Account Age</div><div id="acc-age" style="font-weight: 700;">... years</div></div>
             <i class="fas fa-calendar-alt" style="color: var(--nav-red);"></i>
         </div>
         <div id="prem-stat-box" class="stat-box" style="display: none;">
-            <div><div style="color: var(--gray); font-size: 0.8rem;">Telegram Premium</div><div style="font-weight: 700; color: var(--premium-blue);">Active</div></div>
-            <i class="fas fa-check-circle" style="color: var(--premium-blue);"></i>
+            <div><div id="label-premium" style="color: var(--gray); font-size: 0.8rem;">Telegram Premium</div><div id="label-active" style="font-weight: 700; color: var(--premium-blue);">Active</div></div>
+            <img class="prem-fire-img" src="https://github.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/blob/main/Animals%20and%20Nature/Fire.webp?raw=true" alt="Fire">
         </div>
     </div>
 
     <div id="friends" class="tab-content">
-        <h2 style="text-align:center;">Friends</h2>
-        <p style="text-align:center; margin-top:50px; color:var(--gray);">Coming Soon...</p>
+        <h2 id="label-friends-title" style="text-align:center;">Friends</h2>
+        <p id="label-coming-soon" style="text-align:center; margin-top:50px; color:var(--gray);">Coming Soon...</p>
     </div>
 
     <nav class="bottom-nav">
-        <div class="nav-item active" onclick="switchTab('home')"><i class="fas fa-home"></i><span>Home</span></div>
-        <div class="nav-item" onclick="switchTab('friends')"><i class="fas fa-users"></i><span>Friends</span></div>
+        <div class="nav-item active" onclick="switchTab('home')"><i class="fas fa-home"></i><span id="nav-home">Home</span></div>
+        <div class="nav-item" onclick="switchTab('friends')"><i class="fas fa-users"></i><span id="nav-friends">Friends</span></div>
     </nav>
 </div>
 
@@ -124,9 +137,25 @@
     const tg = window.Telegram.WebApp;
     tg.expand();
 
+    // Rank logic'ine dokunulmadı, sadece isimler ve görsel sınıflar eklendi
     const RANKS = {
-        1: "Apprentice", 2: "Bronze", 3: "Bronze Plus", 4: "Silver", 5: "Silver Plus",
-        6: "Gold", 7: "Gold Plus", 8: "Platinum", 9: "Platinum Plus", 10: "Diamond", 11: "Diamond"
+        1: {name: "Apprentice", class: "rank-apprentice"},
+        2: {name: "Apprentice", class: "rank-apprentice"},
+        3: {name: "Apprentice", class: "rank-apprentice"},
+        4: {name: "Adept", class: "rank-adept"},
+        5: {name: "Adept", class: "rank-adept"},
+        6: {name: "Adept", class: "rank-adept"},
+        7: {name: "Master", class: "rank-master"},
+        8: {name: "Master", class: "rank-master"},
+        9: {name: "Master", class: "rank-master"},
+        10: {name: "Master", class: "rank-master"},
+        11: {name: "Master", class: "rank-master"}
+    };
+
+    const I18N = {
+        tr: { yearsOn: "yıldır Telegram'da", years: "Yıl", continue: "Devam Et", end: "Bitir", totalPoints: "Toplam FLSY Puanı", accAge: "Hesap Yaşı", premium: "Telegram Premium", active: "Aktif", friends: "Arkadaşlar", soon: "Yakında...", home: "Ana Sayfa", premYes: "Harika, Premium kullanıcısısın!<br>Bakiyene ekstra +1,000 FLSY eklendi.", premNo: "Telegram Premium bulunamadı.<br>Ekstra bonus puan kazanılamadı." },
+        en: { yearsOn: "years on Telegram", years: "Years", continue: "Continue", end: "End", totalPoints: "Total FLSY Points", accAge: "Account Age", premium: "Telegram Premium", active: "Active", friends: "Friends", soon: "Coming Soon...", home: "Home", premYes: "You are a Premium user!<br>An extra +1,000 FLSY has been added to your balance.", premNo: "You do not have Telegram Premium.<br>No extra bonus points awarded." },
+        ru: { yearsOn: "лет в Telegram", years: "лет", continue: "Продолжить", end: "Завершить", totalPoints: "Всего очков FLSY", accAge: "Возраст аккаунта", premium: "Telegram Premium", active: "Активен", friends: "Друзья", soon: "Скоро...", home: "Главная", premYes: "Вы Premium-пользователь!<br>К вашему балансу добавлено +1,000 FLSY.", premNo: "У вас нет Telegram Premium.<br>Бонусные баллы не начислены." }
     };
 
     let userData = { age: 1, points: 0, isPremium: false };
@@ -135,7 +164,9 @@
         const user = tg.initDataUnsafe.user;
         if (!user) return;
 
-        // Yaş Hesaplama (Hata düzeltilmiş mantık)
+        const userLang = user.language_code === 'tr' ? 'tr' : (user.language_code === 'ru' ? 'ru' : 'en');
+        const lang = I18N[userLang];
+
         const id = user.id;
         if (id < 50000000) userData.age = 11;
         else if (id < 150000000) userData.age = 10;
@@ -147,18 +178,29 @@
         userData.isPremium = user.is_premium || false;
         userData.points = (userData.age * 450) + (userData.isPremium ? 1000 : 0);
 
-        // UI Doldurma
+        document.getElementById('intro-age-text').innerText = userData.age + " " + lang.yearsOn;
+        document.getElementById('acc-age').innerText = userData.age + " " + lang.years;
+        document.getElementById('btn-continue').innerText = lang.continue;
+        document.getElementById('btn-end').innerText = lang.end;
+        document.getElementById('label-total-points').innerText = lang.totalPoints;
+        document.getElementById('label-acc-age').innerText = lang.accAge;
+        document.getElementById('label-premium').innerText = lang.premium;
+        document.getElementById('label-active').innerText = lang.active;
+        document.getElementById('label-friends-title').innerText = lang.friends;
+        document.getElementById('label-coming-soon').innerText = lang.soon;
+        document.getElementById('nav-home').innerText = lang.home;
+        document.getElementById('nav-friends').innerText = lang.friends;
+
         document.getElementById('intro-user-name').innerText = user.first_name;
         document.getElementById('u-name').innerText = user.first_name;
-        document.getElementById('intro-age-text').innerText = userData.age + " Years";
-        document.getElementById('acc-age').innerText = userData.age + " Years";
         document.getElementById('intro-points-text').innerText = userData.points;
         document.getElementById('total-flsy').innerText = userData.points.toLocaleString();
         
-        const rankName = RANKS[userData.age] || "Apprentice";
-        document.getElementById('intro-rank').innerText = rankName;
-        document.getElementById('u-rank').innerText = rankName;
-        if(userData.age >= 10) document.getElementById('u-rank').classList.add('rank-diamond');
+        const rankData = RANKS[userData.age] || {name: "Apprentice", class: "rank-apprentice"};
+        document.getElementById('intro-rank').innerText = rankData.name;
+        const uRankEl = document.getElementById('u-rank');
+        uRankEl.innerText = rankData.name;
+        uRankEl.className = `rank-badge ${rankData.class}`;
 
         if(user.photo_url) {
             document.getElementById('intro-pic').src = user.photo_url;
@@ -167,7 +209,6 @@
 
         if(userData.isPremium) document.getElementById('prem-stat-box').style.display = 'flex';
 
-        // Daha önce girmiş mi kontrol et
         if (localStorage.getItem('flashy_onboarded')) {
             document.getElementById('intro-screen').style.display = 'none';
             document.getElementById('main-app').style.display = 'block';
@@ -175,18 +216,20 @@
     }
 
     function showPremiumStep() {
+        const user = tg.initDataUnsafe.user;
+        const userLang = user?.language_code === 'tr' ? 'tr' : (user?.language_code === 'ru' ? 'ru' : 'en');
+        const lang = I18N[userLang];
         document.getElementById('intro-screen').style.display = 'none';
         const premScreen = document.getElementById('premium-status-screen');
         const icon = document.getElementById('prem-icon');
         const msg = document.getElementById('prem-msg');
-
         premScreen.style.display = 'flex';
         if (userData.isPremium) {
             icon.innerHTML = "🌟";
-            msg.innerHTML = "You are a Premium user!<br>An extra +1,000 FLSY has been added to your balance.";
+            msg.innerHTML = lang.premYes;
         } else {
             icon.innerHTML = "👤";
-            msg.innerHTML = "You do not have Telegram Premium.<br>No extra bonus points awarded.";
+            msg.innerHTML = lang.premNo;
         }
         tg.HapticFeedback.impactOccurred('medium');
     }
@@ -203,7 +246,7 @@
         document.getElementById(tabId).classList.add('active');
         document.querySelectorAll('.nav-item').forEach(i => {
             i.classList.remove('active');
-            if(i.innerText.toLowerCase() === tabId) i.classList.add('active');
+            if(i.getAttribute('onclick').includes(tabId)) i.classList.add('active');
         });
         tg.HapticFeedback.impactOccurred('light');
     }

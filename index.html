@@ -39,15 +39,7 @@
         .sub-title { color: #666; font-size: 1rem; font-weight: 500; }
 
         .hero-center { position: relative; width: 100%; display: flex; align-items: center; justify-content: center; z-index: 2; }
-        
-        /* Yeni Hareketli Alev Görseli Düzenlemesi */
-        .bg-flame-webp { 
-            width: 280px; height: 280px; 
-            position: absolute; 
-            z-index: 1; /* Yazının arkasında */
-            filter: drop-shadow(0 0 15px rgba(255, 69, 0, 0.4)); /* Hafif Glow */
-            user-select: none;
-        }
+        .bg-flame-webp { width: 280px; height: 280px; position: absolute; z-index: 1; filter: drop-shadow(0 0 15px rgba(255, 69, 0, 0.4)); user-select: none; }
 
         .age-highlight { position: relative; z-index: 3; display: flex; flex-direction: column; align-items: center; pointer-events: none; }
         .age-number { font-size: 6rem; font-weight: 900; line-height: 1; color: #fff; text-shadow: 0 4px 20px rgba(0,0,0,0.8); }
@@ -58,18 +50,13 @@
         .info-white { color: #fff; font-weight: 600; }
         .continue-btn-elite { width: 100%; background: #fff; color: #000; border: none; padding: 20px; border-radius: 18px; font-weight: 800; font-size: 1.1rem; cursor: pointer; z-index: 2; }
 
-        /* DİĞER EKRANLAR */
-        #intro-screen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at center, #1a0505 0%, #000 100%); z-index: 9999; flex-direction: column; align-items: center; justify-content: center; padding: 30px; text-align: center; }
-        .intro-avatar { width: 120px; height: 120px; border-radius: 50%; border: 3px solid var(--nav-red); margin-bottom: 15px; object-fit: cover; }
-        .intro-level { background: var(--nav-red); color: #fff; padding: 4px 12px; border-radius: 50px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; margin-bottom: 30px; }
-        .intro-age { color: var(--gray); font-size: 1.1rem; margin-bottom: 5px; }
-        .intro-points { font-size: 4rem; font-weight: 900; margin-bottom: 40px; color: #fff; text-shadow: 0 0 20px rgba(255,255,255,0.2); }
-        .intro-btn { width: 80%; background: #fff; color: #000; border: none; padding: 18px; border-radius: 20px; font-weight: 800; font-size: 1.1rem; cursor: pointer; transition: 0.3s; }
-        
+        /* PREMIUM STATUS SCREEN */
         #premium-status-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 10000; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 30px; text-align: center; }
         .prem-icon { font-size: 4rem; margin-bottom: 20px; }
         .prem-msg { font-size: 1.2rem; color: #fff; margin-bottom: 30px; line-height: 1.5; font-weight: 600; }
+        .intro-btn { width: 80%; background: #fff; color: #000; border: none; padding: 18px; border-radius: 20px; font-weight: 800; font-size: 1.1rem; cursor: pointer; }
 
+        /* MAIN APP */
         #main-app { display: none; }
         .tab-content { display: none; height: calc(100vh - 70px); overflow-y: auto; padding: 20px 20px 100px 20px; }
         .tab-content.active { display: flex; flex-direction: column; }
@@ -112,15 +99,6 @@
         <div class="info-line" id="txt-top-percent">You're in the top <span class="info-white">1%</span> Telegram users</div>
     </div>
     <button class="continue-btn-elite" id="btn-wel-continue" onclick="startAfterElite()">CONTINUE</button>
-</div>
-
-<div id="intro-screen">
-    <img id="intro-pic" class="intro-avatar" src="https://cdn-icons-png.flaticon.com/512/149/149071.png">
-    <div id="intro-user-name" style="font-weight: 700; margin-bottom: 5px;">User</div>
-    <div id="intro-rank" class="intro-level">Apprentice</div>
-    <div class="intro-age" id="intro-age-text">... years on Telegram</div>
-    <div class="intro-points" id="intro-points-text">0</div>
-    <button class="intro-btn" id="btn-continue" onclick="showPremiumStep()">Continue</button>
 </div>
 
 <div id="premium-status-screen">
@@ -170,9 +148,9 @@
     };
 
     const I18N = {
-        tr: { elite: "ELİT ÜYE", joined: "Telegram'a katıldın", yearsAgo: "yıl önce", accNum: "Hesap numaran:", top: "En iyi %1 Telegram kullanıcısındasın", btn: "DEVAM ET", yearsOn: "yıldır Telegram'da", years: "Yıl", continue: "Devam Et", end: "Bitir", totalPoints: "Toplam FLSY Puanı", accAge: "Hesap Yaşı", premium: "Telegram Premium", active: "Aktif", friends: "Arkadaşlar", soon: "Yakında...", home: "Ana Sayfa", premYes: "Harika, Premium kullanıcısısın!<br>Bakiyene ekstra +1,000 FLSY eklendi.", premNo: "Telegram Premium bulunamadı.<br>Ekstra bonus puan kazanılamadı." },
-        en: { elite: "ELITE MEMBER", joined: "You've joined Telegram", yearsAgo: "years ago", accNum: "Your account number is", top: "You're in the top 1% Telegram users", btn: "CONTINUE", yearsOn: "years on Telegram", years: "Years", continue: "Continue", end: "End", totalPoints: "Total FLSY Points", accAge: "Account Age", premium: "Telegram Premium", active: "Active", friends: "Friends", soon: "Coming Soon...", home: "Home", premYes: "You are a Premium user!<br>An extra +1,000 FLSY has been added to your balance.", premNo: "You do not have Telegram Premium.<br>No extra bonus points awarded." },
-        ru: { elite: "ЭЛИТНЫЙ УЧАСТНИК", joined: "Вы присоединились к Telegram", yearsAgo: "лет назад", accNum: "Ваш номер аккаунта:", top: "Вы входите в 1% лучших пользователей", btn: "ПРОДОЛЖИТЬ", yearsOn: "лет в Telegram", years: "лет", continue: "Продолжить", end: "Завершить", totalPoints: "Всего очков FLSY", accAge: "Возраст аккаунта", premium: "Telegram Premium", active: "Активен", friends: "Друзья", soon: "Скоро...", home: "Главная", premYes: "Вы Premium-пользователь!<br>К вашему балансу добавлено +1,000 FLSY.", premNo: "У вас нет Telegram Premium.<br>Бонусные баллы не начислены." }
+        tr: { elite: "ELİT ÜYE", joined: "Telegram'a katıldın", yearsAgo: "yıl önce", accNum: "Hesap numaran:", top: "En iyi %1 Telegram kullanıcısındasın", btn: "DEVAM ET", years: "Yıl", end: "Bitir", totalPoints: "Toplam FLSY Puanı", accAge: "Hesap Yaşı", premium: "Telegram Premium", active: "Aktif", friends: "Arkadaşlar", soon: "Yakında...", home: "Ana Sayfa", premYes: "Harika, Premium kullanıcısısın!<br>Bakiyene ekstra +1,000 FLSY eklendi.", premNo: "Telegram Premium bulunamadı.<br>Ekstra bonus puan kazanılamadı." },
+        en: { elite: "ELITE MEMBER", joined: "You've joined Telegram", yearsAgo: "years ago", accNum: "Your account number is", top: "You're in the top 1% Telegram users", btn: "CONTINUE", years: "Years", end: "End", totalPoints: "Total FLSY Points", accAge: "Account Age", premium: "Telegram Premium", active: "Active", friends: "Friends", soon: "Coming Soon...", home: "Home", premYes: "You are a Premium user!<br>An extra +1,000 FLSY has been added to your balance.", premNo: "You do not have Telegram Premium.<br>No extra bonus points awarded." },
+        ru: { elite: "ЭЛИТНЫЙ УЧАСТНИК", joined: "Вы присоединились к Telegram", yearsAgo: "лет назад", accNum: "Ваш номер аккаунта:", top: "Вы входите в 1% лучших пользователей", btn: "ПРОДОЛЖИТЬ", years: "лет", end: "Завершить", totalPoints: "Всего очков FLSY", accAge: "Возраст аккаунта", premium: "Telegram Premium", active: "Активен", friends: "Друзья", soon: "Скоро...", home: "Главная", premYes: "Вы Premium-пользователь!<br>К вашему балансу добавлено +1,000 FLSY.", premNo: "У вас нет Telegram Premium.<br>Бонусные баллы не начислены." }
     };
 
     let userData = { age: 1, points: 0, isPremium: false };
@@ -194,6 +172,7 @@
         userData.isPremium = user.is_premium || false;
         userData.points = (userData.age * 450) + (userData.isPremium ? 1000 : 0);
 
+        // Elite Screen
         document.getElementById('txt-elite-title').innerText = lang.elite;
         document.getElementById('txt-joined-desc').innerText = lang.joined;
         document.getElementById('wel-age-num').innerText = userData.age;
@@ -203,9 +182,8 @@
         document.getElementById('txt-top-percent').innerHTML = lang.top.replace("1%", '<span class="info-white">1%</span>');
         document.getElementById('btn-wel-continue').innerText = lang.btn;
 
-        document.getElementById('intro-age-text').innerText = userData.age + " " + lang.yearsOn;
+        // Main UI
         document.getElementById('acc-age').innerText = userData.age + " " + lang.years;
-        document.getElementById('btn-continue').innerText = lang.continue;
         document.getElementById('btn-end').innerText = lang.end;
         document.getElementById('label-total-points').innerText = lang.totalPoints;
         document.getElementById('label-acc-age').innerText = lang.accAge;
@@ -215,21 +193,15 @@
         document.getElementById('label-coming-soon').innerText = lang.soon;
         document.getElementById('nav-home').innerText = lang.home;
         document.getElementById('nav-friends').innerText = lang.friends;
-        document.getElementById('intro-user-name').innerText = user.first_name;
         document.getElementById('u-name').innerText = user.first_name;
-        document.getElementById('intro-points-text').innerText = userData.points;
         document.getElementById('total-flsy').innerText = userData.points.toLocaleString();
         
         const rankData = RANKS[userData.age] || {name: "Apprentice", class: "rank-apprentice"};
-        document.getElementById('intro-rank').innerText = rankData.name;
         const uRankEl = document.getElementById('u-rank');
         uRankEl.innerText = rankData.name;
         uRankEl.className = `rank-badge ${rankData.class}`;
 
-        if(user.photo_url) {
-            document.getElementById('intro-pic').src = user.photo_url;
-            document.getElementById('u-pic').src = user.photo_url;
-        }
+        if(user.photo_url) document.getElementById('u-pic').src = user.photo_url;
         if(userData.isPremium) document.getElementById('prem-stat-box').style.display = 'flex';
 
         if (localStorage.getItem('flashy_onboarded')) {
@@ -253,9 +225,10 @@
         }
     }
 
+    // Alevli ekrandan doğrudan Premium ekranına geçer
     function startAfterElite() {
         document.getElementById('elite-welcome-screen').style.display = 'none';
-        document.getElementById('intro-screen').style.display = 'flex';
+        showPremiumStep();
         tg.HapticFeedback.impactOccurred('medium');
     }
 
@@ -263,14 +236,12 @@
         const user = tg.initDataUnsafe.user;
         const userLang = user?.language_code === 'tr' ? 'tr' : (user?.language_code === 'ru' ? 'ru' : 'en');
         const lang = I18N[userLang];
-        document.getElementById('intro-screen').style.display = 'none';
         const premScreen = document.getElementById('premium-status-screen');
         const icon = document.getElementById('prem-icon');
         const msg = document.getElementById('prem-msg');
         premScreen.style.display = 'flex';
         if (userData.isPremium) { icon.innerHTML = "🌟"; msg.innerHTML = lang.premYes; }
         else { icon.innerHTML = "👤"; msg.innerHTML = lang.premNo; }
-        tg.HapticFeedback.impactOccurred('medium');
     }
 
     function finishIntro() {

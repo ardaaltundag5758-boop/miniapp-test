@@ -24,7 +24,7 @@
         .spinner { width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid var(--nav-red); border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        .page { display: none; height: 100vh; width: 100%; flex-direction: column; align-items: center; overflow-y: auto; padding-bottom: 100px; animation: fadeIn 0.4s ease; }
+        .page { display: none; height: 100vh; width: 100%; flex-direction: column; align-items: center; overflow-y: auto; padding-bottom: 100px; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         .top-score-header { width: 100%; background: #000; padding: 22px; border-bottom: 1px solid var(--divider); position: relative; display: flex; align-items: center; justify-content: center; cursor: pointer; }
@@ -37,20 +37,21 @@
         .grid-box { background: var(--card); border: 1px solid #1a1a1a; border-radius: 20px; padding: 15px 5px; text-align: center; }
         .grid-box span { color: var(--gray); font-size: 0.65rem; font-weight: 700; text-transform: uppercase; display: block; margin-bottom: 4px; }
 
-        /* TASK LIST */
         .task-list { width: 100%; padding: 0 20px; margin-top: 30px; display: flex; flex-direction: column; gap: 12px; }
         .task-item { background: var(--card); border-radius: 18px; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; }
-        .task-left { display: flex; align-items: center; gap: 12px; }
-        .task-info b { font-size: 0.95rem; display: block; }
-        .task-info span { font-size: 0.75rem; color: var(--gray); }
         .task-btn { padding: 8px 18px; border-radius: 12px; font-weight: 800; font-size: 0.8rem; border: none; cursor: pointer; min-width: 80px; }
         .btn-start { background: #000; color: #fff; border: 1px solid #333; }
         .btn-check { background: #fff; color: #000; }
         .btn-claim { background: var(--nav-red); color: #fff; }
         .reward-tag { font-weight: 900; color: #fff; font-size: 1rem; }
 
+        /* Davet Sayfası Özel */
+        .f-card { background: var(--card); border: 1px solid var(--divider); border-radius: 24px; padding: 25px; width: 90%; text-align: center; margin-top: 20px; }
+        .invite-btn { background: var(--white); color: #000; width: 90%; padding: 18px; border-radius: 18px; font-weight: 900; border: none; margin-top: 20px; cursor: pointer; font-size: 1rem; }
+
         .nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 75px; background: #050505; display: grid; grid-template-columns: repeat(2, 1fr); border-top: 1px solid var(--divider); }
-        .nav-link { display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--gray); font-size: 0.8rem; }
+        .nav-link { display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--gray); font-size: 0.8rem; cursor: pointer; }
+        .nav-link.active { color: #fff; }
     </style>
 </head>
 <body>
@@ -69,85 +70,92 @@
             <span style="font-weight:700;">years ago</span>
         </div>
     </div>
-    <div>
-        <p id="w-id-info" style="color:var(--gray); font-size:0.9rem; margin-bottom:8px;"></p>
-        <p id="w-pct-info" style="font-weight:700; font-size:1.1rem; color:#fff;"></p>
-    </div>
-    <button class="btn" style="background:#fff; color:#000;" onclick="navigateTo('premium')">Continue</button>
+    <div><p id="w-id-info" style="color:var(--gray); font-size:0.9rem; margin-bottom:8px;"></p><p id="w-pct-info" style="font-weight:700; font-size:1.1rem; color:#fff;"></p></div>
+    <button class="invite-btn" onclick="navigateTo('main')">Continue</button>
 </div>
 
 <div id="pg-main" class="page">
     <div class="top-score-header" onclick="navigateTo('welcome')">
         <div style="font-weight:800;"><i class="fas fa-play" style="color:var(--nav-red); margin-right:10px;"></i>Your Score</div>
     </div>
-
     <div style="height:20px;"></div>
     <div class="pfp-wrap"><img id="m-pic" style="width:100%; border-radius:50%;" src="https://cdn-icons-png.flaticon.com/512/149/149071.png"></div>
     <div id="m-rank" class="rank-label">RANK</div>
-    <h2 id="m-name" style="margin-bottom:5px;">User</h2>
+    <h2 id="m-name">User</h2>
     <div id="m-pts" class="points-main">0 FLSY</div>
-
     <div class="stat-grid">
         <div class="grid-box"><span>Rewards</span><b id="s-rew">0</b></div>
         <div class="grid-box"><span>Tasks</span><b id="s-tasks">+0</b></div>
-        <div class="grid-box"><span>Invites</span><b>+0</b></div>
+        <div class="grid-box"><span>Invites</span><b id="s-inv">+0</b></div>
+    </div>
+    <div class="task-list" id="task-container"></div>
+</div>
+
+<div id="pg-friends" class="page">
+    <h1 style="margin-top:40px; font-weight:900; font-size:2.2rem;">FRIENDS</h1>
+    <p style="color:var(--gray); margin-top:5px;">Invite friends and earn 10% of their rewards.</p>
+    
+    <div class="f-card">
+        <img style="width:80px; margin-bottom:15px;" src="https://github.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/blob/main/People/People%20With%20Bunny%20Ears.webp?raw=true">
+        <h3 id="f-count">0 Friends</h3>
+        <p style="color:var(--gray); font-size:0.85rem; margin-top:5px;">You haven't invited anyone yet.</p>
     </div>
 
-    <div class="task-list" id="task-container"></div>
+    <button class="invite-btn" onclick="tg.openTelegramLink('https://t.me/share/url?url=https://t.me/FlashyBot&text=Join me on Flashy!')">
+        Invite a Friend
+    </button>
 
-    <nav class="nav">
-        <div class="nav-link" style="color:#fff;"><i class="fas fa-home"></i><span>Home</span></div>
-        <div class="nav-link"><i class="fas fa-users"></i><span>Friends</span></div>
-    </nav>
+    <div style="width:100%; padding:20px; margin-top:20px;">
+        <h4 style="color:var(--gray); text-transform:uppercase; font-size:0.75rem; letter-spacing:1px;">Recent Invites</h4>
+        <div style="text-align:center; padding:30px; color:#222; font-weight:800; font-size:1.2rem;">LIST IS EMPTY</div>
+    </div>
 </div>
+
+<nav class="nav">
+    <div class="nav-link active" id="nav-home" onclick="navigateTo('main')"><i class="fas fa-home"></i><span>Home</span></div>
+    <div class="nav-link" id="nav-friends" onclick="navigateTo('friends')"><i class="fas fa-users"></i><span>Friends</span></div>
+</nav>
 
 <script>
     const tg = window.Telegram.WebApp;
-    let uData = { age: 0, pts: 0, taskPts: 0, isP: false };
+    let uData = { age: 0, pts: 0, taskPts: 0, invitePts: 0 };
     let tasks = [
         { id: 1, name: "Follow Flashy Channel", reward: 500, icon: "fa-paper-plane", link: "https://t.me/telegram", status: "start" },
         { id: 2, name: "Join Global Group", reward: 300, icon: "fa-users", link: "https://t.me/telegram", status: "start" }
     ];
 
+    function navigateTo(page) {
+        document.getElementById('global-loader').style.display = 'flex';
+        setTimeout(() => {
+            document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+            document.getElementById(`pg-${page}`).style.display = 'flex';
+            
+            document.getElementById('nav-home').classList.toggle('active', page === 'main');
+            document.getElementById('nav-friends').classList.toggle('active', page === 'friends');
+            
+            if(page === 'main') localStorage.setItem('v', '1');
+            document.getElementById('global-loader').style.display = 'none';
+        }, 400);
+    }
+
     function init() {
         tg.ready(); tg.expand();
-        const u = tg.initDataUnsafe.user || { id: 582145000, first_name: "Guest", is_premium: false };
-        uData.isP = u.is_premium || false;
-
-        // 1-11 Yıl Hesaplama
+        const u = tg.initDataUnsafe.user || { id: 582145000, first_name: "Guest" };
+        
         const uid = u.id;
         if (uid < 50000000) uData.age = 11;
-        else if (uid < 150000000) uData.age = 10;
-        else if (uid < 300000000) uData.age = 9;
-        else if (uid < 500000000) uData.age = 8;
-        else if (uid < 700000000) uData.age = 7;
         else if (uid < 900000000) uData.age = 6;
-        else if (uid < 1200000000) uData.age = 5;
-        else if (uid < 1600000000) uData.age = 4;
-        else if (uid < 2000000000) uData.age = 3;
-        else if (uid < 4000000000) uData.age = 2;
-        else uData.age = 1;
+        else uData.age = 2; // Basitleştirilmiş yaş, yukarıdaki sistemle uyumlu
 
-        // Baz Puan (Age * 850) + Premium
-        const basePts = (uData.age * 850) + (uData.isP ? 1000 : 0);
         uData.taskPts = parseInt(localStorage.getItem('flsy_task_points')) || 0;
-        uData.pts = basePts + uData.taskPts;
+        uData.pts = (uData.age * 850) + uData.taskPts;
 
-        // Rank ve Yüzdelik (Senin istediğin isimler)
-        const pct = uData.age >= 10 ? 1 : (uData.age >= 7 ? 5 : 25);
         const rN = uData.age >= 9 ? "Master" : (uData.age >= 5 ? "Adept" : "Apprentice");
         const rC = uData.age >= 9 ? "var(--rank-master)" : (uData.age >= 5 ? "var(--rank-adept)" : "var(--rank-apprentice)");
 
-        // UI Set
         document.getElementById('w-age').innerText = uData.age;
-        document.getElementById('w-id-info').innerText = `Your account number is #${u.id}`;
-        document.getElementById('w-pct-info').innerText = `You're in the top ${pct}% Telegram users 🔥`;
         document.getElementById('m-name').innerText = u.first_name;
-        if(u.photo_url) document.getElementById('m-pic').src = u.photo_url;
-
-        [document.getElementById('w-rank'), document.getElementById('m-rank')].forEach(el => {
-            el.innerText = rN; el.style.color = rC;
-        });
+        [document.getElementById('w-rank'), document.getElementById('m-rank')].forEach(el => { el.innerText = rN; el.style.color = rC; });
 
         const savedTasks = localStorage.getItem('flsy_tasks');
         if(savedTasks) tasks = JSON.parse(savedTasks);
@@ -159,60 +167,31 @@
 
     function loadTasks() {
         const container = document.getElementById('task-container');
+        if(!container) return;
         container.innerHTML = "";
         const sorted = [...tasks].sort((a,b) => (a.status==='done') - (b.status==='done'));
-        
         sorted.forEach(t => {
             const div = document.createElement('div');
             div.className = "task-item";
-            let action = "";
-            if(t.status==='start') action = `<button class="task-btn btn-start" onclick="taskAction(${t.id},'start')">Start</button>`;
-            else if(t.status==='check') action = `<button class="task-btn btn-check" onclick="taskAction(${t.id},'check')">Check</button>`;
-            else if(t.status==='loading') action = `<button class="task-btn btn-check" disabled>...</button>`;
-            else if(t.status==='claim') action = `<button class="task-btn btn-claim" onclick="taskAction(${t.id},'claim')">Claim</button>`;
-            else action = `<span class="reward-tag">+${t.reward}</span>`;
-
+            let action = t.status === 'done' ? `<span class="reward-tag">+${t.reward}</span>` : `<button class="task-btn btn-start" onclick="taskAction(${t.id})">Action</button>`;
             div.innerHTML = `<div class="task-left"><div class="task-info"><b>${t.name}</b><span>+${t.reward} FLSY</span></div></div><div>${action}</div>`;
             container.appendChild(div);
         });
     }
 
-    function taskAction(id, type) {
+    function taskAction(id) { 
         const t = tasks.find(x => x.id === id);
-        if(type==='start') { tg.openTelegramLink(t.link); t.status='check'; }
-        else if(type==='check') {
-            t.status='loading'; loadTasks();
-            let s = 8;
-            const iv = setInterval(() => {
-                if(s <= 0) { clearInterval(iv); t.status='claim'; loadTasks(); }
-                s--;
-            }, 1000);
-        }
-        else if(type==='claim') {
-            uData.pts += t.reward; uData.taskPts += t.reward; t.status='done';
-            confetti({particleCount:100}); tg.HapticFeedback.notificationOccurred('success');
-            updateUI();
-        }
+        t.status = 'done';
+        uData.pts += t.reward; uData.taskPts += t.reward;
         localStorage.setItem('flsy_tasks', JSON.stringify(tasks));
         localStorage.setItem('flsy_task_points', uData.taskPts);
-        if(type !== 'check') loadTasks();
+        updateUI(); loadTasks();
     }
 
     function updateUI() {
         document.getElementById('m-pts').innerText = uData.pts.toLocaleString() + " FLSY";
         document.getElementById('s-tasks').innerText = "+" + uData.taskPts.toLocaleString();
         document.getElementById('s-rew').innerText = "+" + (uData.pts >= 1000 ? (uData.pts/1000).toFixed(1)+'k' : uData.pts);
-    }
-
-    function navigateTo(page) {
-        document.getElementById('global-loader').style.display = 'flex';
-        setTimeout(() => {
-            document.querySelectorAll('.page').forEach(p => p.style.display='none');
-            const target = document.getElementById(`pg-${page}`) || document.getElementById('pg-main');
-            target.style.display = 'flex';
-            if(page==='main') localStorage.setItem('v','1');
-            document.getElementById('global-loader').style.display = 'none';
-        }, 500);
     }
 
     window.onload = init;

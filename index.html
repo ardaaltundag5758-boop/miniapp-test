@@ -33,26 +33,24 @@
         .pulse-play { color: var(--nav-red); animation: pulseAnim 2s infinite ease-in-out; margin-right: 12px; }
         @keyframes pulseAnim { 0%, 100% { transform: scale(1); opacity: 0.7; } 50% { transform: scale(1.4); opacity: 1; } }
 
-        /* STATS OVERLAY */
-        #stats-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 5000; display: none; flex-direction: column; align-items: center; padding: 40px 25px; }
-        .stat-card-big { background: var(--card); border: 1px solid #222; width: 100%; border-radius: 24px; padding: 25px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
-        
-        /* SCORE TEXT (ESKİ GRİMSİ TON) */
+        /* SCORE TEXT & HIERARCHY */
         .points-main { 
-            font-size: 3.2rem; font-weight: 900; margin: 15px 0 30px;
+            font-size: 3.2rem; font-weight: 900; margin: 10px 0 25px;
             background: linear-gradient(180deg, #FFFFFF 0%, #A0A0A0 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            drop-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
-
-        /* UI ELEMENTS */
         .wallet-link { background: #111; border: 1px solid #222; padding: 12px 24px; border-radius: 14px; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 8px; margin: 20px 0; }
-        .pfp-wrap { width: 95px; height: 95px; border-radius: 50%; border: 3px solid var(--nav-red); padding: 4px; margin-bottom: 12px; }
-        .rank-label { border: 1.5px solid currentColor; padding: 4px 16px; border-radius: 10px; font-weight: 800; font-size: 0.75rem; text-transform: uppercase; }
+        .pfp-wrap { width: 90px; height: 90px; border-radius: 50%; border: 3px solid var(--nav-red); padding: 4px; margin-bottom: 10px; }
+        .rank-label { border: 1.5px solid currentColor; padding: 4px 16px; border-radius: 10px; font-weight: 800; font-size: 0.7rem; text-transform: uppercase; }
+
+        /* STAT GRID */
+        .stat-grid { width: 100%; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 0 20px; margin-top: 10px; }
+        .grid-box { background: var(--card); border: 1px solid #1a1a1a; border-radius: 20px; padding: 15px 5px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .grid-box span { color: var(--gray); font-size: 0.65rem; font-weight: 700; text-transform: uppercase; margin-bottom: 4px; }
+        .grid-box b { font-size: 1.1rem; font-weight: 800; }
+
         .btn { width: 100%; padding: 18px; border-radius: 20px; font-weight: 800; border: none; cursor: pointer; font-size: 1.1rem; }
         .btn-white { background: #fff; color: #000; }
-        .btn-prem { background: var(--premium-purple); color: #fff; }
 
         .nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 75px; background: rgba(5,5,5,0.98); display: grid; grid-template-columns: repeat(2, 1fr); border-top: 1px solid var(--divider); }
         .nav-link { display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--gray); font-size: 0.8rem; }
@@ -62,25 +60,21 @@
 
 <div id="global-loader"><div class="spinner"></div></div>
 
-<div id="stats-overlay">
-    <h2 style="margin-bottom: 30px; font-weight: 900;">YOUR STATS</h2>
-    <div class="stat-card-big"><div><p style="color:var(--gray); font-size:0.8rem;">Account Age</p><b id="o-age">0 Years</b></div><i class="fas fa-calendar-alt"></i></div>
-    <div class="stat-card-big"><div><p style="color:var(--gray); font-size:0.8rem;">User ID</p><b id="o-id">#0</b></div><i class="fas fa-id-badge"></i></div>
-    <div class="stat-card-big"><div><p style="color:var(--gray); font-size:0.8rem;">Global Rank</p><b id="o-top">Top 0%</b></div><i class="fas fa-chart-line"></i></div>
-    <button class="btn btn-white" style="margin-top:auto;" onclick="closeStats()">Close</button>
-</div>
-
 <div id="pg-welcome" class="page" style="padding:60px 25px; text-align:center; justify-content:space-between;">
     <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
         <div id="w-rank" class="rank-label">RANK</div>
         <div style="font-size: 1.1rem; font-weight: 500;">You've joined Telegram</div>
     </div>
     <div style="position:relative; display:flex; align-items:center; justify-content:center;">
-        <img style="width:240px;" src="https://github.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/blob/main/Animals%20and%20Nature/Fire.webp?raw=true">
+        <img style="width:230px;" src="https://github.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/blob/main/Animals%20and%20Nature/Fire.webp?raw=true">
         <div style="position:absolute; display:flex; flex-direction:column; align-items:center;">
             <span style="font-size:5.5rem; font-weight:900;" id="w-age">0</span>
             <span style="font-weight:700;">years ago</span>
         </div>
+    </div>
+    <div>
+        <p id="w-id-info" style="color:var(--gray); font-size:0.9rem; margin-bottom:8px;"></p>
+        <p id="w-pct-info" style="font-weight:700; font-size:1.1rem; color:#fff;"></p>
     </div>
     <button class="btn btn-white" onclick="navigateTo('premium')">Continue</button>
 </div>
@@ -93,16 +87,25 @@
 </div>
 
 <div id="pg-main" class="page">
-    <div class="top-score-header" onclick="openStats()">
+    <div class="top-score-header" onclick="navigateTo('welcome')">
         <img class="medal-img" style="left:-10px;" src="https://github.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/blob/main/Activity/1st%20Place%20Medal.webp?raw=true">
         <img class="medal-img" style="right:-10px;" src="https://github.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/blob/main/Activity/1st%20Place%20Medal.webp?raw=true">
-        <div style="font-weight:800;"><i class="fas fa-play pulse-play"></i>Your Score</div>
+        <div style="font-weight:800; z-index:2;"><i class="fas fa-play pulse-play"></i>Your Score</div>
     </div>
+
     <div class="wallet-link"><i class="fas fa-wallet" style="color:var(--nav-red);"></i>Connect Wallet</div>
+
     <div class="pfp-wrap"><img id="m-pic" style="width:100%; border-radius:50%;" src="https://cdn-icons-png.flaticon.com/512/149/149071.png"></div>
     <div id="m-rank" class="rank-label">RANK</div>
-    <h2 id="m-name" style="margin-top:15px;">User</h2>
+    <h2 id="m-name" style="margin-top:12px; font-size:1.4rem;">User</h2>
     <div id="m-pts" class="points-main">0 FLSY</div>
+
+    <div class="stat-grid">
+        <div class="grid-box"><span>Rewards</span><b id="s-rew">0</b></div>
+        <div class="grid-box"><span>Tasks</span><b>+0</b></div>
+        <div class="grid-box"><span>Invites</span><b>+0</b></div>
+    </div>
+
     <nav class="nav">
         <div class="nav-link" style="color:#fff;"><i class="fas fa-home"></i><span>Home</span></div>
         <div class="nav-link"><i class="fas fa-users"></i><span>Friends</span></div>
@@ -112,9 +115,6 @@
 <script>
     const tg = window.Telegram.WebApp;
     let uData = { age: 0, pts: 0, id: 0, isP: false };
-
-    function openStats() { tg.HapticFeedback.impactOccurred('medium'); document.getElementById('stats-overlay').style.display = 'flex'; }
-    function closeStats() { document.getElementById('stats-overlay').style.display = 'none'; }
 
     function navigateTo(page) {
         document.getElementById('global-loader').style.display = 'flex';
@@ -132,7 +132,7 @@
         const t = document.getElementById('p-title'), d = document.getElementById('p-desc'), a = document.getElementById('p-action');
         if(uData.isP) {
             t.innerText = "PREMIUM VERIFIED"; d.innerText = "Claim your exclusive 1,000 FLSY bonus!";
-            a.innerHTML = `<button class="btn btn-prem" onclick="claim()">Claim Bonus</button>`;
+            a.innerHTML = `<button class="btn btn-white" style="background:var(--premium-purple); color:#fff;" onclick="claim()">Claim Bonus</button>`;
         } else {
             t.innerText = "PREMIUM NOT FOUND"; d.innerText = "Get Premium to double your score and unlock effects.";
             a.innerHTML = `<button class="btn btn-white" onclick="tg.openTelegramLink('https://t.me/premiumbot')">Get Premium</button>
@@ -157,11 +157,12 @@
         const rC = uData.age >= 7 ? "var(--rank-master)" : (uData.age >= 4 ? "var(--rank-adept)" : "var(--rank-apprentice)");
 
         document.getElementById('w-age').innerText = uData.age;
+        document.getElementById('w-id-info').innerText = `Your account number is #${u.id}`;
+        document.getElementById('w-pct-info').innerText = `You're in the top ${pct}% Telegram users 🔥`;
         document.getElementById('m-pts').innerText = uData.pts.toLocaleString('tr-TR') + " FLSY";
-        document.getElementById('o-age').innerText = uData.age + " Years";
-        document.getElementById('o-id').innerText = "#" + uData.id;
-        document.getElementById('o-top').innerText = "Top " + pct + "% User";
+        document.getElementById('s-rew').innerText = "+" + (uData.pts >= 1000 ? (uData.pts/1000).toFixed(1)+'k' : uData.pts);
         document.getElementById('m-name').innerText = u.first_name;
+        
         [document.getElementById('w-rank'), document.getElementById('m-rank')].forEach(el => { el.innerText = rN; el.style.color = rC; });
         if(u.photo_url) document.getElementById('m-pic').src = u.photo_url;
 

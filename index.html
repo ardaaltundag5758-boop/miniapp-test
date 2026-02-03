@@ -66,15 +66,22 @@
         .nav-item.active { color: #fff; }
         .nav-item.active::after { content: ""; position: absolute; bottom: 8px; width: 20px; height: 3px; background: var(--nav-red); border-radius: 10px; }
 
-        .welcome-header { text-align: center; margin-top: 20px; margin-bottom: 40px; display: flex; flex-direction: column; align-items: center; }
+        /* PROFİL HEADER */
+        .welcome-header { text-align: center; margin-top: 10px; margin-bottom: 25px; display: flex; flex-direction: column; align-items: center; }
         .avatar-main { width: 85px; height: 85px; border-radius: 50%; border: 2px solid var(--nav-red); padding: 3px; margin-bottom: 10px; object-fit: cover; }
         .rank-badge { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; padding: 4px 12px; border-radius: 8px; margin-bottom: 10px; letter-spacing: 1px; }
         .rank-apprentice { background: rgba(0, 210, 255, 0.15); color: var(--rank-apprentice); border: 1px solid var(--rank-apprentice); }
         .rank-adept { background: rgba(164, 69, 247, 0.15); color: var(--rank-adept); border: 1px solid var(--rank-adept); }
         .rank-master { background: rgba(255, 202, 40, 0.15); color: var(--rank-master); border: 1px solid var(--rank-master); }
 
-        .score-card { background: linear-gradient(145deg, #161616, #0a0a0a); border-radius: 30px; padding: 30px; text-align: center; margin-bottom: 20px; border: 1px solid #222; }
-        .score-value { font-size: 3.5rem; font-weight: 900; letter-spacing: -2px; }
+        /* YENİ ÜÇLÜ PUAN TASARIMI (Görseldeki gibi) */
+        .score-summary-container { text-align: center; margin-bottom: 30px; }
+        .main-total-points { font-size: 2.2rem; font-weight: 800; margin-bottom: 20px; letter-spacing: -1px; }
+        .stats-grid { display: flex; justify-content: space-around; align-items: center; width: 100%; }
+        .stat-item { flex: 1; display: flex; flex-direction: column; align-items: center; }
+        .stat-label { color: var(--gray); font-size: 0.85rem; margin-bottom: 5px; font-weight: 500; }
+        .stat-value { font-size: 1.1rem; font-weight: 700; color: #fff; }
+
         .stat-box { background: var(--card); border-radius: 20px; padding: 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
         .prem-fire-img { width: 35px; height: 35px; }
     </style>
@@ -114,10 +121,26 @@
             <span id="u-rank" class="rank-badge rank-apprentice">Apprentice</span>
             <h2 id="u-name" style="font-size: 1.4rem;">User</h2>
         </div>
-        <div class="score-card">
-            <div class="score-value" id="total-flsy">0</div>
-            <div id="label-total-points" style="color: var(--gray); font-size: 0.9rem;">Total FLSY Points</div>
+
+        <div class="score-summary-container">
+            <div class="main-total-points"><span id="total-flsy">0</span> FLSY</div>
+            
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-label" id="lbl-rewards">Rewards</span>
+                    <span class="stat-value">+2.2k</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label" id="lbl-tasks">Tasks</span>
+                    <span class="stat-value">+11.4k</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label" id="lbl-invites">Invites</span>
+                    <span class="stat-value">+218</span>
+                </div>
+            </div>
         </div>
+
         <div class="stat-box">
             <div><div id="label-acc-age" style="color: var(--gray); font-size: 0.8rem;">Account Age</div><div id="acc-age" style="font-weight: 700;">... years</div></div>
             <i class="fas fa-calendar-alt" style="color: var(--nav-red);"></i>
@@ -127,10 +150,12 @@
             <img class="prem-fire-img" src="https://github.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/blob/main/Animals%20and%20Nature/Fire.webp?raw=true" alt="Fire">
         </div>
     </div>
+    
     <div id="friends" class="tab-content">
         <h2 id="label-friends-title" style="text-align:center;">Friends</h2>
         <p id="label-coming-soon" style="text-align:center; margin-top:50px; color:var(--gray);">Coming Soon...</p>
     </div>
+
     <nav class="bottom-nav">
         <div class="nav-item active" onclick="switchTab('home')"><i class="fas fa-home"></i><span id="nav-home">Home</span></div>
         <div class="nav-item" onclick="switchTab('friends')"><i class="fas fa-users"></i><span id="nav-friends">Friends</span></div>
@@ -148,9 +173,9 @@
     };
 
     const I18N = {
-        tr: { elite: "ELİT ÜYE", joined: "Telegram'a katıldın", yearsAgo: "yıl önce", accNum: "Hesap numaran:", top: "En iyi %1 Telegram kullanıcısındasın", btn: "DEVAM ET", years: "Yıl", end: "Bitir", totalPoints: "Toplam FLSY Puanı", accAge: "Hesap Yaşı", premium: "Telegram Premium", active: "Aktif", friends: "Arkadaşlar", soon: "Yakında...", home: "Ana Sayfa", premYes: "Harika, Premium kullanıcısısın!<br>Bakiyene ekstra +1,000 FLSY eklendi.", premNo: "Telegram Premium bulunamadı.<br>Ekstra bonus puan kazanılamadı." },
-        en: { elite: "ELITE MEMBER", joined: "You've joined Telegram", yearsAgo: "years ago", accNum: "Your account number is", top: "You're in the top 1% Telegram users", btn: "CONTINUE", years: "Years", end: "End", totalPoints: "Total FLSY Points", accAge: "Account Age", premium: "Telegram Premium", active: "Active", friends: "Friends", soon: "Coming Soon...", home: "Home", premYes: "You are a Premium user!<br>An extra +1,000 FLSY has been added to your balance.", premNo: "You do not have Telegram Premium.<br>No extra bonus points awarded." },
-        ru: { elite: "ЭЛИТНЫЙ УЧАСТНИК", joined: "Вы присоединились к Telegram", yearsAgo: "лет назад", accNum: "Ваш номер аккаунта:", top: "Вы входите в 1% лучших пользователей", btn: "ПРОДОЛЖИТЬ", years: "лет", end: "Завершить", totalPoints: "Всего очков FLSY", accAge: "Возраст аккаунта", premium: "Telegram Premium", active: "Активен", friends: "Друзья", soon: "Скоро...", home: "Главная", premYes: "Вы Premium-пользователь!<br>К вашему балансу добавлено +1,000 FLSY.", premNo: "У вас нет Telegram Premium.<br>Бонусные баллы не начислены." }
+        tr: { elite: "ELİT ÜYE", joined: "Telegram'a katıldın", yearsAgo: "yıl önce", accNum: "Hesap numaran:", top: "En iyi %1 Telegram kullanıcısındasın", btn: "DEVAM ET", years: "Yıl", end: "Bitir", accAge: "Hesap Yaşı", premium: "Telegram Premium", active: "Aktif", friends: "Arkadaşlar", soon: "Yakında...", home: "Ana Sayfa", rewards: "Ödüller", tasks: "Görevler", invites: "Davetler", premYes: "Harika, Premium kullanıcısısın!<br>Bakiyene ekstra +1,000 FLSY eklendi.", premNo: "Telegram Premium bulunamadı.<br>Ekstra bonus puan kazanılamadı." },
+        en: { elite: "ELITE MEMBER", joined: "You've joined Telegram", yearsAgo: "years ago", accNum: "Your account number is", top: "You're in the top 1% Telegram users", btn: "CONTINUE", years: "Years", end: "End", accAge: "Account Age", premium: "Telegram Premium", active: "Active", friends: "Friends", soon: "Coming Soon...", home: "Home", rewards: "Rewards", tasks: "Tasks", invites: "Invites", premYes: "You are a Premium user!<br>An extra +1,000 FLSY has been added to your balance.", premNo: "You do not have Telegram Premium.<br>No extra bonus points awarded." },
+        ru: { elite: "ЭЛИТНЫЙ УЧАСТНИК", joined: "Вы присоединились к Telegram", yearsAgo: "лет назад", accNum: "Ваш номер аккаунта:", top: "Вы входите в 1% лучших пользователей", btn: "ПРОДОЛЖИТЬ", years: "лет", end: "Завершить", accAge: "Возраст аккаунта", premium: "Telegram Premium", active: "Активен", friends: "Друзья", soon: "Скоро...", home: "Главная", rewards: "Награды", tasks: "Задания", invites: "Друзья", premYes: "Вы Premium-пользователь!<br>К вашему балансу добавлено +1,000 FLSY.", premNo: "У вас нет Telegram Premium.<br>Бонусные баллы не начислены." }
     };
 
     let userData = { age: 1, points: 0, isPremium: false };
@@ -182,10 +207,9 @@
         document.getElementById('txt-top-percent').innerHTML = lang.top.replace("1%", '<span class="info-white">1%</span>');
         document.getElementById('btn-wel-continue').innerText = lang.btn;
 
-        // Main UI
+        // Main UI Labels
         document.getElementById('acc-age').innerText = userData.age + " " + lang.years;
         document.getElementById('btn-end').innerText = lang.end;
-        document.getElementById('label-total-points').innerText = lang.totalPoints;
         document.getElementById('label-acc-age').innerText = lang.accAge;
         document.getElementById('label-premium').innerText = lang.premium;
         document.getElementById('label-active').innerText = lang.active;
@@ -196,6 +220,11 @@
         document.getElementById('u-name').innerText = user.first_name;
         document.getElementById('total-flsy').innerText = userData.points.toLocaleString();
         
+        // Üçlü tablo başlıkları
+        document.getElementById('lbl-rewards').innerText = lang.rewards;
+        document.getElementById('lbl-tasks').innerText = lang.tasks;
+        document.getElementById('lbl-invites').innerText = lang.invites;
+
         const rankData = RANKS[userData.age] || {name: "Apprentice", class: "rank-apprentice"};
         const uRankEl = document.getElementById('u-rank');
         uRankEl.innerText = rankData.name;
@@ -225,7 +254,6 @@
         }
     }
 
-    // Alevli ekrandan doğrudan Premium ekranına geçer
     function startAfterElite() {
         document.getElementById('elite-welcome-screen').style.display = 'none';
         showPremiumStep();

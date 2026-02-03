@@ -1,10 +1,21 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
+    <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src * 'unsafe-inline'; img-src * data: blob: 'unsafe-inline'; frame-src *; style-src * 'unsafe-inline';">
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Flashy App</title>
+
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <script>
+        if (window.Telegram && window.Telegram.WebApp) {
+            window.Telegram.WebApp.ready();
+            window.Telegram.WebApp.expand();
+        }
+    </script>
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { 
@@ -143,10 +154,11 @@
 
 <script>
     const tg = window.Telegram.WebApp;
-    tg.expand();
 
     const RANKS = {
-        1: {name: "Apprentice", class: "rank-apprentice"}, 4: {name: "Adept", class: "rank-adept"}, 7: {name: "Master", class: "rank-master"}
+        1: {name: "Apprentice", class: "rank-apprentice"}, 
+        4: {name: "Adept", class: "rank-adept"}, 
+        7: {name: "Master", class: "rank-master"}
     };
 
     const I18N = {
@@ -157,16 +169,17 @@
     let userData = { age: 1, points: 0, isPremium: false };
 
     function init() {
+        // Dinamik Telegram verisi
         const user = tg.initDataUnsafe.user || { id: 6200000000, first_name: "Guest", language_code: "en" };
         const userId = user.id;
 
-        // Hesaplamalar
+        // Yaş ve Yüzde Hesaplama (ID tabanlı gerçek veri)
         userData.age = userId < 100000000 ? 11 : (userId < 1000000000 ? 6 : 2);
         userData.isPremium = user.is_premium || false;
         userData.points = (userData.age * 450) + (userData.isPremium ? 1000 : 0);
         let percent = userId < 100000000 ? 1 : (userId < 1000000000 ? 12 : 35);
 
-        // UI Doldurma
+        // UI Güncelleme
         document.getElementById('wel-age-num').innerText = userData.age;
         document.getElementById('wel-user-id').innerText = "#" + userId;
         document.getElementById('top-rank-text').innerText = `You're in the Top ${percent}% Telegram users 🔥`;
@@ -190,10 +203,10 @@
         tg.HapticFeedback.impactOccurred('medium');
         document.getElementById('elite-welcome-screen').style.display = 'none';
         
-        // Premium Kontrol Ekranı
         const userLang = tg.initDataUnsafe.user?.language_code === 'tr' ? 'tr' : 'en';
         const pScreen = document.getElementById('premium-status-screen');
         pScreen.style.display = 'flex';
+        
         if(userData.isPremium) {
             document.getElementById('prem-icon').innerText = "🌟";
             document.getElementById('prem-msg').innerHTML = I18N[userLang].premYes;

@@ -9,244 +9,182 @@
     <style>
         :root { 
             --bg: #000000; 
-            --card: #111111; 
-            --gray: #666666; 
+            --white: #ffffff;
+            --gray: #888888;
             --nav-red: #FF3B30;
-            --premium-blue: #007AFF;
-            --rank-apprentice: #00d2ff;
-            --rank-adept: #a445f7;
-            --rank-master: #ffca28;
-            --divider: #1a1a1a;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-        body { background-color: var(--bg); color: #fff; font-family: 'Inter', -apple-system, sans-serif; overflow: hidden; width: 100%; height: 100vh; }
+        body { background-color: var(--bg); color: var(--white); font-family: 'Inter', -apple-system, sans-serif; overflow: hidden; }
 
-        /* --- ÜST "YOUR SCORE" HEADER BÖLÜMÜ --- */
-        .top-score-header {
-            background-color: #000000;
-            padding: 20px 15px;
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            border-bottom: 1px solid var(--divider); /* Narin ve yumuşak çizgi */
+        /* --- ONBOARDING SCREEN --- */
+        #elite-welcome-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: var(--bg); z-index: 20000;
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: space-between; padding: 60px 25px;
+            text-align: center;
         }
-        
-        .medal-bg {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 80px;
-            height: 80px;
-            z-index: 1;
-            opacity: 0.4;
-        }
-        .medal-left { left: -10px; }
-        .medal-right { right: -10px; }
 
-        .your-score-title {
-            position: relative;
-            z-index: 2;
+        .top-joined-text {
             font-size: 1.1rem;
-            font-weight: 800;
-            color: #fff;
+            font-weight: 500;
+            color: var(--white);
+            margin-top: 20px;
+        }
+
+        .hero-center {
+            position: relative;
             display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 10px;
-            letter-spacing: 0.5px;
-        }
-
-        .pulse-icon {
-            color: var(--nav-red);
-            font-size: 0.9rem;
-            animation: breathe 2.5s infinite ease-in-out;
-        }
-        @keyframes breathe {
-            0%, 100% { transform: scale(1); opacity: 0.8; }
-            50% { transform: scale(1.3); opacity: 1; }
-        }
-
-        /* --- CÜZDAN BUTONU (ORTALANMIŞ) --- */
-        .wallet-container {
-            display: flex;
             justify-content: center;
-            margin: 15px 0;
         }
-        .connect-wallet-btn {
-            background: #111111;
-            color: #fff;
-            border: 1px solid #222;
-            padding: 10px 24px;
-            border-radius: 14px;
-            font-size: 0.85rem;
-            font-weight: 700;
+
+        .bg-flame {
+            width: 250px;
+            height: 250px;
+            z-index: 1;
+        }
+
+        .age-overlay {
+            position: absolute;
+            z-index: 2;
             display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 10px;
-            cursor: pointer;
+            pointer-events: none;
+            margin-top: 10px; /* Ateşin üzerine tam oturması için */
         }
 
-        /* PROFİL HEADER */
-        .welcome-header { text-align: center; margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; }
-        .avatar-main { width: 85px; height: 85px; border-radius: 50%; border: 2px solid var(--nav-red); padding: 3px; margin-bottom: 10px; object-fit: cover; }
-        .rank-badge { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; padding: 4px 12px; border-radius: 8px; margin-bottom: 10px; }
+        .age-number {
+            font-size: 5.5rem;
+            font-weight: 900;
+            line-height: 1;
+            color: var(--white);
+            text-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
 
-        /* PUAN TABLOSU */
-        .score-summary-container { text-align: center; margin-bottom: 25px; }
-        .main-total-points { font-size: 2.2rem; font-weight: 800; margin-bottom: 15px; }
-        .stats-grid { display: flex; justify-content: space-around; width: 100%; }
-        .stat-item { flex: 1; display: flex; flex-direction: column; align-items: center; }
-        .stat-label { color: var(--gray); font-size: 0.8rem; margin-bottom: 4px; }
-        .stat-value { font-size: 1.1rem; font-weight: 700; }
+        .age-subtext {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-top: -5px;
+        }
 
-        /* GENEL BİLEŞENLER */
-        .stat-box { background: var(--card); border-radius: 20px; padding: 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-        .tab-content { display: none; height: 100vh; overflow-y: auto; padding-bottom: 100px; }
-        .tab-content.active { display: block; }
-        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 70px; background: rgba(10, 10, 10, 0.95); display: grid; grid-template-columns: repeat(2, 1fr); border-top: 1px solid #1a1a1a; z-index: 1000; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--gray); font-size: 0.75rem; }
-        .nav-item.active { color: #fff; }
+        .footer-info {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
 
-        /* ONBOARDING EKRANLARI */
-        #elite-welcome-screen, #premium-status-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 20000; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 60px 30px; text-align: center; }
+        .acc-id-text {
+            font-size: 0.95rem;
+            color: var(--gray);
+        }
+
+        .top-percent-text {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--white);
+        }
+
+        .continue-btn {
+            width: 100%;
+            background: var(--white);
+            color: #000;
+            border: none;
+            padding: 18px;
+            border-radius: 16px;
+            font-weight: 800;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: transform 0.1s ease;
+        }
+        .continue-btn:active { transform: scale(0.97); }
+
+        /* --- ANA UYGULAMA GİZLİ BAŞLAR --- */
+        #main-app { display: none; }
     </style>
 </head>
 <body>
 
 <div id="elite-welcome-screen">
-    <div class="header-group" style="margin-top:20px;">
-        <div id="txt-elite-title" style="font-size: 2.2rem; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; background: linear-gradient(to bottom, #fff, #888); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">RANK</div>
-        <div id="txt-joined-desc" style="color:#666; margin-top:8px;">You've joined Telegram</div>
-    </div>
-    <div class="hero-center" style="position:relative;">
-        <img src="https://github.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/blob/main/Animals%20and%20Nature/Fire.webp?raw=true" style="width:280px;">
-        <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);">
-            <div id="wel-age-num" style="font-size:6rem; font-weight:900;">0</div>
-            <div id="wel-age-txt" style="font-size:1.5rem; font-weight:700;">years ago</div>
+    <div class="top-joined-text">You've joined Telegram</div>
+
+    <div class="hero-center">
+        <img class="bg-flame" src="https://github.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/blob/main/Animals%20and%20Nature/Fire.webp?raw=true" alt="Flame">
+        <div class="age-overlay">
+            <span class="age-number" id="wel-age-num">0</span>
+            <span class="age-subtext">years ago</span>
         </div>
     </div>
-    <button onclick="startAfterElite()" style="width:100%; background:#fff; color:#000; padding:20px; border-radius:18px; font-weight:800;">CONTINUE</button>
+
+    <div class="footer-info">
+        <div class="acc-id-text">Your account number is <span id="wel-user-id" style="color: #fff; font-weight: 600;">#0</span></div>
+        <div class="top-percent-text" id="top-rank-text">You're in the Top 0% Telegram users 🔥</div>
+    </div>
+
+    <button class="continue-btn" onclick="startAfterElite()">Continue</button>
 </div>
 
-<div id="premium-status-screen" style="display:none; justify-content:center;">
-    <div id="prem-icon" style="font-size:4rem; margin-bottom:20px;"></div>
-    <div id="prem-msg" style="font-size:1.2rem; margin-bottom:30px;"></div>
-    <button onclick="finishIntro()" style="width:80%; background:var(--nav-red); color:#fff; padding:18px; border-radius:20px; font-weight:800;">End</button>
-</div>
-
-<div id="main-app" style="display:none;">
-    <div class="top-score-header" onclick="goToStart()">
-        <img class="medal-bg medal-left" src="https://github.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/blob/main/Activity/1st%20Place%20Medal.webp?raw=true">
-        <img class="medal-bg medal-right" src="https://github.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/blob/main/Activity/1st%20Place%20Medal.webp?raw=true">
-        <div class="your-score-title">
-            <i class="fas fa-play pulse-icon"></i>
-            <span>Your Score</span>
-        </div>
-    </div>
-
-    <div id="home" class="tab-content active" style="padding: 0 20px;">
-        <div class="wallet-container">
-            <div class="connect-wallet-btn">
-                <i class="fas fa-wallet"></i>
-                <span>Connect Wallet</span>
-            </div>
-        </div>
-
-        <div class="welcome-header">
-            <img id="u-pic" class="avatar-main" src="https://cdn-icons-png.flaticon.com/512/149/149071.png">
-            <span id="u-rank" class="rank-badge rank-apprentice">Apprentice</span>
-            <h2 id="u-name">User</h2>
-        </div>
-
-        <div class="score-summary-container">
-            <div class="main-total-points"><span id="total-flsy">0</span> FLSY</div>
-            <div class="stats-grid">
-                <div class="stat-item">
-                    <span class="stat-label" id="lbl-rewards">Rewards</span>
-                    <span class="stat-value">+0</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label" id="lbl-tasks">Tasks</span>
-                    <span class="stat-value">+0</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label" id="lbl-invites">Invites</span>
-                    <span class="stat-value">+0</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="stat-box">
-            <div><div id="label-acc-age" style="color:var(--gray); font-size:0.8rem;">Account Age</div><div id="acc-age" style="font-weight:700;">... years</div></div>
-            <i class="fas fa-calendar-alt" style="color:var(--nav-red);"></i>
-        </div>
-    </div>
-
-    <nav class="bottom-nav">
-        <div class="nav-item active" onclick="switchTab('home')"><i class="fas fa-home"></i><span id="nav-home">Home</span></div>
-        <div class="nav-item" onclick="switchTab('friends')"><i class="fas fa-users"></i><span id="nav-friends">Friends</span></div>
-    </nav>
+<div id="main-app">
+    <div style="padding: 50px; text-align: center;">Main App Loaded</div>
 </div>
 
 <script>
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    const RANKS = {
-        1: {name: "Apprentice", class: "rank-apprentice"}, 4: {name: "Adept", class: "rank-adept"}, 7: {name: "Master", class: "rank-master"}
-    };
+    function initOnboarding() {
+        const user = tg.initDataUnsafe.user || { id: 5800000000, first_name: "User" }; // Fallback for browser
+        const userId = user.id;
 
-    const I18N = {
-        tr: { apprentice: "ÇIRAK", adept: "UZMAN", master: "USTA", joined: "Telegram'a katıldın", yearsAgo: "yıl önce", btn: "DEVAM ET", years: "Yıl", rewards: "Ödüller", tasks: "Görevler", invites: "Davetler" },
-        en: { apprentice: "APPRENTICE", adept: "ADEPT", master: "MASTER", joined: "You've joined Telegram", yearsAgo: "years ago", btn: "CONTINUE", years: "Years", rewards: "Rewards", tasks: "Tasks", invites: "Invites" }
-    };
+        // 1. Yaş Hesaplama (ID Aralığına Göre Tahmini)
+        let age = 1;
+        if (userId < 100000000) age = 11;
+        else if (userId < 250000000) age = 10;
+        else if (userId < 500000000) age = 8;
+        else if (userId < 1000000000) age = 6;
+        else if (userId < 2000000000) age = 4;
+        else if (userId < 5000000000) age = 2;
+        else age = 1;
 
-    let userData = { age: 1, points: 0, isPremium: false };
+        // 2. Gerçekçi Yüzde Hesaplama 
+        // Telegram'ın yaklaşık 900M+ kullanıcısı var. 
+        // Düşük ID'li kullanıcılar daha eski ve daha küçük bir azınlıktadır.
+        let percent = 1;
+        if (userId > 5000000000) percent = 45;
+        else if (userId > 2000000000) percent = 25;
+        else if (userId > 1000000000) percent = 12;
+        else if (userId > 500000000) percent = 5;
+        else percent = 1;
 
-    function initData() {
-        const user = tg.initDataUnsafe.user || { first_name: "Guest", id: 12345, language_code: "en" };
-        const userLang = user.language_code === 'tr' ? 'tr' : 'en';
-        const lang = I18N[userLang];
+        // Verileri Ekrana Bas
+        document.getElementById('wel-age-num').innerText = age;
+        document.getElementById('wel-user-id').innerText = "#" + userId;
+        document.getElementById('top-rank-text').innerText = `You're in the Top ${percent}% Telegram users 🔥`;
 
-        const id = user.id;
-        if (id < 50000000) userData.age = 11;
-        else if (id < 1000000000) userData.age = 6;
-        else userData.age = 2;
-
-        userData.isPremium = user.is_premium || false;
-        userData.points = (userData.age * 450) + (userData.isPremium ? 1000 : 0);
-
-        document.getElementById('wel-age-num').innerText = userData.age;
-        document.getElementById('u-name').innerText = user.first_name;
-        document.getElementById('total-flsy').innerText = userData.points.toLocaleString();
-        document.getElementById('acc-age').innerText = userData.age + " " + lang.years;
-        
-        const rankKey = userData.age >= 7 ? 7 : (userData.age >= 4 ? 4 : 1);
-        const rankData = RANKS[rankKey];
-        document.getElementById('u-rank').innerText = rankData.name;
-        document.getElementById('txt-elite-title').innerText = lang[rankData.name.toLowerCase()];
-
-        if (localStorage.getItem('flashy_onboarded')) {
-            document.getElementById('elite-welcome-screen').style.display = 'none';
-            document.getElementById('main-app').style.display = 'block';
+        // Daha önce girmişse atla
+        if (localStorage.getItem('flashy_done')) {
+            showMain();
         }
     }
 
-    function goToStart() {
+    function startAfterElite() {
         tg.HapticFeedback.impactOccurred('medium');
-        document.getElementById('main-app').style.display = 'none';
-        document.getElementById('elite-welcome-screen').style.display = 'flex';
+        // İkinci adıma (Premium kontrolü gibi) veya direkt ana uygulamaya geçiş
+        localStorage.setItem('flashy_done', 'true');
+        showMain();
     }
 
-    function startAfterElite() { document.getElementById('elite-welcome-screen').style.display = 'none'; showPremiumStep(); }
-    function showPremiumStep() { document.getElementById('premium-status-screen').style.display = 'flex'; }
-    function finishIntro() { localStorage.setItem('flashy_onboarded', 'true'); document.getElementById('premium-status-screen').style.display = 'none'; document.getElementById('main-app').style.display = 'block'; }
-    function switchTab(id) { tg.HapticFeedback.impactOccurred('light'); }
+    function showMain() {
+        document.getElementById('elite-welcome-screen').style.display = 'none';
+        document.getElementById('main-app').style.display = 'block';
+    }
 
-    window.onload = initData;
+    window.onload = initOnboarding;
 </script>
+
 </body>
 </html>

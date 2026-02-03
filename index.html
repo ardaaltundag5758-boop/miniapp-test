@@ -19,7 +19,6 @@
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         body { background-color: var(--bg); color: var(--white); font-family: 'Inter', sans-serif; overflow: hidden; height: 100vh; }
 
-        /* LOADING */
         #global-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 99999; display: flex; align-items: center; justify-content: center; }
         .spinner { width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid var(--nav-red); border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -27,23 +26,21 @@
         .page { display: none; height: 100vh; width: 100%; flex-direction: column; align-items: center; overflow-y: auto; padding-bottom: 100px; animation: fadeIn 0.4s ease; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* TOP HEADER */
         .top-score-header { width: 100%; background: #000; padding: 22px; border-bottom: 1px solid var(--divider); position: relative; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; }
         .medal-img { position: absolute; top: 50%; transform: translateY(-50%); width: 85px; opacity: 0.4; pointer-events: none; }
         .pulse-play { color: var(--nav-red); animation: pulseAnim 2s infinite ease-in-out; margin-right: 12px; }
         @keyframes pulseAnim { 0%, 100% { transform: scale(1); opacity: 0.7; } 50% { transform: scale(1.4); opacity: 1; } }
 
-        /* SCORE TEXT & HIERARCHY */
         .points-main { 
             font-size: 3.2rem; font-weight: 900; margin: 10px 0 25px;
             background: linear-gradient(180deg, #FFFFFF 0%, #A0A0A0 100%);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
+
         .wallet-link { background: #111; border: 1px solid #222; padding: 12px 24px; border-radius: 14px; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 8px; margin: 20px 0; }
         .pfp-wrap { width: 90px; height: 90px; border-radius: 50%; border: 3px solid var(--nav-red); padding: 4px; margin-bottom: 10px; }
         .rank-label { border: 1.5px solid currentColor; padding: 4px 16px; border-radius: 10px; font-weight: 800; font-size: 0.7rem; text-transform: uppercase; }
 
-        /* STAT GRID */
         .stat-grid { width: 100%; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 0 20px; margin-top: 10px; }
         .grid-box { background: var(--card); border: 1px solid #1a1a1a; border-radius: 20px; padding: 15px 5px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .grid-box span { color: var(--gray); font-size: 0.65rem; font-weight: 700; text-transform: uppercase; margin-bottom: 4px; }
@@ -92,20 +89,16 @@
         <img class="medal-img" style="right:-10px;" src="https://github.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/blob/main/Activity/1st%20Place%20Medal.webp?raw=true">
         <div style="font-weight:800; z-index:2;"><i class="fas fa-play pulse-play"></i>Your Score</div>
     </div>
-
     <div class="wallet-link"><i class="fas fa-wallet" style="color:var(--nav-red);"></i>Connect Wallet</div>
-
     <div class="pfp-wrap"><img id="m-pic" style="width:100%; border-radius:50%;" src="https://cdn-icons-png.flaticon.com/512/149/149071.png"></div>
     <div id="m-rank" class="rank-label">RANK</div>
     <h2 id="m-name" style="margin-top:12px; font-size:1.4rem;">User</h2>
     <div id="m-pts" class="points-main">0 FLSY</div>
-
     <div class="stat-grid">
         <div class="grid-box"><span>Rewards</span><b id="s-rew">0</b></div>
         <div class="grid-box"><span>Tasks</span><b>+0</b></div>
         <div class="grid-box"><span>Invites</span><b>+0</b></div>
     </div>
-
     <nav class="nav">
         <div class="nav-link" style="color:#fff;"><i class="fas fa-home"></i><span>Home</span></div>
         <div class="nav-link"><i class="fas fa-users"></i><span>Friends</span></div>
@@ -150,11 +143,26 @@
         tg.ready(); tg.expand();
         const u = tg.initDataUnsafe.user || { id: 582145000, first_name: "Guest", is_premium: false };
         uData.id = u.id; uData.isP = u.is_premium || false;
-        uData.age = u.id < 100000000 ? 11 : (u.id < 1000000000 ? 6 : 2);
-        uData.pts = (uData.age * 450) + (uData.isP ? 1000 : 0);
-        const pct = uData.age >= 10 ? 1 : (uData.age >= 5 ? 12 : 35);
-        const rN = uData.age >= 7 ? "Master" : (uData.age >= 4 ? "Adept" : "Apprentice");
-        const rC = uData.age >= 7 ? "var(--rank-master)" : (uData.age >= 4 ? "var(--rank-adept)" : "var(--rank-apprentice)");
+
+        const uid = u.id;
+        if (uid < 50000000) uData.age = 11;
+        else if (uid < 150000000) uData.age = 10;
+        else if (uid < 300000000) uData.age = 9;
+        else if (uid < 500000000) uData.age = 8;
+        else if (uid < 700000000) uData.age = 7;
+        else if (uid < 900000000) uData.age = 6;
+        else if (uid < 1200000000) uData.age = 5;
+        else if (uid < 1600000000) uData.age = 4;
+        else if (uid < 2000000000) uData.age = 3;
+        else if (uid < 4000000000) uData.age = 2;
+        else uData.age = 1;
+
+        uData.pts = (uData.age * 850) + (uData.isP ? 1000 : 0);
+        const pct = uData.age >= 10 ? 1 : (uData.age >= 7 ? 5 : (uData.age >= 4 ? 15 : 30));
+        
+        // Senin Rank İsimlerin ve Renklerin
+        const rN = uData.age >= 9 ? "Master" : (uData.age >= 5 ? "Adept" : "Apprentice");
+        const rC = uData.age >= 9 ? "var(--rank-master)" : (uData.age >= 5 ? "var(--rank-adept)" : "var(--rank-apprentice)");
 
         document.getElementById('w-age').innerText = uData.age;
         document.getElementById('w-id-info').innerText = `Your account number is #${u.id}`;
@@ -162,10 +170,9 @@
         document.getElementById('m-pts').innerText = uData.pts.toLocaleString('tr-TR') + " FLSY";
         document.getElementById('s-rew').innerText = "+" + (uData.pts >= 1000 ? (uData.pts/1000).toFixed(1)+'k' : uData.pts);
         document.getElementById('m-name').innerText = u.first_name;
-        
         [document.getElementById('w-rank'), document.getElementById('m-rank')].forEach(el => { el.innerText = rN; el.style.color = rC; });
-        if(u.photo_url) document.getElementById('m-pic').src = u.photo_url;
 
+        if(u.photo_url) document.getElementById('m-pic').src = u.photo_url;
         if(localStorage.getItem('v')) navigateTo('main'); else navigateTo('welcome');
     }
     window.onload = init;

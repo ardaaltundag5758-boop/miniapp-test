@@ -13,66 +13,49 @@
         :root { 
             --bg: #000000; --white: #ffffff; --gray: #888888; --nav-red: #FF3B30;
             --premium-purple: #A020F0; --card: #111111; --divider: #1a1a1a;
-            --rank-apprentice: #00d2ff; --rank-adept: #a445f7; --rank-master: #ffca28;
+            --rank-master: #ffca28; --rank-adept: #a445f7; --rank-apprentice: #00d2ff;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         body { background-color: var(--bg); color: var(--white); font-family: 'Inter', sans-serif; overflow: hidden; height: 100vh; }
 
-        /* --- LOADING SİSTEMİ --- */
-        #global-loader {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #000; z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center;
-        }
-        .spinner { width: 45px; height: 45px; border: 4px solid rgba(255,255,255,0.05); border-top: 4px solid var(--nav-red); border-radius: 50%; animation: spin 0.8s linear infinite; }
+        #global-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 99999; display: flex; align-items: center; justify-content: center; }
+        .spinner { width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid var(--nav-red); border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         .page { display: none; height: 100vh; width: 100%; flex-direction: column; align-items: center; overflow-y: auto; padding-bottom: 100px; }
 
-        /* --- BAŞLIK: YOUR SCORE (MADALYALI & PULSE) --- */
+        /* --- YOUR SCORE BAŞLIĞI --- */
         .top-score-header { 
             width: 100%; background: #000; padding: 22px; border-bottom: 1px solid var(--divider);
-            position: relative; display: flex; align-items: center; justify-content: center;
+            position: relative; display: flex; align-items: center; justify-content: center; cursor: pointer;
         }
-        .medal-img { position: absolute; top: 50%; transform: translateY(-50%); width: 85px; opacity: 0.4; }
+        .medal-img { position: absolute; top: 50%; transform: translateY(-50%); width: 85px; opacity: 0.4; pointer-events: none; }
         .pulse-play { color: var(--nav-red); animation: pulseAnim 2s infinite ease-in-out; margin-right: 12px; }
-        @keyframes pulseAnim { 0%, 100% { transform: scale(1); opacity: 0.7; } 50% { transform: scale(1.3); opacity: 1; } }
+        @keyframes pulseAnim { 0%, 100% { transform: scale(1); opacity: 0.7; } 50% { transform: scale(1.4); opacity: 1; } }
 
-        /* --- BAŞLANGIÇ EKRANI --- */
-        #welcome-screen { padding: 60px 25px; text-align: center; justify-content: space-between; }
-        .hero-unit { position: relative; display: flex; align-items: center; justify-content: center; margin: 30px 0; }
-        .fire-gif { width: 240px; height: 240px; }
-        .age-text-wrap { position: absolute; display: flex; flex-direction: column; align-items: center; }
-        .big-age { font-size: 5.5rem; font-weight: 900; line-height: 1; }
-
-        /* --- PREMIUM GÖRSEL --- */
-        .premium-star-box { position: relative; margin: 40px 0; }
-        .premium-star-img {
-            width: 175px; height: 175px;
-            filter: drop-shadow(0 0 25px var(--premium-purple));
-            animation: breatheStar 3s infinite ease-in-out;
+        /* --- İSTATİSTİK MODAL (İÇ İÇE GİRMEYEN DÜZEN) --- */
+        #stats-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000;
+            z-index: 5000; display: none; flex-direction: column; align-items: center; padding: 40px 25px;
         }
-        @keyframes breatheStar { 0%, 100% { transform: scale(1); filter: drop-shadow(0 0 15px var(--premium-purple)); } 50% { transform: scale(1.1); filter: drop-shadow(0 0 40px var(--premium-purple)); } }
+        .stat-card-big { background: var(--card); border: 1px solid #222; width: 100%; border-radius: 24px; padding: 25px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .stat-card-big i { font-size: 1.5rem; color: var(--nav-red); }
 
-        /* --- ANA MENÜ MERKEZİ DÜZEN --- */
+        /* --- ANA MENÜ DÜZENİ --- */
         .wallet-link { background: #111; border: 1px solid #222; padding: 12px 24px; border-radius: 14px; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 8px; margin: 20px 0; }
         .pfp-wrap { width: 95px; height: 95px; border-radius: 50%; border: 3px solid var(--nav-red); padding: 4px; margin-bottom: 12px; }
-        .rank-label { border: 1.5px solid currentColor; padding: 4px 16px; border-radius: 10px; font-weight: 800; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; }
-        .points-main { font-size: 3.2rem; font-weight: 900; margin: 20px 0 35px; }
+        .rank-label { border: 1.5px solid currentColor; padding: 4px 16px; border-radius: 10px; font-weight: 800; font-size: 0.75rem; text-transform: uppercase; }
+        .points-main { font-size: 3rem; font-weight: 900; margin: 20px 0 35px; }
 
-        .stat-row { width: 100%; display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; padding: 0 25px; }
-        .stat-card { background: var(--card); border-radius: 20px; padding: 18px 5px; display: flex; flex-direction: column; align-items: center; border: 1px solid #1a1a1a; }
-        .stat-desc { color: var(--gray); font-size: 0.65rem; margin-bottom: 5px; font-weight: 700; }
-
-        /* BUTONLAR */
-        .btn { width: 100%; padding: 18px; border-radius: 20px; font-weight: 800; border: none; cursor: pointer; font-size: 1.1rem; transition: 0.2s; }
-        .btn-prem { background: var(--premium-purple); color: #fff; box-shadow: 0 5px 20px rgba(160, 32, 240, 0.4); }
+        .stat-grid { width: 100%; display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; padding: 0 25px; }
+        .grid-box { background: var(--card); border-radius: 18px; padding: 15px 5px; display: flex; flex-direction: column; align-items: center; border: 1px solid #1a1a1a; }
+        
+        .btn { width: 100%; padding: 18px; border-radius: 20px; font-weight: 800; border: none; cursor: pointer; font-size: 1.1rem; }
         .btn-white { background: #fff; color: #000; }
-        .btn:active { transform: scale(0.96); }
 
-        /* NAV */
-        .footer-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 75px; background: rgba(5,5,5,0.98); display: grid; grid-template-columns: repeat(2, 1fr); border-top: 1px solid var(--divider); }
-        .nav-link { display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--gray); font-size: 0.8rem; gap: 4px; }
+        .nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 75px; background: rgba(5,5,5,0.98); display: grid; grid-template-columns: repeat(2, 1fr); border-top: 1px solid var(--divider); }
+        .nav-link { display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--gray); font-size: 0.8rem; }
         .nav-link.active { color: #fff; }
     </style>
 </head>
@@ -80,60 +63,61 @@
 
 <div id="global-loader"><div class="spinner"></div></div>
 
-<div id="pg-welcome" class="page">
+<div id="stats-overlay">
+    <h2 style="margin-bottom: 30px; font-weight: 900;">TELEGRAM STATS</h2>
+    
+    <div class="stat-card-big">
+        <div><p style="color:var(--gray); font-size:0.8rem;">Account Age</p><b id="o-age" style="font-size:1.2rem;">0 Years</b></div>
+        <i class="fas fa-calendar-check"></i>
+    </div>
+    <div class="stat-card-big">
+        <div><p style="color:var(--gray); font-size:0.8rem;">User ID</p><b id="o-id" style="font-size:1.2rem;">#0</b></div>
+        <i class="fas fa-fingerprint"></i>
+    </div>
+    <div class="stat-card-big">
+        <div><p style="color:var(--gray); font-size:0.8rem;">Global Rank</p><b id="o-top" style="font-size:1.2rem;">Top 0%</b></div>
+        <i class="fas fa-trophy"></i>
+    </div>
+
+    <button class="btn btn-white" style="margin-top:auto;" onclick="closeStats()">Close</button>
+</div>
+
+<div id="pg-welcome" class="page" style="padding:60px 25px; text-align:center; justify-content:space-between;">
     <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
         <div id="w-rank" class="rank-label">RANK</div>
         <div style="font-size: 1.1rem; font-weight: 500;">You've joined Telegram</div>
     </div>
-    <div class="hero-unit">
-        <img class="fire-gif" src="https://github.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/blob/main/Animals%20and%20Nature/Fire.webp?raw=true">
-        <div class="age-text-wrap">
-            <span class="big-age" id="w-age">0</span>
-            <span style="font-size:1.3rem; font-weight:700;">years ago</span>
+    <div style="position:relative; display:flex; align-items:center; justify-content:center;">
+        <img style="width:240px;" src="https://github.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/blob/main/Animals%20and%20Nature/Fire.webp?raw=true">
+        <div style="position:absolute; display:flex; flex-direction:column; align-items:center;">
+            <span style="font-size:5.5rem; font-weight:900;" id="w-age">0</span>
+            <span style="font-weight:700;">years ago</span>
         </div>
-    </div>
-    <div>
-        <div id="w-id" style="color:var(--gray); font-size:0.9rem; margin-bottom:8px;"></div>
-        <div id="w-top" style="font-weight:600; font-size:1rem;"></div>
     </div>
     <button class="btn btn-white" onclick="go('premium')">Continue</button>
 </div>
 
-<div id="pg-premium" class="page" style="padding: 60px 25px; text-align: center;">
-    <div class="premium-star-box">
-        <img id="p-star" class="premium-star-img" src="https://github.com/ardaaltundag5758-boop/gifler/blob/main/premium-star.png?raw=true">
-    </div>
-    <h2 id="p-title" style="font-size:1.8rem; font-weight:900;"></h2>
-    <p id="p-desc" style="color:var(--gray); margin-top:15px; line-height:1.5;"></p>
-    <div style="width:100%; margin-top:auto; padding-bottom:30px;" id="p-action"></div>
-</div>
-
 <div id="pg-main" class="page">
-    <div class="top-score-header">
-        <img class="medal-img" style="left: -10px;" src="https://github.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/blob/main/Activity/1st%20Place%20Medal.webp?raw=true">
-        <img class="medal-img" style="right: -10px;" src="https://github.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/blob/main/Activity/1st%20Place%20Medal.webp?raw=true">
-        <div style="font-weight:800; font-size:1.1rem; z-index:2; display:flex; align-items:center;">
-            <i class="fas fa-play pulse-play"></i>Your Score
-        </div>
+    <div class="top-score-header" onclick="openStats()">
+        <img class="medal-img" style="left:-10px;" src="https://github.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/blob/main/Activity/1st%20Place%20Medal.webp?raw=true">
+        <img class="medal-img" style="right:-10px;" src="https://github.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/blob/main/Activity/1st%20Place%20Medal.webp?raw=true">
+        <div style="font-weight:800; z-index:2;"><i class="fas fa-play pulse-play"></i>Your Score</div>
     </div>
 
     <div class="wallet-link"><i class="fas fa-wallet" style="color:var(--nav-red);"></i>Connect Wallet</div>
 
-    <div class="pfp-wrap">
-        <img id="m-pic" style="width:100%; height:100%; border-radius:50%;" src="https://cdn-icons-png.flaticon.com/512/149/149071.png">
-    </div>
+    <div class="pfp-wrap"><img id="m-pic" style="width:100%; border-radius:50%;" src="https://cdn-icons-png.flaticon.com/512/149/149071.png"></div>
     <div id="m-rank" class="rank-label">RANK</div>
-
-    <h2 id="m-name" style="margin-top:15px; font-size:1.5rem; font-weight:700;">User</h2>
+    <h2 id="m-name" style="margin-top:15px;">User</h2>
     <div id="m-pts" class="points-main">0 FLSY</div>
 
-    <div class="stat-row">
-        <div class="stat-card"><span class="stat-desc">REWARDS</span><b id="s-rew" style="font-size:1.2rem;">0</b></div>
-        <div class="stat-card"><span class="stat-desc">TASKS</span><b style="font-size:1.2rem;">+0</b></div>
-        <div class="stat-card"><span class="stat-desc">INVITES</span><b style="font-size:1.2rem;">+0</b></div>
+    <div class="stat-grid">
+        <div class="grid-box"><span style="color:var(--gray); font-size:0.6rem;">REWARDS</span><b id="s-rew">0</b></div>
+        <div class="grid-box"><span style="color:var(--gray); font-size:0.6rem;">TASKS</span><b>+0</b></div>
+        <div class="grid-box"><span style="color:var(--gray); font-size:0.6rem;">INVITES</span><b>+0</b></div>
     </div>
 
-    <nav class="footer-nav">
+    <nav class="nav">
         <div class="nav-link active"><i class="fas fa-home"></i><span>Home</span></div>
         <div class="nav-link"><i class="fas fa-users"></i><span>Friends</span></div>
     </nav>
@@ -141,64 +125,46 @@
 
 <script>
     const tg = window.Telegram.WebApp;
-    let uData = { age: 0, pts: 0, isP: false };
+    let uData = { age: 0, pts: 0, id: 0 };
+
+    function openStats() { 
+        tg.HapticFeedback.impactOccurred('medium');
+        document.getElementById('stats-overlay').style.display = 'flex'; 
+    }
+    function closeStats() { document.getElementById('stats-overlay').style.display = 'none'; }
 
     function go(page) {
         document.getElementById('global-loader').style.display = 'flex';
         setTimeout(() => {
             document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
-            if(page === 'premium') renderP();
-            if(page === 'main') { localStorage.setItem('f_v', '1'); document.getElementById('pg-main').style.display='flex'; }
-            else if(page === 'premium') document.getElementById('pg-premium').style.display='flex';
+            if(page === 'main') { localStorage.setItem('v', '1'); document.getElementById('pg-main').style.display='flex'; }
             else document.getElementById('pg-welcome').style.display='flex';
             document.getElementById('global-loader').style.display = 'none';
-        }, 700);
-    }
-
-    function renderP() {
-        const t = document.getElementById('p-title'), d = document.getElementById('p-desc'), a = document.getElementById('p-action'), s = document.getElementById('p-star');
-        if(uData.isP) {
-            t.innerText = "PREMIUM VERIFIED"; t.style.color = "var(--premium-purple)";
-            d.innerText = "Elite status confirmed! Your +1,000 FLSY bonus is ready to be claimed.";
-            a.innerHTML = `<button class="btn btn-prem" onclick="doClaim()">Claim Bonus</button>`;
-        } else {
-            s.style.filter = "grayscale(1) opacity(0.3)"; s.style.animation = "none";
-            t.innerText = "PREMIUM NOT FOUND";
-            d.innerText = "Get Telegram Premium to unlock your bonus and the purple glow effect.";
-            a.innerHTML = `<button class="btn btn-white" onclick="tg.openTelegramLink('https://t.me/premiumbot')">Get Premium</button>
-                           <p onclick="go('main')" style="margin-top:20px; color:var(--gray); cursor:pointer;">Skip Bonus</p>`;
-        }
-    }
-
-    function doClaim() {
-        confetti({ particleCount: 150, spread: 70, origin: { y: 0.75 } });
-        tg.HapticFeedback.notificationOccurred('success');
-        setTimeout(() => go('main'), 1500);
+        }, 600);
     }
 
     function init() {
         tg.ready(); tg.expand();
         const u = tg.initDataUnsafe.user || { id: 582145000, first_name: "Guest", is_premium: false };
+        uData.id = u.id;
         uData.age = u.id < 100000000 ? 11 : (u.id < 1000000000 ? 6 : 2);
-        uData.isP = u.is_premium || false;
-        uData.pts = (uData.age * 450) + (uData.isP ? 1000 : 0);
-        
+        uData.pts = (uData.age * 450) + (u.is_premium ? 1000 : 0);
         const pct = uData.age >= 10 ? 1 : (uData.age >= 5 ? 12 : 35);
         const rN = uData.age >= 7 ? "Master" : (uData.age >= 4 ? "Adept" : "Apprentice");
         const rC = uData.age >= 7 ? "var(--rank-master)" : (uData.age >= 4 ? "var(--rank-adept)" : "var(--rank-apprentice)");
 
+        // Verileri Doldur
         document.getElementById('w-age').innerText = uData.age;
-        document.getElementById('w-id').innerText = `Your account number is #${u.id}`;
-        document.getElementById('w-top').innerText = `You're in the top ${pct}% Telegram users 🔥`;
-        document.getElementById('m-name').innerText = u.first_name;
         document.getElementById('m-pts').innerText = uData.pts.toLocaleString('tr-TR') + " FLSY";
+        document.getElementById('o-age').innerText = uData.age + " Years";
+        document.getElementById('o-id').innerText = "#" + uData.id;
+        document.getElementById('o-top').innerText = "Top " + pct + "% User";
+        document.getElementById('m-name').innerText = u.first_name;
         document.getElementById('s-rew').innerText = "+" + (uData.pts >= 1000 ? (uData.pts/1000).toFixed(1)+'k' : uData.pts);
-        
-        [document.getElementById('w-rank'), document.getElementById('m-rank')].forEach(el => { el.innerText = rN; el.style.color = rC; });
-        if(u.photo_url) document.getElementById('m-pic').src = u.photo_url;
 
-        if(localStorage.getItem('f_v')) go('main');
-        else go('welcome');
+        [document.getElementById('w-rank'), document.getElementById('m-rank')].forEach(el => { el.innerText = rN; el.style.color = rC; });
+
+        if(localStorage.getItem('v')) go('main'); else go('welcome');
     }
     window.onload = init;
 </script>

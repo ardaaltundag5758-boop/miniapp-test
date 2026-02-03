@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Flashy Elite</title>
 
+    <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -37,7 +38,14 @@
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
 
-        .wallet-link { background: #111; border: 1px solid #222; padding: 12px 24px; border-radius: 14px; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 8px; margin: 20px 0; }
+        /* CONNECT WALLET BUTON TASARIMI */
+        .wallet-link { 
+            background: #111; border: 1px solid #222; padding: 12px 24px; border-radius: 14px; 
+            font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; 
+            gap: 8px; margin: 20px 0; cursor: pointer; transition: 0.2s;
+        }
+        .wallet-link:active { transform: scale(0.96); opacity: 0.8; }
+
         .pfp-wrap { width: 90px; height: 90px; border-radius: 50%; border: 3px solid var(--nav-red); padding: 4px; margin-bottom: 10px; }
         .rank-label { border: 1.5px solid currentColor; padding: 4px 16px; border-radius: 10px; font-weight: 800; font-size: 0.7rem; text-transform: uppercase; }
 
@@ -89,7 +97,12 @@
         <img class="medal-img" style="right:-10px;" src="https://github.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/blob/main/Activity/1st%20Place%20Medal.webp?raw=true">
         <div style="font-weight:800; z-index:2;"><i class="fas fa-play pulse-play"></i>Your Score</div>
     </div>
-    <div class="wallet-link"><i class="fas fa-wallet" style="color:var(--nav-red);"></i>Connect Wallet</div>
+
+    <div class="wallet-link" id="ton-connect-btn" onclick="handleWalletAction()">
+        <i class="fas fa-wallet" style="color:var(--nav-red);"></i>
+        <span id="wallet-text">Connect Wallet</span>
+    </div>
+
     <div class="pfp-wrap"><img id="m-pic" style="width:100%; border-radius:50%;" src="https://cdn-icons-png.flaticon.com/512/149/149071.png"></div>
     <div id="m-rank" class="rank-label">RANK</div>
     <h2 id="m-name" style="margin-top:12px; font-size:1.4rem;">User</h2>
@@ -109,6 +122,36 @@
     const tg = window.Telegram.WebApp;
     let uData = { age: 0, pts: 0, id: 0, isP: false };
 
+    // --- TON CONNECT SETUP ---
+    const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
+        manifestUrl: 'https://raw.githubusercontent.com/ton-connect/demo-dapp/main/public/tonconnect-manifest.json', // Kendi manifest URL'inle değiştirebilirsin
+        buttonRootId: null // Butonu biz özelleştirdiğimiz için null bırakıyoruz
+    });
+
+    // Cüzdan Değişimlerini İzle
+    tonConnectUI.onStatusChange(wallet => {
+        const btnText = document.getElementById('wallet-text');
+        if (wallet) {
+            const addr = wallet.account.address;
+            // EQD1...4f2a formatına getir
+            const formatted = addr.slice(0, 4) + "..." + addr.slice(-4);
+            btnText.innerText = formatted;
+            tg.HapticFeedback.notificationOccurred('success');
+        } else {
+            btnText.innerText = "Connect Wallet";
+        }
+    });
+
+    async function handleWalletAction() {
+        tg.HapticFeedback.impactOccurred('medium');
+        if (tonConnectUI.connected) {
+            await tonConnectUI.disconnect();
+        } else {
+            await tonConnectUI.openModal();
+        }
+    }
+    // -------------------------
+
     function navigateTo(page) {
         document.getElementById('global-loader').style.display = 'flex';
         setTimeout(() => {
@@ -117,6 +160,7 @@
             if(page === 'main') { localStorage.setItem('v', '1'); document.getElementById('pg-main').style.display='flex'; }
             else if(page === 'premium') document.getElementById('pg-premium').style.display='flex';
             else document.getElementById('pg-welcome').style.display='flex';
+            document.getElementById('global-loader').style.none = 'none';
             document.getElementById('global-loader').style.display = 'none';
         }, 600);
     }
@@ -159,8 +203,6 @@
 
         uData.pts = (uData.age * 850) + (uData.isP ? 1000 : 0);
         const pct = uData.age >= 10 ? 1 : (uData.age >= 7 ? 5 : (uData.age >= 4 ? 15 : 30));
-        
-        // Senin Rank İsimlerin ve Renklerin
         const rN = uData.age >= 9 ? "Master" : (uData.age >= 5 ? "Adept" : "Apprentice");
         const rC = uData.age >= 9 ? "var(--rank-master)" : (uData.age >= 5 ? "var(--rank-adept)" : "var(--rank-apprentice)");
 

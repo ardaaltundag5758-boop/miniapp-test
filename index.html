@@ -74,7 +74,7 @@
         .rank-adept { background: rgba(164, 69, 247, 0.15); color: var(--rank-adept); border: 1px solid var(--rank-adept); }
         .rank-master { background: rgba(255, 202, 40, 0.15); color: var(--rank-master); border: 1px solid var(--rank-master); }
 
-        /* YENİ ÜÇLÜ PUAN TASARIMI (Görseldeki gibi) */
+        /* ÜÇLÜ PUAN TASARIMI */
         .score-summary-container { text-align: center; margin-bottom: 30px; }
         .main-total-points { font-size: 2.2rem; font-weight: 800; margin-bottom: 20px; letter-spacing: -1px; }
         .stats-grid { display: flex; justify-content: space-around; align-items: center; width: 100%; }
@@ -91,7 +91,7 @@
 <div id="elite-welcome-screen">
     <div class="stars-container" id="stars-box"></div>
     <div class="header-group">
-        <div class="elite-title" id="txt-elite-title">ELITE MEMBER</div>
+        <div class="elite-title" id="txt-elite-title">RANK</div>
         <div class="sub-title" id="txt-joined-desc">You've joined Telegram</div>
     </div>
     <div class="hero-center">
@@ -128,15 +128,15 @@
             <div class="stats-grid">
                 <div class="stat-item">
                     <span class="stat-label" id="lbl-rewards">Rewards</span>
-                    <span class="stat-value">+2.2k</span>
+                    <span class="stat-value">+0</span>
                 </div>
                 <div class="stat-item">
                     <span class="stat-label" id="lbl-tasks">Tasks</span>
-                    <span class="stat-value">+11.4k</span>
+                    <span class="stat-value">+0</span>
                 </div>
                 <div class="stat-item">
                     <span class="stat-label" id="lbl-invites">Invites</span>
-                    <span class="stat-value">+218</span>
+                    <span class="stat-value">+0</span>
                 </div>
             </div>
         </div>
@@ -173,9 +173,9 @@
     };
 
     const I18N = {
-        tr: { elite: "ELİT ÜYE", joined: "Telegram'a katıldın", yearsAgo: "yıl önce", accNum: "Hesap numaran:", top: "En iyi %1 Telegram kullanıcısındasın", btn: "DEVAM ET", years: "Yıl", end: "Bitir", accAge: "Hesap Yaşı", premium: "Telegram Premium", active: "Aktif", friends: "Arkadaşlar", soon: "Yakında...", home: "Ana Sayfa", rewards: "Ödüller", tasks: "Görevler", invites: "Davetler", premYes: "Harika, Premium kullanıcısısın!<br>Bakiyene ekstra +1,000 FLSY eklendi.", premNo: "Telegram Premium bulunamadı.<br>Ekstra bonus puan kazanılamadı." },
-        en: { elite: "ELITE MEMBER", joined: "You've joined Telegram", yearsAgo: "years ago", accNum: "Your account number is", top: "You're in the top 1% Telegram users", btn: "CONTINUE", years: "Years", end: "End", accAge: "Account Age", premium: "Telegram Premium", active: "Active", friends: "Friends", soon: "Coming Soon...", home: "Home", rewards: "Rewards", tasks: "Tasks", invites: "Invites", premYes: "You are a Premium user!<br>An extra +1,000 FLSY has been added to your balance.", premNo: "You do not have Telegram Premium.<br>No extra bonus points awarded." },
-        ru: { elite: "ЭЛИТНЫЙ УЧАСТНИК", joined: "Вы присоединились к Telegram", yearsAgo: "лет назад", accNum: "Ваш номер аккаунта:", top: "Вы входите в 1% лучших пользователей", btn: "ПРОДОЛЖИТЬ", years: "лет", end: "Завершить", accAge: "Возраст аккаунта", premium: "Telegram Premium", active: "Активен", friends: "Друзья", soon: "Скоро...", home: "Главная", rewards: "Награды", tasks: "Задания", invites: "Друзья", premYes: "Вы Premium-пользователь!<br>К вашему балансу добавлено +1,000 FLSY.", premNo: "У вас нет Telegram Premium.<br>Бонусные баллы не начислены." }
+        tr: { apprentice: "ÇIRAK", adept: "UZMAN", master: "USTA", joined: "Telegram'a katıldın", yearsAgo: "yıl önce", accNum: "Hesap numaran:", top: "En iyi %1 Telegram kullanıcısındasın", btn: "DEVAM ET", years: "Yıl", end: "Bitir", accAge: "Hesap Yaşı", premium: "Telegram Premium", active: "Aktif", friends: "Arkadaşlar", soon: "Yakında...", home: "Ana Sayfa", rewards: "Ödüller", tasks: "Görevler", invites: "Davetler", premYes: "Harika, Premium kullanıcısısın!<br>Bakiyene ekstra +1,000 FLSY eklendi.", premNo: "Telegram Premium bulunamadı.<br>Ekstra bonus puan kazanılamadı." },
+        en: { apprentice: "APPRENTICE", adept: "ADEPT", master: "MASTER", joined: "You've joined Telegram", yearsAgo: "years ago", accNum: "Your account number is", top: "You're in the top 1% Telegram users", btn: "CONTINUE", years: "Years", end: "End", accAge: "Account Age", premium: "Telegram Premium", active: "Active", friends: "Friends", soon: "Coming Soon...", home: "Home", rewards: "Rewards", tasks: "Tasks", invites: "Invites", premYes: "You are a Premium user!<br>An extra +1,000 FLSY has been added to your balance.", premNo: "You do not have Telegram Premium.<br>No extra bonus points awarded." },
+        ru: { apprentice: "УЧЕНИК", adept: "ЗНАТОК", master: "МАСТЕР", joined: "Вы присоединились к Telegram", yearsAgo: "лет назад", accNum: "Ваш номер аккаунта:", top: "Вы входите в 1% лучших пользователей", btn: "ПРОДОЛЖИТЬ", years: "лет", end: "Завершить", accAge: "Возраст аккаунта", premium: "Telegram Premium", active: "Активен", friends: "Друзья", soon: "Скоро...", home: "Главная", rewards: "Награды", tasks: "Задания", invites: "Друзья", premYes: "Вы Premium-пользователь!<br>К вашему балансу добавлено +1,000 FLSY.", premNo: "У вас нет Telegram Premium.<br>Бонусные баллы не начислены." }
     };
 
     let userData = { age: 1, points: 0, isPremium: false };
@@ -197,8 +197,12 @@
         userData.isPremium = user.is_premium || false;
         userData.points = (userData.age * 450) + (userData.isPremium ? 1000 : 0);
 
-        // Elite Screen
-        document.getElementById('txt-elite-title').innerText = lang.elite;
+        // Rank verisini al
+        const rankData = RANKS[userData.age] || {name: "Apprentice", class: "rank-apprentice"};
+        const rankName = lang[rankData.name.toLowerCase()];
+
+        // Elite Screen (Rank ismini yazdırıyoruz)
+        document.getElementById('txt-elite-title').innerText = rankName;
         document.getElementById('txt-joined-desc').innerText = lang.joined;
         document.getElementById('wel-age-num').innerText = userData.age;
         document.getElementById('wel-age-txt').innerText = lang.yearsAgo;
@@ -220,12 +224,10 @@
         document.getElementById('u-name').innerText = user.first_name;
         document.getElementById('total-flsy').innerText = userData.points.toLocaleString();
         
-        // Üçlü tablo başlıkları
         document.getElementById('lbl-rewards').innerText = lang.rewards;
         document.getElementById('lbl-tasks').innerText = lang.tasks;
         document.getElementById('lbl-invites').innerText = lang.invites;
 
-        const rankData = RANKS[userData.age] || {name: "Apprentice", class: "rank-apprentice"};
         const uRankEl = document.getElementById('u-rank');
         uRankEl.innerText = rankData.name;
         uRankEl.className = `rank-badge ${rankData.class}`;

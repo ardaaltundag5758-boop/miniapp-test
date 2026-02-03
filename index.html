@@ -8,12 +8,13 @@
     <title>Flashy App</title>
 
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    
     <script>
-        if (window.Telegram && window.Telegram.WebApp) {
-            window.Telegram.WebApp.ready();
-            window.Telegram.WebApp.expand();
-        }
+        (function() {
+            if (window.Telegram && window.Telegram.WebApp) {
+                window.Telegram.WebApp.ready();
+                window.Telegram.WebApp.expand();
+            }
+        })();
     </script>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -27,25 +28,31 @@
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         body { background-color: var(--bg); color: var(--white); font-family: 'Inter', -apple-system, sans-serif; overflow: hidden; height: 100vh; }
 
-        /* --- ONBOARDING & SCREENS --- */
-        #elite-welcome-screen, #premium-status-screen {
+        /* FLICKER ÖNLEYİCİ: EKRANLAR VARSAYILAN OLARAK GİZLİ */
+        #elite-welcome-screen, #premium-status-screen, #main-app { display: none; }
+
+        /* --- BAŞLANGIÇ EKRANI (ONBOARDING) --- */
+        #elite-welcome-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: var(--bg); z-index: 20000;
-            display: flex; flex-direction: column; align-items: center;
-            justify-content: space-between; padding: 60px 25px; text-align: center;
+            flex-direction: column; align-items: center; justify-content: space-between; padding: 60px 25px; text-align: center;
         }
-        #premium-status-screen { display: none; justify-content: center; z-index: 20001; }
-
-        .hero-center { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .hero-center { position: relative; display: flex; align-items: center; justify-content: center; }
         .bg-flame { width: 250px; height: 250px; }
         .age-overlay { position: absolute; display: flex; flex-direction: column; align-items: center; margin-top: 10px; }
-        .age-number { font-size: 5.5rem; font-weight: 900; line-height: 1; }
-        
+        .age-number { font-size: 5.5rem; font-weight: 900; line-height: 1; text-shadow: 0 4px 15px rgba(0,0,0,0.5); }
         .continue-btn { width: 100%; background: var(--white); color: #000; border: none; padding: 18px; border-radius: 16px; font-weight: 800; font-size: 1.1rem; cursor: pointer; }
 
-        /* --- MAIN APP --- */
-        #main-app { display: none; height: 100vh; overflow-y: auto; }
-        
+        /* --- PREMIUM KONTROL EKRANI --- */
+        #premium-status-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 20001; flex-direction: column; align-items: center; justify-content: center; padding: 30px; text-align: center;
+        }
+        .prem-icon { font-size: 4rem; margin-bottom: 20px; }
+        .prem-msg { font-size: 1.2rem; color: #fff; margin-bottom: 30px; line-height: 1.5; font-weight: 600; }
+
+        /* --- ANA UYGULAMA --- */
+        #main-app { height: 100vh; overflow-y: auto; flex-direction: column; }
         .top-score-header { 
             background-color: #000; padding: 20px; position: relative; border-bottom: 1px solid var(--divider);
             display: flex; align-items: center; justify-content: center; cursor: pointer;
@@ -54,30 +61,35 @@
         .medal-left { left: -10px; } .medal-right { right: -10px; }
         
         .pulse-icon { color: var(--nav-red); animation: breathe 2.5s infinite ease-in-out; margin-right: 10px; }
-        @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
+        @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.3); } }
 
-        .wallet-container { display: flex; justify-content: center; margin: 15px 0; }
-        .connect-wallet-btn { background: #111; border: 1px solid #222; padding: 10px 20px; border-radius: 12px; font-size: 0.8rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
-
-        .welcome-header { text-align: center; margin-bottom: 25px; }
-        .avatar-main { width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--nav-red); padding: 3px; margin-bottom: 10px; }
+        .welcome-header { text-align: center; margin: 20px 0; display: flex; flex-direction: column; align-items: center; }
+        .avatar-main { width: 85px; height: 85px; border-radius: 50%; border: 2px solid var(--nav-red); padding: 3px; margin-bottom: 10px; }
         
-        /* REWARDS SECTION */
-        .score-summary-container { text-align: center; margin-bottom: 30px; }
-        .main-total-points { font-size: 2.5rem; font-weight: 900; letter-spacing: -1px; margin-bottom: 15px; }
+        .rank-badge { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; padding: 4px 12px; border-radius: 8px; margin-bottom: 10px; }
+        .rank-apprentice { background: rgba(0, 210, 255, 0.15); color: var(--rank-apprentice); border: 1px solid var(--rank-apprentice); }
+        .rank-adept { background: rgba(164, 69, 247, 0.15); color: var(--rank-adept); border: 1px solid var(--rank-adept); }
+        .rank-master { background: rgba(255, 202, 40, 0.15); color: var(--rank-master); border: 1px solid var(--rank-master); }
+
+        .score-summary-container { text-align: center; padding-bottom: 30px; }
+        .main-total-points { font-size: 2.8rem; font-weight: 900; letter-spacing: -1px; margin-bottom: 20px; }
         
         .stats-grid { display: flex; justify-content: space-around; padding: 0 10px; }
         .stat-item { display: flex; flex-direction: column; align-items: center; }
-        .stat-label { color: var(--gray); font-size: 0.75rem; text-transform: uppercase; margin-bottom: 5px; }
-        .stat-value { font-size: 1.1rem; font-weight: 800; color: #fff; }
+        .stat-label { color: var(--gray); font-size: 0.7rem; text-transform: uppercase; margin-bottom: 5px; }
+        .stat-value { font-size: 1.1rem; font-weight: 800; }
 
-        .stat-box { background: var(--card); border-radius: 18px; padding: 20px; display: flex; justify-content: space-between; align-items: center; margin: 0 20px 10px; }
+        .stat-box { background: var(--card); border-radius: 20px; padding: 20px; display: flex; justify-content: space-between; align-items: center; margin: 0 20px 10px; }
+        
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 70px; background: rgba(10,10,10,0.95); display: grid; grid-template-columns: repeat(2,1fr); border-top: 1px solid #1a1a1a; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--gray); font-size: 0.75rem; }
+        .nav-item.active { color: #fff; }
     </style>
 </head>
 <body>
 
 <div id="elite-welcome-screen">
-    <div style="font-size: 1.1rem;">You've joined Telegram</div>
+    <div style="font-size: 1.1rem; font-weight: 500;">You've joined Telegram</div>
     <div class="hero-center">
         <img class="bg-flame" src="https://github.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/blob/main/Animals%20and%20Nature/Fire.webp?raw=true">
         <div class="age-overlay">
@@ -86,41 +98,46 @@
         </div>
     </div>
     <div class="footer-info">
-        <div style="color:var(--gray); margin-bottom:10px;">Your account number is <span id="wel-user-id" style="color:#fff;">#0</span></div>
+        <div style="color:var(--gray); font-size:0.9rem; margin-bottom:8px;">Your account number is <span id="wel-user-id" style="color:#fff;">#0</span></div>
         <div id="top-rank-text" style="font-weight:600;">You're in the Top 0% 🔥</div>
     </div>
-    <button class="continue-btn" onclick="startAfterElite()">Continue</button>
+    <button class="continue-btn" onclick="goToPremiumCheck()">Continue</button>
 </div>
 
 <div id="premium-status-screen">
-    <div id="prem-icon" style="font-size:4rem; margin-bottom:20px;">🌟</div>
-    <div id="prem-msg" style="font-size:1.2rem; font-weight:600; margin-bottom:30px;"></div>
-    <button onclick="finishIntro()" class="continue-btn">Finish</button>
+    <div id="prem-icon" class="prem-icon">🌟</div>
+    <div id="prem-msg" class="prem-msg"></div>
+    <button onclick="completeOnboarding()" class="continue-btn">Finish</button>
 </div>
 
 <div id="main-app">
-    <div class="top-score-header" onclick="resetDemo()">
+    <div class="top-score-header" onclick="resetApp()">
         <img class="medal-bg medal-left" src="https://github.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/blob/main/Activity/1st%20Place%20Medal.webp?raw=true">
         <img class="medal-bg medal-right" src="https://github.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/blob/main/Activity/1st%20Place%20Medal.webp?raw=true">
-        <div style="font-weight:800;"><i class="fas fa-play pulse-icon"></i>Your Score</div>
+        <div style="font-weight:800; font-size:1.1rem; position:relative; z-index:2;">
+            <i class="fas fa-play pulse-icon"></i>Your Score
+        </div>
     </div>
 
-    <div class="wallet-container">
-        <div class="connect-wallet-btn"><i class="fas fa-wallet"></i>Connect Wallet</div>
+    <div style="display:flex; justify-content:center; margin: 15px 0;">
+        <div style="background:#111; border:1px solid #222; padding:10px 20px; border-radius:12px; font-size:0.8rem; font-weight:700;">
+            <i class="fas fa-wallet" style="margin-right:8px;"></i>Connect Wallet
+        </div>
     </div>
 
     <div class="welcome-header">
         <img id="u-pic" class="avatar-main" src="https://cdn-icons-png.flaticon.com/512/149/149071.png">
+        <span id="u-rank" class="rank-badge rank-apprentice">Apprentice</span>
         <h2 id="u-name">User</h2>
     </div>
 
     <div class="score-summary-container">
-        <div class="main-total-points" id="display-total-points">0 FLSY</div>
+        <div class="main-total-points" id="main-full-points">0</div>
         
         <div class="stats-grid">
             <div class="stat-item">
                 <span class="stat-label">Rewards</span>
-                <span class="stat-value" id="val-rewards">0</span>
+                <span class="stat-value" id="sub-rewards">0</span>
             </div>
             <div class="stat-item">
                 <span class="stat-label">Tasks</span>
@@ -137,90 +154,91 @@
         <div><div style="color:var(--gray); font-size:0.8rem;">Account Age</div><div id="acc-age" style="font-weight:700;">... years</div></div>
         <i class="fas fa-calendar-alt" style="color:var(--nav-red); font-size:1.2rem;"></i>
     </div>
+
+    <nav class="bottom-nav">
+        <div class="nav-item active"><i class="fas fa-home"></i><span>Home</span></div>
+        <div class="nav-item"><i class="fas fa-users"></i><span>Friends</span></div>
+    </nav>
 </div>
 
 <script>
     const tg = window.Telegram.WebApp;
 
-    // 1. FORMATLAYICI FONKSİYON (k, M, B)
-    function formatPoints(num) {
-        if (num >= 1000000000) return (num / 1000000000).toFixed(1).replace(/\.0$/, '') + 'B';
+    // FORMATLAYICILAR
+    function formatFull(num) { return new Intl.NumberFormat('tr-TR').format(num); }
+    function formatK(num) {
         if (num >= 1000000) return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
         if (num >= 1000) return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
         return num.toString();
     }
 
-    let userState = {
-        age: 0,
-        id: 0,
-        rewards: 0,
-        isPremium: false
+    const RANKS = {
+        1: {name: "Apprentice", class: "rank-apprentice"}, 
+        4: {name: "Adept", class: "rank-adept"}, 
+        7: {name: "Master", class: "rank-master"}
     };
 
+    let globalState = { age: 0, points: 0, isPremium: false };
+
     function init() {
-        const tgUser = tg.initDataUnsafe.user || { id: 582145000, first_name: "Guest", is_premium: false };
-        userState.id = tgUser.id;
-        userState.isPremium = tgUser.is_premium || false;
+        const user = tg.initDataUnsafe.user || { id: 582145000, first_name: "Guest", is_premium: false };
+        const userId = user.id;
 
-        // 2. PUAN HESAPLAMA (Yaşa göre)
-        userState.age = userState.id < 100000000 ? 11 : (userState.id < 1000000000 ? 6 : 2);
-        
-        // KALICI VERİ OKUMA: Eğer daha önce kaydedilmemişse hesapla ve kaydet
-        let savedRewards = localStorage.getItem('user_rewards');
-        
-        if (savedRewards) {
-            userState.rewards = parseInt(savedRewards);
-        } else {
-            // İlk hesaplama: Yaş puanı + (varsa) Premium bonusu
-            userState.rewards = (userState.age * 450) + (userState.isPremium ? 1000 : 0);
-            localStorage.setItem('user_rewards', userState.rewards);
-        }
+        // Hesaplamalar
+        globalState.age = userId < 100000000 ? 11 : (userId < 1000000000 ? 6 : 2);
+        globalState.isPremium = user.is_premium || false;
+        globalState.points = (globalState.age * 450) + (globalState.isPremium ? 1000 : 0);
+        let percent = userId < 100000000 ? 1 : (userId < 1000000000 ? 12 : 35);
 
-        updateUI(tgUser);
-
-        if (localStorage.getItem('onboarding_complete')) showMain();
-    }
-
-    function updateUI(tgUser) {
-        // Giriş ekranı verileri
-        document.getElementById('wel-age-num').innerText = userState.age;
-        document.getElementById('wel-user-id').innerText = "#" + userState.id;
-        let percent = userState.id < 100000000 ? 1 : (userState.id < 1000000000 ? 12 : 35);
+        // UI Doldurma
+        document.getElementById('wel-age-num').innerText = globalState.age;
+        document.getElementById('wel-user-id').innerText = "#" + userId;
         document.getElementById('top-rank-text').innerText = `You're in the Top ${percent}% 🔥`;
-
-        // Ana uygulama verileri (FORMATLI)
-        document.getElementById('u-name').innerText = tgUser.first_name;
-        document.getElementById('acc-age').innerText = userState.age + " Years";
         
-        // Rewards kısmında kısaltılmış hali göster
-        document.getElementById('display-total-points').innerText = formatPoints(userState.rewards) + " FLSY";
-        document.getElementById('val-rewards').innerText = "+" + formatPoints(userState.rewards);
+        document.getElementById('u-name').innerText = user.first_name;
+        document.getElementById('acc-age').innerText = globalState.age + " Years";
+        document.getElementById('main-full-points').innerText = formatFull(globalState.points) + " FLSY";
+        document.getElementById('sub-rewards').innerText = "+" + formatK(globalState.points);
 
-        if(tgUser.photo_url) document.getElementById('u-pic').src = tgUser.photo_url;
+        // Rütbe Ayarı
+        const rKey = globalState.age >= 7 ? 7 : (globalState.age >= 4 ? 4 : 1);
+        const rData = RANKS[rKey];
+        const rEl = document.getElementById('u-rank');
+        rEl.innerText = rData.name;
+        rEl.className = "rank-badge " + rData.class;
+
+        if(user.photo_url) document.getElementById('u-pic').src = user.photo_url;
+
+        // FLICKER ÖNLEYİCİ GİRİŞ KONTROLÜ
+        if (localStorage.getItem('hasVisited')) {
+            document.getElementById('main-app').style.display = 'flex';
+        } else {
+            document.getElementById('elite-welcome-screen').style.display = 'flex';
+        }
     }
 
-    function startAfterElite() {
+    function goToPremiumCheck() {
         document.getElementById('elite-welcome-screen').style.display = 'none';
-        const msg = userState.isPremium ? 
-            "Premium detected! +1.0k FLSY added to your rewards." : 
-            "No Premium found. Standard age rewards applied.";
-        document.getElementById('prem-msg').innerText = msg;
-        document.getElementById('premium-status-screen').style.display = 'flex';
+        const pScreen = document.getElementById('premium-status-screen');
+        pScreen.style.display = 'flex';
+        
+        if(globalState.isPremium) {
+            document.getElementById('prem-icon').innerText = "🌟";
+            document.getElementById('prem-msg').innerHTML = "Premium detected!<br>An extra +1.0k FLSY has been added.";
+        } else {
+            document.getElementById('prem-icon').innerText = "👤";
+            document.getElementById('prem-msg').innerHTML = "No Telegram Premium found.<br>Standard rewards applied.";
+        }
     }
 
-    function finishIntro() {
-        localStorage.setItem('onboarding_complete', 'true');
-        showMain();
-    }
-
-    function showMain() {
-        document.getElementById('elite-welcome-screen').style.display = 'none';
+    function completeOnboarding() {
+        localStorage.setItem('hasVisited', 'true');
         document.getElementById('premium-status-screen').style.display = 'none';
-        document.getElementById('main-app').style.display = 'block';
+        document.getElementById('main-app').style.display = 'flex';
     }
 
-    function resetDemo() {
-        localStorage.clear();
+    function resetApp() {
+        localStorage.removeItem('hasVisited');
         location.reload();
     }
 

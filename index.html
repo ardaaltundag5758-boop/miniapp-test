@@ -10,129 +10,58 @@
         :root { 
             --bg: #000000; 
             --card: #111111; 
-            --gold: #FFD700;
             --gray: #666666; 
             --nav-red: #FF3B30;
             --premium-blue: #007AFF;
             --rank-apprentice: #00d2ff;
             --rank-adept: #a445f7;
             --rank-master: #ffca28;
+            --divider: #1a1a1a;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         body { background-color: var(--bg); color: #fff; font-family: 'Inter', -apple-system, sans-serif; overflow: hidden; width: 100%; height: 100vh; }
 
-        /* ELITE WELCOME SCREEN */
-        #elite-welcome-screen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: #000; z-index: 20000;
-            display: flex; flex-direction: column; align-items: center;
-            justify-content: space-between; padding: 60px 30px;
-            text-align: center; overflow: hidden;
-        }
-        .stars-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
-        .star { position: absolute; background: #fff; border-radius: 50%; opacity: 0.3; animation: twinkle var(--duration) infinite ease-in-out; }
-        @keyframes twinkle { 0%, 100% { opacity: 0.1; transform: translateY(0); } 50% { opacity: 0.6; transform: translateY(-20px); } }
-        
-        .header-group { z-index: 2; margin-top: 20px; }
-        .elite-title { font-size: 2.2rem; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; background: linear-gradient(to bottom, #fff 0%, #888 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .sub-title { color: #666; font-size: 1rem; font-weight: 500; }
-
-        .hero-center { position: relative; width: 100%; display: flex; align-items: center; justify-content: center; z-index: 2; }
-        .bg-flame-webp { width: 280px; height: 280px; position: absolute; z-index: 1; filter: drop-shadow(0 0 15px rgba(255, 69, 0, 0.4)); user-select: none; }
-
-        .age-highlight { position: relative; z-index: 3; display: flex; flex-direction: column; align-items: center; pointer-events: none; }
-        .age-number { font-size: 6rem; font-weight: 900; line-height: 1; color: #fff; text-shadow: 0 4px 20px rgba(0,0,0,0.8); }
-        .age-text { font-size: 1.5rem; font-weight: 700; color: #fff; margin-top: 5px; text-shadow: 0 2px 10px rgba(0,0,0,0.8); }
-
-        .info-group { z-index: 2; width: 100%; margin-bottom: 30px; }
-        .info-line { color: #888; font-size: 0.9rem; margin-bottom: 8px; }
-        .info-white { color: #fff; font-weight: 600; }
-        .continue-btn-elite { width: 100%; background: #fff; color: #000; border: none; padding: 20px; border-radius: 18px; font-weight: 800; font-size: 1.1rem; cursor: pointer; z-index: 2; }
-
-        /* PREMIUM STATUS SCREEN */
-        #premium-status-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 10000; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 30px; text-align: center; }
-        .prem-icon { font-size: 4rem; margin-bottom: 20px; }
-        .prem-msg { font-size: 1.2rem; color: #fff; margin-bottom: 30px; line-height: 1.5; font-weight: 600; }
-        .intro-btn { width: 80%; background: #fff; color: #000; border: none; padding: 18px; border-radius: 20px; font-weight: 800; font-size: 1.1rem; cursor: pointer; }
-
-        /* MAIN APP */
-        #main-app { display: none; }
-        .tab-content { display: none; height: calc(100vh - 70px); overflow-y: auto; padding: 20px 20px 100px 20px; }
-        .tab-content.active { display: flex; flex-direction: column; }
-
-        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 70px; background: rgba(10, 10, 10, 0.95); backdrop-filter: blur(10px); display: grid; grid-template-columns: repeat(2, 1fr); border-top: 1px solid #1a1a1a; z-index: 1000; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: var(--gray); font-size: 0.75rem; font-weight: 600; }
-        .nav-item.active { color: #fff; }
-        .nav-item.active::after { content: ""; position: absolute; bottom: 8px; width: 20px; height: 3px; background: var(--nav-red); border-radius: 10px; }
-
-        /* PROFİL HEADER */
-        .welcome-header { text-align: center; margin-top: 10px; margin-bottom: 15px; display: flex; flex-direction: column; align-items: center; }
-        .avatar-main { width: 85px; height: 85px; border-radius: 50%; border: 2px solid var(--nav-red); padding: 3px; margin-bottom: 10px; object-fit: cover; }
-        .rank-badge { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; padding: 4px 12px; border-radius: 8px; margin-bottom: 10px; letter-spacing: 1px; }
-
-        /* YENİ ÜÇLÜ PUAN TASARIMI */
-        .score-summary-container { text-align: center; margin-bottom: 25px; }
-        .main-total-points { font-size: 2.2rem; font-weight: 800; margin-bottom: 20px; letter-spacing: -1px; }
-        .stats-grid { display: flex; justify-content: space-around; align-items: center; width: 100%; }
-        .stat-item { flex: 1; display: flex; flex-direction: column; align-items: center; }
-        .stat-label { color: var(--gray); font-size: 0.85rem; margin-bottom: 5px; font-weight: 500; }
-        .stat-value { font-size: 1.1rem; font-weight: 700; color: #fff; }
-
-        /* --- ÖZEL YOUR SCORE / WALLET BÖLÜMÜ --- */
-        .score-wallet-section {
+        /* --- ÜST "YOUR SCORE" HEADER BÖLÜMÜ --- */
+        .top-score-header {
             background-color: #000000;
-            border-radius: 24px;
-            padding: 25px 15px;
+            padding: 20px 15px;
             position: relative;
             overflow: hidden;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            border: 1px solid #222;
             cursor: pointer;
-            transition: transform 0.2s ease;
+            border-bottom: 1px solid var(--divider); /* Narin ve yumuşak çizgi */
         }
-        .score-wallet-section:active { transform: scale(0.98); }
-
-        /* Madalya Görselleri */
+        
         .medal-bg {
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
-            width: 100px; /* Büyük ve dikkat çekici */
-            height: 100px;
+            width: 80px;
+            height: 80px;
             z-index: 1;
-            opacity: 0.6;
-            pointer-events: none;
+            opacity: 0.4;
         }
         .medal-left { left: -10px; }
         .medal-right { right: -10px; }
 
-        .score-content {
+        .your-score-title {
             position: relative;
             z-index: 2;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .your-score-title {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-weight: 800;
             color: #fff;
             display: flex;
             align-items: center;
             gap: 10px;
+            letter-spacing: 0.5px;
         }
 
-        /* Nefes alma animasyonu */
         .pulse-icon {
             color: var(--nav-red);
-            font-size: 1.1rem;
+            font-size: 0.9rem;
             animation: breathe 2.5s infinite ease-in-out;
         }
         @keyframes breathe {
@@ -140,64 +69,100 @@
             50% { transform: scale(1.3); opacity: 1; }
         }
 
+        /* --- CÜZDAN BUTONU (ORTALANMIŞ) --- */
+        .wallet-container {
+            display: flex;
+            justify-content: center;
+            margin: 15px 0;
+        }
         .connect-wallet-btn {
-            background: #1a1a1a;
+            background: #111111;
             color: #fff;
-            border: 1px solid #333;
-            padding: 10px 20px;
-            border-radius: 12px;
+            border: 1px solid #222;
+            padding: 10px 24px;
+            border-radius: 14px;
             font-size: 0.85rem;
             font-weight: 700;
             display: flex;
             align-items: center;
-            gap: 8px;
-            pointer-events: none; /* Üst konteyner basılabilir olduğu için butonu pasif bıraktık */
+            gap: 10px;
+            cursor: pointer;
         }
-        /* -------------------------------------- */
 
-        .stat-box { background: var(--card); border-radius: 20px; padding: 20px; display: flex; justify-content: space-between; align-items: center; margin-top: 15px; margin-bottom: 12px; }
-        .prem-fire-img { width: 35px; height: 35px; }
+        /* PROFİL HEADER */
+        .welcome-header { text-align: center; margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; }
+        .avatar-main { width: 85px; height: 85px; border-radius: 50%; border: 2px solid var(--nav-red); padding: 3px; margin-bottom: 10px; object-fit: cover; }
+        .rank-badge { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; padding: 4px 12px; border-radius: 8px; margin-bottom: 10px; }
+
+        /* PUAN TABLOSU */
+        .score-summary-container { text-align: center; margin-bottom: 25px; }
+        .main-total-points { font-size: 2.2rem; font-weight: 800; margin-bottom: 15px; }
+        .stats-grid { display: flex; justify-content: space-around; width: 100%; }
+        .stat-item { flex: 1; display: flex; flex-direction: column; align-items: center; }
+        .stat-label { color: var(--gray); font-size: 0.8rem; margin-bottom: 4px; }
+        .stat-value { font-size: 1.1rem; font-weight: 700; }
+
+        /* GENEL BİLEŞENLER */
+        .stat-box { background: var(--card); border-radius: 20px; padding: 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .tab-content { display: none; height: 100vh; overflow-y: auto; padding-bottom: 100px; }
+        .tab-content.active { display: block; }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 70px; background: rgba(10, 10, 10, 0.95); display: grid; grid-template-columns: repeat(2, 1fr); border-top: 1px solid #1a1a1a; z-index: 1000; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--gray); font-size: 0.75rem; }
+        .nav-item.active { color: #fff; }
+
+        /* ONBOARDING EKRANLARI */
+        #elite-welcome-screen, #premium-status-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 20000; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 60px 30px; text-align: center; }
     </style>
 </head>
 <body>
 
 <div id="elite-welcome-screen">
-    <div class="stars-container" id="stars-box"></div>
-    <div class="header-group">
-        <div class="elite-title" id="txt-elite-title">RANK</div>
-        <div class="sub-title" id="txt-joined-desc">You've joined Telegram</div>
+    <div class="header-group" style="margin-top:20px;">
+        <div id="txt-elite-title" style="font-size: 2.2rem; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; background: linear-gradient(to bottom, #fff, #888); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">RANK</div>
+        <div id="txt-joined-desc" style="color:#666; margin-top:8px;">You've joined Telegram</div>
     </div>
-    <div class="hero-center">
-        <img class="bg-flame-webp" src="https://github.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/blob/main/Animals%20and%20Nature/Fire.webp?raw=true" alt="Fire">
-        <div class="age-highlight">
-            <span class="age-number" id="wel-age-num">0</span>
-            <span class="age-text" id="wel-age-txt">years ago</span>
+    <div class="hero-center" style="position:relative;">
+        <img src="https://github.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/blob/main/Animals%20and%20Nature/Fire.webp?raw=true" style="width:280px;">
+        <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);">
+            <div id="wel-age-num" style="font-size:6rem; font-weight:900;">0</div>
+            <div id="wel-age-txt" style="font-size:1.5rem; font-weight:700;">years ago</div>
         </div>
     </div>
-    <div class="info-group">
-        <div class="info-line"><span id="txt-acc-num">Your account number is</span> <span class="info-white" id="wel-user-id">#0</span></div>
-        <div class="info-line" id="txt-top-percent">You're in the top <span class="info-white">1%</span> Telegram users</div>
+    <button onclick="startAfterElite()" style="width:100%; background:#fff; color:#000; padding:20px; border-radius:18px; font-weight:800;">CONTINUE</button>
+</div>
+
+<div id="premium-status-screen" style="display:none; justify-content:center;">
+    <div id="prem-icon" style="font-size:4rem; margin-bottom:20px;"></div>
+    <div id="prem-msg" style="font-size:1.2rem; margin-bottom:30px;"></div>
+    <button onclick="finishIntro()" style="width:80%; background:var(--nav-red); color:#fff; padding:18px; border-radius:20px; font-weight:800;">End</button>
+</div>
+
+<div id="main-app" style="display:none;">
+    <div class="top-score-header" onclick="goToStart()">
+        <img class="medal-bg medal-left" src="https://github.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/blob/main/Activity/1st%20Place%20Medal.webp?raw=true">
+        <img class="medal-bg medal-right" src="https://github.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/blob/main/Activity/1st%20Place%20Medal.webp?raw=true">
+        <div class="your-score-title">
+            <i class="fas fa-play pulse-icon"></i>
+            <span>Your Score</span>
+        </div>
     </div>
-    <button class="continue-btn-elite" id="btn-wel-continue" onclick="startAfterElite()">CONTINUE</button>
-</div>
 
-<div id="premium-status-screen">
-    <div id="prem-icon" class="prem-icon"></div>
-    <div id="prem-msg" class="prem-msg"></div>
-    <button class="intro-btn" id="btn-end" style="background: var(--nav-red); color: #fff;" onclick="finishIntro()">End</button>
-</div>
+    <div id="home" class="tab-content active" style="padding: 0 20px;">
+        <div class="wallet-container">
+            <div class="connect-wallet-btn">
+                <i class="fas fa-wallet"></i>
+                <span>Connect Wallet</span>
+            </div>
+        </div>
 
-<div id="main-app">
-    <div id="home" class="tab-content active">
         <div class="welcome-header">
             <img id="u-pic" class="avatar-main" src="https://cdn-icons-png.flaticon.com/512/149/149071.png">
             <span id="u-rank" class="rank-badge rank-apprentice">Apprentice</span>
-            <h2 id="u-name" style="font-size: 1.4rem;">User</h2>
+            <h2 id="u-name">User</h2>
         </div>
 
         <div class="score-summary-container">
             <div class="main-total-points"><span id="total-flsy">0</span> FLSY</div>
-            
             <div class="stats-grid">
                 <div class="stat-item">
                     <span class="stat-label" id="lbl-rewards">Rewards</span>
@@ -214,35 +179,10 @@
             </div>
         </div>
 
-        <div class="score-wallet-section" onclick="goToStart()">
-            <img class="medal-bg medal-left" src="https://github.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/blob/main/Activity/1st%20Place%20Medal.webp?raw=true">
-            <img class="medal-bg medal-right" src="https://github.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/blob/main/Activity/1st%20Place%20Medal.webp?raw=true">
-            
-            <div class="score-content">
-                <div class="your-score-title">
-                    <i class="fas fa-play pulse-icon"></i>
-                    <span>Your Score</span>
-                </div>
-                <div class="connect-wallet-btn">
-                    <i class="fas fa-wallet"></i>
-                    <span>Connect Wallet</span>
-                </div>
-            </div>
-        </div>
-
         <div class="stat-box">
-            <div><div id="label-acc-age" style="color: var(--gray); font-size: 0.8rem;">Account Age</div><div id="acc-age" style="font-weight: 700;">... years</div></div>
-            <i class="fas fa-calendar-alt" style="color: var(--nav-red);"></i>
+            <div><div id="label-acc-age" style="color:var(--gray); font-size:0.8rem;">Account Age</div><div id="acc-age" style="font-weight:700;">... years</div></div>
+            <i class="fas fa-calendar-alt" style="color:var(--nav-red);"></i>
         </div>
-        <div id="prem-stat-box" class="stat-box" style="display: none;">
-            <div><div id="label-premium" style="color: var(--gray); font-size: 0.8rem;">Telegram Premium</div><div id="label-active" style="font-weight: 700; color: var(--premium-blue);">Active</div></div>
-            <img class="prem-fire-img" src="https://github.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/blob/main/Animals%20and%20Nature/Fire.webp?raw=true" alt="Fire">
-        </div>
-    </div>
-    
-    <div id="friends" class="tab-content">
-        <h2 id="label-friends-title" style="text-align:center;">Friends</h2>
-        <p id="label-coming-soon" style="text-align:center; margin-top:50px; color:var(--gray);">Coming Soon...</p>
     </div>
 
     <nav class="bottom-nav">
@@ -256,134 +196,55 @@
     tg.expand();
 
     const RANKS = {
-        1: {name: "Apprentice", class: "rank-apprentice"}, 2: {name: "Apprentice", class: "rank-apprentice"}, 3: {name: "Apprentice", class: "rank-apprentice"},
-        4: {name: "Adept", class: "rank-adept"}, 5: {name: "Adept", class: "rank-adept"}, 6: {name: "Adept", class: "rank-adept"},
-        7: {name: "Master", class: "rank-master"}, 8: {name: "Master", class: "rank-master"}, 9: {name: "Master", class: "rank-master"}, 10: {name: "Master", class: "rank-master"}, 11: {name: "Master", class: "rank-master"}
+        1: {name: "Apprentice", class: "rank-apprentice"}, 4: {name: "Adept", class: "rank-adept"}, 7: {name: "Master", class: "rank-master"}
     };
 
     const I18N = {
-        tr: { apprentice: "ÇIRAK", adept: "UZMAN", master: "USTA", joined: "Telegram'a katıldın", yearsAgo: "yıl önce", accNum: "Hesap numaran:", top: "En iyi %1 Telegram kullanıcısındasın", btn: "DEVAM ET", years: "Yıl", end: "Bitir", accAge: "Hesap Yaşı", premium: "Telegram Premium", active: "Aktif", friends: "Arkadaşlar", soon: "Yakında...", home: "Ana Sayfa", rewards: "Ödüller", tasks: "Görevler", invites: "Davetler", premYes: "Harika, Premium kullanıcısısın!<br>Bakiyene ekstra +1,000 FLSY eklendi.", premNo: "Telegram Premium bulunamadı.<br>Ekstra bonus puan kazanılamadı." },
-        en: { apprentice: "APPRENTICE", adept: "ADEPT", master: "MASTER", joined: "You've joined Telegram", yearsAgo: "years ago", accNum: "Your account number is", top: "You're in the top 1% Telegram users", btn: "CONTINUE", years: "Years", end: "End", accAge: "Account Age", premium: "Telegram Premium", active: "Active", friends: "Friends", soon: "Coming Soon...", home: "Home", rewards: "Rewards", tasks: "Tasks", invites: "Invites", premYes: "You are a Premium user!<br>An extra +1,000 FLSY has been added to your balance.", premNo: "You do not have Telegram Premium.<br>No extra bonus points awarded." },
-        ru: { apprentice: "УЧЕНИК", adept: "ЗНАТОК", master: "МАСТЕР", joined: "Вы присоединились к Telegram", yearsAgo: "лет назад", accNum: "Ваш номер аккаунта:", top: "Вы входите в 1% лучших пользователей", btn: "ПРОДОЛЖИТЬ", years: "лет", end: "Завершить", accAge: "Возраст аккаунта", premium: "Telegram Premium", active: "Активен", friends: "Друзья", soon: "Скоро...", home: "Главная", rewards: "Награды", tasks: "Задания", invites: "Друзья", premYes: "Вы Premium-пользователь!<br>К вашему балансу добавлено +1,000 FLSY.", premNo: "У вас нет Telegram Premium.<br>Бонусные баллы не начислены." }
+        tr: { apprentice: "ÇIRAK", adept: "UZMAN", master: "USTA", joined: "Telegram'a katıldın", yearsAgo: "yıl önce", btn: "DEVAM ET", years: "Yıl", rewards: "Ödüller", tasks: "Görevler", invites: "Davetler" },
+        en: { apprentice: "APPRENTICE", adept: "ADEPT", master: "MASTER", joined: "You've joined Telegram", yearsAgo: "years ago", btn: "CONTINUE", years: "Years", rewards: "Rewards", tasks: "Tasks", invites: "Invites" }
     };
 
     let userData = { age: 1, points: 0, isPremium: false };
 
     function initData() {
-        const user = tg.initDataUnsafe.user;
-        if (!user) return;
-        const userLang = user.language_code === 'tr' ? 'tr' : (user.language_code === 'ru' ? 'ru' : 'en');
+        const user = tg.initDataUnsafe.user || { first_name: "Guest", id: 12345, language_code: "en" };
+        const userLang = user.language_code === 'tr' ? 'tr' : 'en';
         const lang = I18N[userLang];
 
         const id = user.id;
         if (id < 50000000) userData.age = 11;
-        else if (id < 150000000) userData.age = 10;
-        else if (id < 450000000) userData.age = 8;
         else if (id < 1000000000) userData.age = 6;
-        else if (id < 5000000000) userData.age = 3;
-        else userData.age = 1;
+        else userData.age = 2;
 
         userData.isPremium = user.is_premium || false;
         userData.points = (userData.age * 450) + (userData.isPremium ? 1000 : 0);
 
-        const rankData = RANKS[userData.age] || {name: "Apprentice", class: "rank-apprentice"};
-        const rankName = lang[rankData.name.toLowerCase()];
-
-        document.getElementById('txt-elite-title').innerText = rankName;
-        document.getElementById('txt-joined-desc').innerText = lang.joined;
         document.getElementById('wel-age-num').innerText = userData.age;
-        document.getElementById('wel-age-txt').innerText = lang.yearsAgo;
-        document.getElementById('txt-acc-num').innerText = lang.accNum;
-        document.getElementById('wel-user-id').innerText = "#" + user.id;
-        document.getElementById('txt-top-percent').innerHTML = lang.top.replace("1%", '<span class="info-white">1%</span>');
-        document.getElementById('btn-wel-continue').innerText = lang.btn;
-
-        document.getElementById('acc-age').innerText = userData.age + " " + lang.years;
-        document.getElementById('btn-end').innerText = lang.end;
-        document.getElementById('label-acc-age').innerText = lang.accAge;
-        document.getElementById('label-premium').innerText = lang.premium;
-        document.getElementById('label-active').innerText = lang.active;
-        document.getElementById('label-friends-title').innerText = lang.friends;
-        document.getElementById('label-coming-soon').innerText = lang.soon;
-        document.getElementById('nav-home').innerText = lang.home;
-        document.getElementById('nav-friends').innerText = lang.friends;
         document.getElementById('u-name').innerText = user.first_name;
         document.getElementById('total-flsy').innerText = userData.points.toLocaleString();
+        document.getElementById('acc-age').innerText = userData.age + " " + lang.years;
         
-        document.getElementById('lbl-rewards').innerText = lang.rewards;
-        document.getElementById('lbl-tasks').innerText = lang.tasks;
-        document.getElementById('lbl-invites').innerText = lang.invites;
-
-        const uRankEl = document.getElementById('u-rank');
-        uRankEl.innerText = rankData.name;
-        uRankEl.className = `rank-badge ${rankData.class}`;
-
-        if(user.photo_url) document.getElementById('u-pic').src = user.photo_url;
-        if(userData.isPremium) document.getElementById('prem-stat-box').style.display = 'flex';
+        const rankKey = userData.age >= 7 ? 7 : (userData.age >= 4 ? 4 : 1);
+        const rankData = RANKS[rankKey];
+        document.getElementById('u-rank').innerText = rankData.name;
+        document.getElementById('txt-elite-title').innerText = lang[rankData.name.toLowerCase()];
 
         if (localStorage.getItem('flashy_onboarded')) {
             document.getElementById('elite-welcome-screen').style.display = 'none';
             document.getElementById('main-app').style.display = 'block';
         }
-        createStars();
     }
 
-    // Başlangıç ekranına döndüren fonksiyon
     function goToStart() {
         tg.HapticFeedback.impactOccurred('medium');
         document.getElementById('main-app').style.display = 'none';
         document.getElementById('elite-welcome-screen').style.display = 'flex';
-        // Opsiyonel: LocalStorage sıfırlanmasın, sadece ekran geçişi olsun
     }
 
-    function createStars() {
-        const box = document.getElementById('stars-box');
-        if(!box) return;
-        for (let i = 0; i < 40; i++) {
-            const star = document.createElement('div');
-            star.className = 'star';
-            const size = Math.random() * 3 + 'px';
-            star.style.width = size; star.style.height = size;
-            star.style.left = Math.random() * 100 + '%'; star.style.top = Math.random() * 100 + '%';
-            star.style.setProperty('--duration', Math.random() * 3 + 2 + 's');
-            box.appendChild(star);
-        }
-    }
-
-    function startAfterElite() {
-        document.getElementById('elite-welcome-screen').style.display = 'none';
-        showPremiumStep();
-        tg.HapticFeedback.impactOccurred('medium');
-    }
-
-    function showPremiumStep() {
-        const user = tg.initDataUnsafe.user;
-        const userLang = user?.language_code === 'tr' ? 'tr' : (user?.language_code === 'ru' ? 'ru' : 'en');
-        const lang = I18N[userLang];
-        const premScreen = document.getElementById('premium-status-screen');
-        const icon = document.getElementById('prem-icon');
-        const msg = document.getElementById('prem-msg');
-        premScreen.style.display = 'flex';
-        if (userData.isPremium) { icon.innerHTML = "🌟"; msg.innerHTML = lang.premYes; }
-        else { icon.innerHTML = "👤"; msg.innerHTML = lang.premNo; }
-    }
-
-    function finishIntro() {
-        localStorage.setItem('flashy_onboarded', 'true');
-        document.getElementById('premium-status-screen').style.display = 'none';
-        document.getElementById('main-app').style.display = 'block';
-        tg.HapticFeedback.notificationOccurred('success');
-    }
-
-    function switchTab(tabId) {
-        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-        document.getElementById(tabId).classList.add('active');
-        document.querySelectorAll('.nav-item').forEach(i => {
-            i.classList.remove('active');
-            if(i.getAttribute('onclick').includes(tabId)) i.classList.add('active');
-        });
-        tg.HapticFeedback.impactOccurred('light');
-    }
+    function startAfterElite() { document.getElementById('elite-welcome-screen').style.display = 'none'; showPremiumStep(); }
+    function showPremiumStep() { document.getElementById('premium-status-screen').style.display = 'flex'; }
+    function finishIntro() { localStorage.setItem('flashy_onboarded', 'true'); document.getElementById('premium-status-screen').style.display = 'none'; document.getElementById('main-app').style.display = 'block'; }
+    function switchTab(id) { tg.HapticFeedback.impactOccurred('light'); }
 
     window.onload = initData;
 </script>
